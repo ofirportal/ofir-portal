@@ -16,9 +16,9 @@ body{background:var(--navy);color:var(--white);font-family:var(--sans);min-heigh
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--white-dim);}
 #loginScreen{display:none;min-height:100vh;align-items:center;justify-content:center;background:#1e2a38;}
-.login-box{width:400px;padding:52px 44px;background:#1e2a38;border:1px solid rgba(201,169,110,0.2);animation:fadeUp .4s ease;}
+.login-box{width:420px;padding:48px 44px;background:transparent;border:none;animation:fadeUp .4s ease;}
 .login-logo{text-align:center;margin-bottom:40px;}
-.login-logo img{width:260px;margin:0 auto;display:block;mix-blend-mode:normal;}
+.login-logo img{width:280px;margin:0 auto;display:block;}
 .form-group{margin-bottom:18px;}
 .form-group label{display:block;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--white-dim);margin-bottom:8px;}
 .form-group input,.form-group select{width:100%;padding:13px 15px;background:var(--white-faint);border:1px solid rgba(201,169,110,0.2);color:var(--white);font-family:var(--sans);font-size:.8rem;outline:none;transition:border-color .2s;}
@@ -583,7 +583,6 @@ function renderP(c){
   document.getElementById('liqTotalView').innerHTML=t.tLiq>0?`<strong style="color:var(--gold);">Total: USD ${fmt(t.tLiq)}</strong>`:'';
 
   // Notes
-  const notes=c.notes||[];
   const notes=c.notes||[];
   const meetingHtml=c.nextMeeting?`<div class="note-item" style="border-left-color:var(--green);margin-bottom:14px;"><div class="note-date" style="color:var(--green);">📅 Próxima reunión</div><div class="note-text" style="font-size:.82rem;color:var(--white);font-weight:500;">${new Date(c.nextMeeting+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div>`:'' ;
   document.getElementById('notesList').innerHTML=meetingHtml+(notes.length?notes.map(n=>`<div class="note-item"><div class="note-date">${n.date}</div><div class="note-text">${n.text}</div></div>`).join(''):'<div style="color:var(--white-dim);font-size:.75rem;margin-bottom:12px;">Sin notas</div>');
