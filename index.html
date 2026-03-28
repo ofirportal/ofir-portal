@@ -209,7 +209,7 @@ tbody td:first-child { text-align:left; color:var(--white); font-weight:500; }
 .edit-field select option { background:#1e2a38; }
 .items-list { margin-bottom:14px; }
 .item-row { display:grid; gap:8px; align-items:start; background:var(--white-faint); padding:10px 12px; margin-bottom:7px; border:1px solid rgba(201,169,110,0.07); }
-.item-row.inv { grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 26px; }
+.item-row.inv { grid-template-columns:2fr 1fr 1fr 1fr 1fr 26px; }
 .item-row.prop { grid-template-columns:2.5fr 0.5fr 1fr 1fr 1fr 26px; }
 .item-row.note { grid-template-columns:1fr 3fr 26px; }
 .item-row.goal { grid-template-columns:2fr 1fr 1fr 26px; }
@@ -221,7 +221,7 @@ tbody td:first-child { text-align:left; color:var(--white); font-weight:500; }
 .btn-add-row { background:transparent;border:1px dashed rgba(201,169,110,0.2);color:var(--white-dim);font-family:var(--sans);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;cursor:pointer;transition:.2s;margin-bottom:18px; }
 .btn-add-row:hover { border-color:var(--gold); color:var(--gold); }
 .col-labels { display:grid; gap:8px; font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--white-dim);margin-bottom:5px;padding:0 12px; }
-.col-labels.inv { grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 26px; }
+.col-labels.inv { grid-template-columns:2fr 1fr 1fr 1fr 1fr 26px; }
 .col-labels.prop { grid-template-columns:2.5fr 0.5fr 1fr 1fr 1fr 26px; }
 .col-labels.note { grid-template-columns:1fr 3fr 26px; }
 .col-labels.goal { grid-template-columns:2fr 1fr 1fr 26px; }
@@ -249,24 +249,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
 .footer-l { font-family:var(--serif);font-size:.8rem;color:var(--white-dim);font-style:italic; }
 .footer-r { font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,169,110,0.35); }
 
-/* ── REPORTS ── */
-.reports-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; margin-top:8px; }
-.report-card { background:var(--navy-card); border:1px solid rgba(201,169,110,0.1); padding:24px; display:flex; flex-direction:column; gap:14px; transition:.2s; position:relative; overflow:hidden; }
-.report-card::before { content:''; position:absolute; top:0;left:0;width:3px;height:100%;background:var(--gold);opacity:0;transition:.3s; }
-.report-card:hover::before { opacity:1; }
-.report-quarter { font-size:.56rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:500; }
-.report-title { font-family:var(--serif); font-size:1.2rem; font-weight:300; color:var(--white); line-height:1.3; }
-.report-date { font-size:.62rem; color:var(--white-dim); }
-.report-desc { font-size:.7rem; color:var(--white-dim); line-height:1.6; flex:1; }
-.btn-download { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:var(--gold-dim); border:1px solid rgba(201,169,110,0.3); color:var(--gold); font-family:var(--sans); font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; text-decoration:none; cursor:pointer; transition:.2s; width:fit-content; }
-.btn-download:hover { background:rgba(201,169,110,0.25); }
-.empty-reports { text-align:center; padding:60px 0; color:var(--white-dim); }
-.empty-reports .icon { font-size:2rem; margin-bottom:12px; opacity:.3; }
-.empty-reports p { font-size:.75rem; }
-
-/* Report admin rows */
-.report-row { display:grid; grid-template-columns:1fr 1fr 2fr 2fr 26px; gap:8px; align-items:start; background:var(--white-faint); padding:10px 12px; margin-bottom:7px; border:1px solid rgba(201,169,110,0.07); }
-.col-labels.rep { grid-template-columns:1fr 1fr 2fr 2fr 26px; }
+/* responsive hint */
 @media(max-width:900px) {
   .kpi-row { grid-template-columns:1fr 1fr; }
   .mid-grid, .bottom-grid { grid-template-columns:1fr; }
@@ -360,7 +343,6 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
 
   <nav id="mainNav">
     <div class="nav-item active" onclick="showView('patrimony',this)">Resumen Patrimonial</div>
-    <div class="nav-item" onclick="showView('reports',this)">Reportes</div>
     <div class="nav-item admin-only" onclick="showView('admin',this)" style="display:none">Panel Admin</div>
   </nav>
 
@@ -380,7 +362,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
           <div class="kpi-value"><span class="kpi-cur">USD</span><span id="kTotal">—</span></div>
           <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
             <span class="badge pos" id="kYtd">—</span>
-            <span class="badge pos" id="kSinceInception" style="background:rgba(201,169,110,0.12);color:var(--gold);">—</span>
+            <span class="kpi-sub" id="kBench">—</span>
           </div>
           <div class="progress-wrap">
             <div class="progress-label"><span>Meta objetivo</span><span id="kGoalLbl">—</span></div>
@@ -407,10 +389,11 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
       </div>
       <div class="mid-grid">
         <div class="panel">
-          <div class="panel-title">Evolución patrimonial — Desde inicio</div>
+          <div class="panel-title">Evolución patrimonial — 12 meses</div>
           <div class="chart-area"><canvas id="perfChart"></canvas></div>
           <div class="legend-row">
             <div class="legend-item"><div class="legend-line" style="background:var(--gold);"></div>Patrimonio OFIR</div>
+            <div class="legend-item"><div class="legend-line" style="background:rgba(245,242,237,0.25);border-top:1px dashed rgba(245,242,237,0.3);"></div>Benchmark</div>
           </div>
         </div>
         <div class="panel">
@@ -426,7 +409,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
         <table>
           <thead><tr>
             <th>Instrumento</th><th>Broker</th><th>Valor actual</th>
-            <th>Var. mes</th><th>YTD</th><th>Desde inicio</th><th>% Cartera</th>
+            <th>Var. mes</th><th>YTD</th><th>% Cartera</th>
           </tr></thead>
           <tbody id="invTable"></tbody>
         </table>
@@ -444,14 +427,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
       </div>
     </div>
 
-    <!-- REPORTS VIEW -->
-    <div id="view-reports" class="view">
-      <div class="page-header">
-        <h1>Reportes <span>Trimestrales</span></h1>
-        <div style="font-size:.62rem;color:var(--white-dim);letter-spacing:.06em;" id="reportsClientName"></div>
-      </div>
-      <div id="reportsList"></div>
-    </div>
+    <!-- ADMIN VIEW -->
     <div id="view-admin" class="view">
       <div class="page-header">
         <h1>Panel de <span>Administración</span></h1>
@@ -486,7 +462,6 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
               <div class="edit-tab" onclick="setEditTab('inversiones',this)">Inversiones</div>
               <div class="edit-tab" onclick="setEditTab('inmuebles',this)">Inmuebles</div>
               <div class="edit-tab" onclick="setEditTab('notas',this)">Notas</div>
-              <div class="edit-tab" onclick="setEditTab('reportes',this)">Reportes</div>
             </div>
 
             <div id="edit-general" class="edit-section active">
@@ -498,7 +473,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
               <div class="edit-row three">
                 <div class="edit-field"><label>Patrimonio total (USD)</label><input id="ef-total" type="number"/></div>
                 <div class="edit-field"><label>Rendimiento YTD</label><input id="ef-ytd" placeholder="+8.4% YTD"/></div>
-                <div class="edit-field"><label>Valor inicial (USD) — para gráfico desde inicio</label><input id="ef-inception" type="number" placeholder="ej: 1500000"/></div>
+                <div class="edit-field"><label>vs Benchmark</label><input id="ef-bench" placeholder="vs +6.1% bench"/></div>
               </div>
               <div class="edit-row three">
                 <div class="edit-field"><label>Inversiones (USD)</label><input id="ef-inv" type="number"/></div>
@@ -525,7 +500,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
 
             <div id="edit-inversiones" class="edit-section">
               <div class="section-sub">Detalle de inversiones</div>
-              <div class="col-labels inv"><span>Instrumento / Tipo</span><span>Broker</span><span>Valor USD</span><span>Var. mes</span><span>YTD</span><span>Desde inicio</span><span></span></div>
+              <div class="col-labels inv"><span>Instrumento / Tipo</span><span>Broker</span><span>Valor USD</span><span>Var. mes</span><span>YTD</span><span></span></div>
               <div id="invRows" class="items-list"></div>
               <button class="btn-add-row" onclick="addInv()">+ Agregar instrumento</button>
             </div>
@@ -548,15 +523,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
               <button class="btn-add-row" onclick="addGoal()">+ Agregar objetivo</button>
             </div>
 
-            <div id="edit-reportes" class="edit-section">
-              <div class="section-sub">Reportes trimestrales</div>
-              <div style="font-size:.65rem;color:var(--white-dim);margin-bottom:16px;line-height:1.7;">
-                Subí el PDF a Google Drive → click derecho → "Obtener link" → asegurate que esté en "Cualquier persona con el link" → pegá el link acá.
-              </div>
-              <div class="col-labels rep"><span>Trimestre</span><span>Fecha</span><span>Título</span><span>Link Google Drive</span><span></span></div>
-              <div id="reportRows" class="items-list"></div>
-              <button class="btn-add-row" onclick="addReport()">+ Agregar reporte</button>
-            </div>
+            <div class="save-row">
               <button class="btn-save" id="btnSave" onclick="saveClient()">Guardar cambios</button>
               <span class="save-msg" id="saveMsg"></span>
             </div>
@@ -589,8 +556,8 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
 // ══════════════════════════════════════════════════════════════
 // CONFIGURACIÓN — Reemplazar con tus credenciales de Supabase
 // ══════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'REEMPLAZAR_CON_TU_URL';
-const SUPABASE_ANON_KEY = 'REEMPLAZAR_CON_TU_KEY';
+const SUPABASE_URL = 'https://jpegcujzyzqfjvlumzpm.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWdjdWp6eXpxZmp2bHVtenBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzgzNzEsImV4cCI6MjA5MDIxNDM3MX0.A6cx3covHatuMa6PgkLVquDyrZAjzRCk3Knt0nKq2tQ';
 
 const ADMIN_USER = 'alan';
 const ADMIN_PASS = 'ofir2025';
@@ -605,61 +572,12 @@ let selIdx = 0;
 let isAdmin = false;
 let perfChart = null, donutChart = null;
 
-// ── Reports ──
-function renderReportsView(c) {
-  document.getElementById('reportsClientName').textContent = c.name;
-  const reports = c.reports || [];
-  if(!reports.length) {
-    document.getElementById('reportsList').innerHTML = `
-      <div class="empty-reports">
-        <div class="icon">📄</div>
-        <p>No hay reportes disponibles todavía.</p>
-      </div>`;
-    return;
-  }
-  document.getElementById('reportsList').innerHTML = `<div class="reports-grid">` +
-    reports.map(r => {
-      // Convert Google Drive share link to direct download link
-      let url = r.url || '#';
-      if(url.includes('drive.google.com/file/d/')) {
-        const id = url.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1];
-        if(id) url = `https://drive.google.com/uc?export=download&id=${id}`;
-      }
-      return `<div class="report-card">
-        <div class="report-quarter">${r.quarter||'—'}</div>
-        <div class="report-title">${r.title||'Reporte Patrimonial'}</div>
-        <div class="report-date">${r.date||''}</div>
-        <div class="report-desc">${r.desc||'Resumen completo del portfolio, rendimientos y próximos pasos.'}</div>
-        <a class="btn-download" href="${url}" target="_blank">
-          ↓ Descargar PDF
-        </a>
-      </div>`;
-    }).join('') + `</div>`;
-}
-
-function renderReportRows(arr) {
-  document.getElementById('reportRows').innerHTML = (arr||[]).map((r,i) =>
-    `<div class="report-row">
-      <input class="item-input" value="${r.quarter||''}" placeholder="Q1 2026" onchange="upReport(${i},'quarter',this.value)"/>
-      <input class="item-input" value="${r.date||''}" placeholder="Mar 2026" onchange="upReport(${i},'date',this.value)"/>
-      <input class="item-input" value="${r.title||''}" placeholder="Reporte Q1 2026" onchange="upReport(${i},'title',this.value)"/>
-      <input class="item-input" value="${r.url||''}" placeholder="https://drive.google.com/..." onchange="upReport(${i},'url',this.value)"/>
-      <button class="btn-del" onclick="delReport(${i})">✕</button>
-    </div>`).join('');
-}
-function upReport(i,f,v){if(!clients[selIdx].reports)clients[selIdx].reports=[];clients[selIdx].reports[i][f]=v;}
-function delReport(i){clients[selIdx].reports.splice(i,1);renderReportRows(clients[selIdx].reports);}
-function addReport(){
-  if(!clients[selIdx].reports)clients[selIdx].reports=[];
-  clients[selIdx].reports.push({quarter:'',date:'',title:'',url:'',desc:''});
-  renderReportRows(clients[selIdx].reports);
-}
-
-// ── Reports ──
+// ══════════════════════════════════════════════════════════════
+// STARTUP
 // ══════════════════════════════════════════════════════════════
 async function init() {
   // Check if Supabase is configured
-  if (SUPABASE_URL === 'REEMPLAZAR_CON_TU_URL') {
+  if (SUPABASE_URL === 'https://jpegcujzyzqfjvlumzpm.supabase.co') {
     // Demo mode with localStorage
     clients = JSON.parse(localStorage.getItem('ofir_clients') || 'null') || getSampleData();
     document.getElementById('loadingScreen').style.display = 'none';
@@ -816,7 +734,6 @@ function showView(name, el) {
   document.getElementById('view-'+name).classList.add('active');
   if(el) el.classList.add('active');
   if(name==='patrimony') renderPatrimony(clients[selIdx]);
-  if(name==='reports') renderReportsView(clients[selIdx]);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -831,15 +748,7 @@ function renderPatrimony(c) {
   if(!c) return;
   document.getElementById('kTotal').textContent=fmt(c.total);
   document.getElementById('kYtd').textContent=c.ytd||'—';
-  // Retorno desde inicio
-  const sinceEl = document.getElementById('kSinceInception');
-  if(c.inceptionValue && c.inceptionValue > 0) {
-    const ret = ((c.total - c.inceptionValue) / c.inceptionValue * 100).toFixed(1);
-    sinceEl.textContent = (ret > 0 ? '+' : '') + ret + '% desde inicio';
-    sinceEl.style.display = 'inline-flex';
-  } else {
-    sinceEl.style.display = 'none';
-  }
+  document.getElementById('kBench').textContent=c.bench||'—';
   document.getElementById('kInv').textContent=fmt(c.inv);
   document.getElementById('kInvYtd').textContent=c.invYtd||'—';
   document.getElementById('kInvPct').textContent=c.total>0?Math.round(c.inv/c.total*100)+'% del patrimonio':'—';
@@ -854,21 +763,18 @@ function renderPatrimony(c) {
   // Perf chart
   if(perfChart) perfChart.destroy();
   const pCtx=document.getElementById('perfChart').getContext('2d');
-  // Desde inicio — muestra crecimiento desde el inicio de la relación
-  const startVal = c.inceptionValue || Math.round(c.total * 0.72);
-  const months = c.inceptionMonths || ['Ene 24','Mar 24','May 24','Jul 24','Sep 24','Nov 24','Ene 25','Mar 25','May 25','Jul 25','Sep 25','Nov 25','Mar 26'];
-  const ofirD = months.map((_,i) => {
-    const progress = i / (months.length - 1);
-    const noise = (Math.random() - 0.38) * c.total * 0.025;
-    return Math.round(startVal + (c.total - startVal) * progress + noise);
-  });
-  ofirD[ofirD.length-1] = c.total;
+  const base=c.total*0.85;
+  const months=['Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar'];
+  const ofirD=months.map((_,i)=>Math.round(base+(c.total-base)*(i/11)+(Math.random()-.4)*c.total*.02));
+  ofirD[11]=c.total;
+  const benchD=months.map((_,i)=>Math.round(base+(c.total-base)*.75*(i/11)));
   perfChart=new Chart(pCtx,{type:'line',data:{labels:months,datasets:[
-    {label:'Patrimonio',data:ofirD,borderColor:'#c9a96e',borderWidth:2.5,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:'#c9a96e',tension:.4,fill:true,
-     backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.22)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}}
+    {label:'OFIR',data:ofirD,borderColor:'#c9a96e',borderWidth:2,pointRadius:0,tension:.4,fill:true,
+     backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.18)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}},
+    {label:'Bench',data:benchD,borderColor:'rgba(245,242,237,.22)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,tension:.4,fill:false}
   ]},options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#f5f2ed',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},
-    scales:{x:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}
+    scales:{x:{grid:{color:'rgba(245,242,237,.05)'},ticks:{color:'rgba(245,242,237,.4)',font:{size:9,family:'Montserrat'}}},y:{grid:{color:'rgba(245,242,237,.05)'},ticks:{color:'rgba(245,242,237,.4)',font:{size:9,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}
   });
 
   // Donut
@@ -889,8 +795,7 @@ function renderPatrimony(c) {
     const pos=!String(i.varMes).startsWith('-');
     const posY=!String(i.ytd).startsWith('-');
     return `<tr><td>${i.name}<span class="tag">${i.tag||''}</span></td><td>${i.broker}</td><td>USD ${fmt(i.value)}</td>
-      <td class="${pos?'pos':'neg'}">${i.varMes||'—'}</td><td class="${posY?'pos':'neg'}">${i.ytd||'—'}</td>
-      <td class="${i.sinceInception&&!String(i.sinceInception).startsWith('-')?'pos':'neg'}">${i.sinceInception||'—'}</td>
+      <td class="${pos?'pos':'neg'}">${i.varMes}</td><td class="${posY?'pos':'neg'}">${i.ytd}</td>
       <td>${tot>0?(i.value/tot*100).toFixed(1)+'%':'—'}</td></tr>`;
   }).join('')+(inv.length?`<tr class="total-row"><td>Total cartera financiera</td><td></td><td>USD ${fmt(tot)}</td><td></td><td></td><td>100%</td></tr>`
     :'<tr><td colspan="6" style="text-align:center;color:var(--white-dim);padding:20px;">Sin inversiones cargadas</td></tr>');
@@ -956,7 +861,7 @@ function selectClient(idx) {
   document.getElementById('ef-pass').value=c.pass;
   document.getElementById('ef-total').value=c.total;
   document.getElementById('ef-ytd').value=c.ytd;
-  document.getElementById('ef-inception').value=c.inceptionValue||'';
+  document.getElementById('ef-bench').value=c.bench;
   document.getElementById('ef-inv').value=c.inv;
   document.getElementById('ef-invytd').value=c.invYtd;
   document.getElementById('ef-cf').value=c.cf;
@@ -969,7 +874,6 @@ function selectClient(idx) {
   renderPropRows(c.properties||[]);
   renderNoteRows(c.notes||[]);
   renderGoalRows(c.goals||[]);
-  renderReportRows(c.reports||[]);
 }
 
 function setEditTab(name, el) {
@@ -989,13 +893,12 @@ function renderInvRows(arr) {
       <input class="item-input" type="number" value="${inv.value||0}" onchange="upInv(${i},'value',Number(this.value))"/>
       <input class="item-input" value="${inv.varMes||''}" placeholder="+0%" onchange="upInv(${i},'varMes',this.value)"/>
       <input class="item-input" value="${inv.ytd||''}" placeholder="+0%" onchange="upInv(${i},'ytd',this.value)"/>
-      <input class="item-input" value="${inv.sinceInception||''}" placeholder="+0%" onchange="upInv(${i},'sinceInception',this.value)"/>
       <button class="btn-del" onclick="delInv(${i})">✕</button>
     </div>`).join('');
 }
 function upInv(i,f,v){clients[selIdx].investments[i][f]=v;}
 function delInv(i){clients[selIdx].investments.splice(i,1);renderInvRows(clients[selIdx].investments);}
-function addInv(){clients[selIdx].investments.push({name:'',tag:'',broker:'',value:0,varMes:'',ytd:'',sinceInception:''});renderInvRows(clients[selIdx].investments);}
+function addInv(){clients[selIdx].investments.push({name:'',tag:'',broker:'',value:0,varMes:'',ytd:''});renderInvRows(clients[selIdx].investments);}
 
 // Property rows
 function renderPropRows(arr) {
@@ -1052,7 +955,7 @@ async function saveClient() {
   c.pass=document.getElementById('ef-pass').value;
   c.total=Number(document.getElementById('ef-total').value);
   c.ytd=document.getElementById('ef-ytd').value;
-  c.inceptionValue=Number(document.getElementById('ef-inception').value)||0;
+  c.bench=document.getElementById('ef-bench').value;
   c.inv=Number(document.getElementById('ef-inv').value);
   c.invYtd=document.getElementById('ef-invytd').value;
   c.cf=Number(document.getElementById('ef-cf').value);
@@ -1062,7 +965,7 @@ async function saveClient() {
   c.alloc=['a1','a2','a3','a4','a5'].map(id=>Number(document.getElementById('ef-'+id).value)||0);
 
   try {
-    if(SUPABASE_URL !== 'REEMPLAZAR_CON_TU_URL') {
+    if(SUPABASE_URL !== 'https://jpegcujzyzqfjvlumzpm.supabase.co') {
       const { error } = await db.from('clients').upsert({
         id: c.id, name:c.name, pass:c.pass, total:c.total, ytd:c.ytd,
         bench:c.bench, inv:c.inv, inv_ytd:c.invYtd, cf:c.cf,
@@ -1092,13 +995,13 @@ async function addClient() {
   const name=document.getElementById('nc-name').value.trim();
   const pass=document.getElementById('nc-pass').value.trim();
   if(!name||!pass) return;
-  const nc={name,pass,total:0,ytd:'+0% YTD',bench:'',inv:0,invYtd:'+0%',cf:0,prop:0,propYtd:'+0%',goal:0,alloc:[28,21,41,7,3],investments:[],properties:[],notes:[],goals:[],reports:[]};
-  if(SUPABASE_URL!=='REEMPLAZAR_CON_TU_URL') {
+  const nc={name,pass,total:0,ytd:'+0% YTD',bench:'',inv:0,invYtd:'+0%',cf:0,prop:0,propYtd:'+0%',goal:0,alloc:[28,21,41,7,3],investments:[],properties:[],notes:[],goals:[]};
+  if(SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co') {
     const {data,error}=await db.from('clients').insert([nc]).select();
     if(!error&&data) nc.id=data[0].id;
   }
   clients.push(nc);
-  if(SUPABASE_URL==='REEMPLAZAR_CON_TU_URL') localStorage.setItem('ofir_clients',JSON.stringify(clients));
+  if(SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co') localStorage.setItem('ofir_clients',JSON.stringify(clients));
   closeModal();
   renderAdminList();
   selectClient(clients.length-1);
