@@ -15,11 +15,10 @@ body{background:var(--navy);color:var(--white);font-family:var(--sans);min-heigh
 .spinner{width:36px;height:36px;border:2px solid var(--gold-dim);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--white-dim);}
-#loginScreen{display:none;min-height:100vh;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,#2e4057 0%,#1e2a38 70%);}
-.login-box{width:400px;padding:52px 44px;background:var(--navy-card);border:1px solid rgba(201,169,110,0.2);animation:fadeUp .4s ease;}
+#loginScreen{display:none;min-height:100vh;align-items:center;justify-content:center;background:#1e2a38;}
+.login-box{width:400px;padding:52px 44px;background:#1e2a38;border:1px solid rgba(201,169,110,0.2);animation:fadeUp .4s ease;}
 .login-logo{text-align:center;margin-bottom:40px;}
-.login-logo .ofir-big{font-family:var(--serif);font-size:2.8rem;letter-spacing:.15em;}
-.login-logo .sub{font-size:.58rem;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-top:6px;}
+.login-logo img{width:260px;margin:0 auto;display:block;mix-blend-mode:normal;}
 .form-group{margin-bottom:18px;}
 .form-group label{display:block;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--white-dim);margin-bottom:8px;}
 .form-group input,.form-group select{width:100%;padding:13px 15px;background:var(--white-faint);border:1px solid rgba(201,169,110,0.2);color:var(--white);font-family:var(--sans);font-size:.8rem;outline:none;transition:border-color .2s;}
@@ -275,7 +274,7 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
 
       <div class="table-panel">
         <div class="panel-title">Cuentas de inversión & bancarias</div>
-        <table><thead><tr><th>Institución</th><th>Tipo</th><th>Valor actual</th><th>% Cartera</th><th>Yield est.</th><th>Desde inicio</th></tr></thead><tbody id="invTable"></tbody></table>
+        <table><thead><tr><th>Institución</th><th>Tipo</th><th>Valor actual</th><th>% Cartera</th><th>Retorno acumulado</th></tr></thead><tbody id="invTable"></tbody></table>
       </div>
 
       <div class="two-grid">
@@ -337,19 +336,23 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
               </div>
               <div class="edit-row three">
                 <div class="edit-field"><label>Patrimonio total <span class="auto-lbl">● auto</span></label><input id="ef-total" readonly/></div>
-                <div class="edit-field"><label>Rendimiento YTD</label><input id="ef-ytd" placeholder="+8.4% YTD"/></div>
-                <div class="edit-field"><label>Meta AUM objetivo (USD)</label><input id="ef-goal" type="number"/></div>
+                <div class="edit-field"><label>Patrimonio al inicio (USD)</label><input id="ef-inception" type="number" placeholder="ej: 1500000"/></div>
+                <div class="edit-field"><label>Retorno acumulado (USD) <span class="auto-lbl">● auto</span></label><input id="ef-retorno" readonly/></div>
               </div>
               <div class="edit-row three">
+                <div class="edit-field"><label>Rendimiento YTD</label><input id="ef-ytd" placeholder="+8.4% YTD"/></div>
+                <div class="edit-field"><label>Meta AUM objetivo (USD)</label><input id="ef-goal" type="number"/></div>
+                <div class="edit-field"><label>Próxima reunión</label><input id="ef-nextmeeting" type="date"/></div>
+              </div>
+              <div class="edit-row">
                 <div class="edit-field"><label>Inicio del asesoramiento</label><input id="ef-startdate" type="date"/></div>
-                <div class="edit-field"><label>Patrimonio al inicio (USD)</label><input id="ef-inception" type="number" placeholder="ej: 1500000"/></div>
-                <div class="edit-field"><label>Retorno acumulado <span class="auto-lbl">● auto</span></label><input id="ef-retorno" readonly/></div>
+                <div class="edit-field"></div>
               </div>
             </div>
 
             <div id="edit-cuentas" class="edit-section">
               <div class="section-sub">Cuentas de inversión & bancarias</div>
-              <div class="col-lbl cl-acc"><span>Institución</span><span>Tipo</span><span>Valor USD</span><span>% Desde inicio</span><span></span></div>
+              <div class="col-lbl cl-acc"><span>Institución</span><span>Tipo</span><span>Valor USD</span><span>Retorno acumulado %</span><span></span></div>
               <div id="accRows" class="items-list"></div>
               <button class="btn-add-row" onclick="addAcc()">+ Agregar cuenta</button>
             </div>
@@ -447,7 +450,7 @@ async function init(){
   showLogin();
 }
 
-function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
+function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,nextMeeting:r.next_meeting||'',accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
 
 function getSample(){return[
   {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,
@@ -550,9 +553,26 @@ function renderP(c){
 
   // Inv table
   document.getElementById('invTable').innerHTML=acc.map(a=>{
-    const ye=Number(a.yieldEst||5);const ay=Number(a.value||0)*ye/100;const pos=!String(a.sinceInception||'').startsWith('-');
-    return `<tr><td><strong>${a.name}</strong>${a.type==='banco'?'<span class="tag bank">Banco</span>':'<span class="tag">Inversión</span>'}</td><td>${a.type==='banco'?'Banco comercial':'Cuenta de inversión'}</td><td>USD ${fmt(a.value)}</td><td>${t.tInv>0?(Number(a.value)/t.tInv*100).toFixed(1)+'%':'—'}</td><td class="pos">${ye>0?ye.toFixed(1)+'% · USD '+fmt(Math.round(ay))+'/año':'—'}</td><td class="${a.sinceInception?(pos?'pos':'neg'):''}">${a.sinceInception||'—'}</td></tr>`;
-  }).join('')+(acc.length?`<tr class="total-row"><td>Total cuentas</td><td></td><td>USD ${fmt(t.tInv)}</td><td>100%</td><td class="pos">${t.wYield.toFixed(2)}% pond.</td><td></td></tr>`:'<tr><td colspan="6" style="text-align:center;color:var(--white-dim);padding:20px;">Sin cuentas cargadas</td></tr>');
+    const ye=Number(a.yieldEst||5);
+    const val=Number(a.value||0);
+    // Retorno acumulado desde inicio
+    let retHTML='—';
+    if(a.sinceInception && a.sinceInception!=='') {
+      const pct=parseFloat(a.sinceInception.replace('%','').replace('+',''));
+      if(!isNaN(pct)&&val>0) {
+        const usd=Math.round(val*pct/100/(1+pct/100));
+        const pos=pct>=0;
+        retHTML=`<span class="${pos?'pos':'neg'}">${pos?'+':''}${pct.toFixed(1)}% · USD ${fmt(usd)}</span>`;
+      } else retHTML=`<span class="${a.sinceInception.startsWith('-')?'neg':'pos'}">${a.sinceInception}</span>`;
+    }
+    return `<tr>
+      <td><strong>${a.name}</strong>${a.type==='banco'?'<span class="tag bank">Banco</span>':'<span class="tag">Inversión</span>'}</td>
+      <td>${a.type==='banco'?'Banco comercial':'Cuenta de inversión'}</td>
+      <td>USD ${fmt(val)}</td>
+      <td>${t.tInv>0?(val/t.tInv*100).toFixed(1)+'%':'—'}</td>
+      <td>${retHTML}</td>
+    </tr>`;
+  }).join('')+(acc.length?`<tr class="total-row"><td>Total cuentas</td><td></td><td>USD ${fmt(t.tInv)}</td><td>100%</td><td></td></tr>`:'<tr><td colspan="5" style="text-align:center;color:var(--white-dim);padding:20px;">Sin cuentas cargadas</td></tr>');
 
   // Props
   document.getElementById('propList').innerHTML=props.length?props.map(p=>{const yc=Number(p.val)>0&&Number(p.rent)>0?(Number(p.rent)*12/Number(p.val)*100).toFixed(2):(p.yieldCalc||0);return`<div class="prop-item"><div class="prop-icon">${p.icon||'🏠'}</div><div><div class="prop-name">${p.name}</div>${p.addr?`<div class="prop-addr">${p.addr}</div>`:''}<div class="prop-stats"><div class="prop-stat"><div class="lbl">Valuación</div><div class="val">USD ${fmt(p.val)}</div></div>${Number(p.rent)>0?`<div class="prop-stat"><div class="lbl">Alquiler</div><div class="val green">USD ${fmt(p.rent)}/mes</div></div>`:''}<div class="prop-stat"><div class="lbl">Yield anual</div><div class="val green">${Number(yc)>0?Number(yc).toFixed(2)+'%':'—'}</div></div></div></div></div>`;}).join(''):'<div style="color:var(--white-dim);font-size:.75rem;padding:12px 0;">Sin inmuebles cargados</div>';
@@ -564,7 +584,9 @@ function renderP(c){
 
   // Notes
   const notes=c.notes||[];
-  document.getElementById('notesList').innerHTML=notes.length?notes.map(n=>`<div class="note-item"><div class="note-date">${n.date}</div><div class="note-text">${n.text}</div></div>`).join(''):'<div style="color:var(--white-dim);font-size:.75rem;margin-bottom:12px;">Sin notas</div>';
+  const notes=c.notes||[];
+  const meetingHtml=c.nextMeeting?`<div class="note-item" style="border-left-color:var(--green);margin-bottom:14px;"><div class="note-date" style="color:var(--green);">📅 Próxima reunión</div><div class="note-text" style="font-size:.82rem;color:var(--white);font-weight:500;">${new Date(c.nextMeeting+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div>`:'' ;
+  document.getElementById('notesList').innerHTML=meetingHtml+(notes.length?notes.map(n=>`<div class="note-item"><div class="note-date">${n.date}</div><div class="note-text">${n.text}</div></div>`).join(''):'<div style="color:var(--white-dim);font-size:.75rem;margin-bottom:12px;">Sin notas</div>');
 
   // Goals
   const goals=c.goals||[];
@@ -596,14 +618,27 @@ function selectClient(idx){
   document.getElementById('ef-goal').value=c.goal||0;
   document.getElementById('ef-startdate').value=c.startDate||'';
   document.getElementById('ef-inception').value=c.inceptionValue||'';
-  if(c.inceptionValue>0&&t.total>0){const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);document.getElementById('ef-retorno').value=(r>0?'+':'')+r+'%';}
-  else document.getElementById('ef-retorno').value='';
+  document.getElementById('ef-nextmeeting').value=c.nextMeeting||'';
+  if(c.inceptionValue>0&&t.total>0){
+    const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
+    const usd=t.total-c.inceptionValue;
+    document.getElementById('ef-retorno').value=(r>0?'+':'')+r+'% · USD '+fmt(usd);
+  } else document.getElementById('ef-retorno').value='';
   renderAccR(c.accounts||[]);renderLiqR(c.liquidity||[]);renderPropR(c.properties||[]);renderNoteR(c.notes||[]);renderGoalR(c.goals||[]);renderRepR(c.reports||[]);
 }
 
 function setTab(name,el){document.querySelectorAll('.edit-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.edit-section').forEach(s=>s.classList.remove('active'));el.classList.add('active');document.getElementById('edit-'+name).classList.add('active');}
 
-function updAdminTotals(){const t=calcT(clients[selIdx]);document.getElementById('ef-total').value='USD '+fmt(t.total);if(clients[selIdx].inceptionValue>0&&t.total>0){const r=((t.total-clients[selIdx].inceptionValue)/clients[selIdx].inceptionValue*100).toFixed(1);document.getElementById('ef-retorno').value=(r>0?'+':'')+r+'%';}updateLiqTotal();}
+function updAdminTotals(){
+  const c=clients[selIdx],t=calcT(c);
+  document.getElementById('ef-total').value='USD '+fmt(t.total);
+  if(c.inceptionValue>0&&t.total>0){
+    const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
+    const usd=t.total-c.inceptionValue;
+    document.getElementById('ef-retorno').value=(r>0?'+':'')+r+'% · USD '+fmt(usd);
+  }
+  updateLiqTotal();
+}
 
 // Accounts
 function renderAccR(arr){document.getElementById('accRows').innerHTML=arr.map((a,i)=>`<div class="item-row ir-acc"><input class="item-input" value="${a.name||''}" placeholder="BNY Pershing, Comafi..." onchange="upA(${i},'name',this.value)"/><select class="item-sel" onchange="upA(${i},'type',this.value)"><option value="inversion" ${(a.type||'inversion')==='inversion'?'selected':''}>Cuenta de inversión</option><option value="banco" ${a.type==='banco'?'selected':''}>Banco comercial</option></select><input class="item-input" type="number" value="${a.value||0}" onchange="upA(${i},'value',Number(this.value));updAdminTotals()"/><input class="item-input" value="${a.sinceInception||''}" placeholder="+18.5%" onchange="upA(${i},'sinceInception',this.value)"/><button class="btn-del" onclick="delA(${i})">✕</button></div>`).join('');}
@@ -653,9 +688,10 @@ async function saveClient(){
   c.goal=Number(document.getElementById('ef-goal').value)||0;
   c.startDate=document.getElementById('ef-startdate').value;
   c.inceptionValue=Number(document.getElementById('ef-inception').value)||0;
+  c.nextMeeting=document.getElementById('ef-nextmeeting').value;
   try{
     const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
-    if(useSb){const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal,start_date:c.startDate,inception_value:c.inceptionValue,accounts:c.accounts,liquidity:c.liquidity,properties:c.properties,notes:c.notes,goals:c.goals,reports:c.reports});if(error)throw error;}
+    if(useSb){const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal,start_date:c.startDate,inception_value:c.inceptionValue,next_meeting:c.nextMeeting,accounts:c.accounts,liquidity:c.liquidity,properties:c.properties,notes:c.notes,goals:c.goals,reports:c.reports});if(error)throw error;}
     else localStorage.setItem('ofir_v8',JSON.stringify(clients));
     msg.textContent='✓ Guardado';msg.className='save-msg show';
     document.getElementById('editTitle').textContent=c.name;
