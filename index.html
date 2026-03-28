@@ -312,14 +312,11 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
     <!-- Client tab -->
     <div id="clientTab" style="display:none">
       <div class="form-group">
-        <label>Seleccioná tu familia</label>
-        <select id="clientSelect"></select>
-      </div>
-      <div class="form-group">
         <label>Contraseña</label>
         <input type="password" id="clientPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginClient()" />
       </div>
       <button class="btn-gold" id="btnLoginClient" onclick="loginClient()">Ver mi portal</button>
+      <div class="login-hint" id="clientLoginHint" style="display:none"></div>
     </div>
 
     <div class="login-error" id="loginError"></div>
@@ -388,7 +385,7 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
           </div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Inversiones Financieras</div>
+          <div class="kpi-label">Cuentas de Inversión</div>
           <div class="kpi-value" style="font-size:1.8rem;"><span class="kpi-cur" style="font-size:.75rem;">USD</span><span id="kInv">—</span></div>
           <span class="badge pos" id="kInvYtd">—</span>
           <div class="kpi-sub" id="kInvPct" style="margin-top:6px;"></div>
@@ -400,9 +397,9 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
           <div class="kpi-sub" id="kPropPct" style="margin-top:6px;"></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Cashflow Mensual Neto</div>
-          <div class="kpi-value" style="font-size:1.8rem;"><span class="kpi-cur" style="font-size:.75rem;">USD</span><span id="kCf">—</span></div>
-          <div class="kpi-sub" style="margin-top:6px;color:var(--white-dim);">Alquileres + dividendos</div>
+          <div class="kpi-label">Liquidez & Cash</div>
+          <div class="kpi-value" style="font-size:1.8rem;"><span class="kpi-cur" style="font-size:.75rem;">USD</span><span id="kLiq">—</span></div>
+          <div class="kpi-sub" style="margin-top:6px;color:var(--white-dim);">Caja + disponible</div>
         </div>
       </div>
       <div class="mid-grid">
@@ -422,11 +419,11 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
         </div>
       </div>
       <div class="table-panel">
-        <div class="panel-title">Detalle de inversiones financieras</div>
+        <div class="panel-title">Cuentas de inversión & bancarias</div>
         <table>
           <thead><tr>
-            <th>Instrumento</th><th>Broker</th><th>Valor actual</th>
-            <th>Var. mes</th><th>YTD</th><th>Desde inicio</th><th>% Cartera</th>
+            <th>Institución</th><th>Tipo</th><th>Valor actual</th>
+            <th>Desde inicio</th><th>% Cartera</th>
           </tr></thead>
           <tbody id="invTable"></tbody>
         </table>
@@ -437,10 +434,18 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
           <div id="propList"></div>
         </div>
         <div class="panel">
+          <div class="panel-title">Liquidez & Cash</div>
+          <div id="liqList"></div>
+          <div id="liqTotal" style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(201,169,110,0.15);font-size:.72rem;color:var(--gold);"></div>
+        </div>
+      </div>
+      <div class="bottom-grid" style="margin-top:18px;">
+        <div class="panel">
           <div class="panel-title">Notas & próximas acciones</div>
           <div id="notesList"></div>
           <div id="goalsSection"></div>
         </div>
+        <div style="display:none;" id="dummy"></div>
       </div>
     </div>
 
@@ -482,8 +487,9 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
               <div style="font-size:.58rem;color:var(--gold);letter-spacing:.1em;margin-top:3px;" id="editPassDisplay">—</div>
             </div>
             <div class="edit-tabs">
-              <div class="edit-tab active" onclick="setEditTab('general',this)">General</div>
-              <div class="edit-tab" onclick="setEditTab('inversiones',this)">Inversiones</div>
+                <div class="edit-tab active" onclick="setEditTab('general',this)">General</div>
+              <div class="edit-tab" onclick="setEditTab('inversiones',this)">Cuentas</div>
+              <div class="edit-tab" onclick="setEditTab('liquidez',this)">Liquidez</div>
               <div class="edit-tab" onclick="setEditTab('inmuebles',this)">Inmuebles</div>
               <div class="edit-tab" onclick="setEditTab('notas',this)">Notas</div>
               <div class="edit-tab" onclick="setEditTab('reportes',this)">Reportes</div>
@@ -524,10 +530,22 @@ footer { border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:fl
             </div>
 
             <div id="edit-inversiones" class="edit-section">
-              <div class="section-sub">Detalle de inversiones</div>
-              <div class="col-labels inv"><span>Instrumento / Tipo</span><span>Broker</span><span>Valor USD</span><span>Var. mes</span><span>YTD</span><span>Desde inicio</span><span></span></div>
+              <div class="section-sub">Cuentas de inversión & bancarias</div>
+              <div style="font-size:.65rem;color:var(--white-dim);margin-bottom:12px;line-height:1.7;">Cargá cada cuenta por institución (BNY Pershing, Comafi, Balanz, etc.)</div>
+              <div class="col-labels inv"><span>Institución</span><span>Tipo</span><span>Valor USD</span><span>Desde inicio</span><span></span></div>
               <div id="invRows" class="items-list"></div>
-              <button class="btn-add-row" onclick="addInv()">+ Agregar instrumento</button>
+              <button class="btn-add-row" onclick="addInv()">+ Agregar cuenta</button>
+            </div>
+
+            <div id="edit-liquidez" class="edit-section">
+              <div class="section-sub">Liquidez & Cash</div>
+              <div style="font-size:.65rem;color:var(--white-dim);margin-bottom:12px;line-height:1.7;">Caja de seguridad, efectivo disponible, cuentas corrientes, etc.</div>
+              <div class="col-labels" style="display:grid;grid-template-columns:2fr 1fr 26px;gap:8px;font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--white-dim);margin-bottom:5px;padding:0 12px;">
+                <span>Descripción</span><span>Monto USD</span><span></span>
+              </div>
+              <div id="liqRows" class="items-list"></div>
+              <button class="btn-add-row" onclick="addLiq()">+ Agregar item</button>
+              <div style="font-size:.72rem;color:var(--gold);margin-top:4px;" id="liqTotalAdmin">Total liquidez: USD 0</div>
             </div>
 
             <div id="edit-inmuebles" class="edit-section">
@@ -680,10 +698,21 @@ async function init() {
   }
 }
 
+function populateClientSelect() {
+  // No-op — client selector removed for privacy
+}
+
 function showLogin() {
   const ls = document.getElementById('loginScreen');
   ls.style.display = 'flex';
-  populateClientSelect();
+  // If ?client= param, go straight to client tab with no name shown
+  const urlParams = new URLSearchParams(window.location.search);
+  const clientParam = urlParams.get('client');
+  if(clientParam !== null) {
+    setTab('client');
+    // Store expected idx for after password entry
+    window._expectedClientIdx = parseInt(clientParam);
+  }
 }
 
 function getSampleData() {
@@ -770,9 +799,16 @@ function loginAdmin() {
 }
 
 function loginClient() {
-  const idx = parseInt(document.getElementById('clientSelect').value);
   const p = document.getElementById('clientPass').value;
-  if(clients[idx] && clients[idx].pass===p) { isAdmin=false; selIdx=idx; enterApp(); }
+  // If came via ?client= link, verify that specific client's password
+  if(window._expectedClientIdx !== undefined) {
+    const idx = window._expectedClientIdx;
+    if(clients[idx] && clients[idx].pass === p) { isAdmin=false; selIdx=idx; enterApp(); return; }
+    else { showLoginError('Contraseña incorrecta'); return; }
+  }
+  // Otherwise find by password (admin gives each client their unique link)
+  const idx = clients.findIndex(c => c.pass === p);
+  if(idx !== -1) { isAdmin=false; selIdx=idx; enterApp(); }
   else showLoginError('Contraseña incorrecta');
 }
 
@@ -824,31 +860,42 @@ function showView(name, el) {
 // ══════════════════════════════════════════════════════════════
 function fmt(n) { return Number(n||0).toLocaleString('es-AR'); }
 
-const ALLOC_COLORS=['#c9a96e','#6dbf9e','#7ea8c9','#a08080','#9e9e7e'];
-const ALLOC_LABELS=['Renta Variable','Renta Fija','Inmuebles','Liquidez','Otros'];
+const ALLOC_COLORS=['#c9a96e','#7ea8c9','#6dbf9e','#a08080','#9e9e7e'];
+const ALLOC_LABELS=['Cuentas de inversión','Banco comercial','Inmuebles','Liquidez','Otros'];
 
 function renderPatrimony(c) {
   if(!c) return;
-  document.getElementById('kTotal').textContent=fmt(c.total);
+  // Auto-calculate totals from data
+  const inv = c.investments||[];
+  const props = c.properties||[];
+  const liqs = c.liquidity||[];
+  const totalInv = inv.reduce((s,i)=>s+Number(i.value||0),0);
+  const totalProp = props.reduce((s,p)=>s+Number(p.val||0),0);
+  const totalLiq = liqs.reduce((s,l)=>s+Number(l.amount||0),0);
+  const autoTotal = totalInv + totalProp + totalLiq;
+
+  document.getElementById('kTotal').textContent=fmt(autoTotal||c.total);
   document.getElementById('kYtd').textContent=c.ytd||'—';
-  // Retorno desde inicio
   const sinceEl = document.getElementById('kSinceInception');
-  if(c.inceptionValue && c.inceptionValue > 0) {
-    const ret = ((c.total - c.inceptionValue) / c.inceptionValue * 100).toFixed(1);
-    sinceEl.textContent = (ret > 0 ? '+' : '') + ret + '% desde inicio';
-    sinceEl.style.display = 'inline-flex';
-  } else {
-    sinceEl.style.display = 'none';
-  }
-  document.getElementById('kInv').textContent=fmt(c.inv);
+  const baseVal = c.inceptionValue||0;
+  const curTotal = autoTotal||c.total;
+  if(baseVal>0) {
+    const ret=((curTotal-baseVal)/baseVal*100).toFixed(1);
+    sinceEl.textContent=(ret>0?'+':'')+ret+'% desde inicio';
+    sinceEl.style.display='inline-flex';
+  } else sinceEl.style.display='none';
+
+  document.getElementById('kInv').textContent=fmt(totalInv||c.inv);
   document.getElementById('kInvYtd').textContent=c.invYtd||'—';
-  document.getElementById('kInvPct').textContent=c.total>0?Math.round(c.inv/c.total*100)+'% del patrimonio':'—';
-  document.getElementById('kProp').textContent=fmt(c.prop);
+  document.getElementById('kInvPct').textContent=curTotal>0?Math.round((totalInv||c.inv)/curTotal*100)+'% del patrimonio':'—';
+  document.getElementById('kProp').textContent=fmt(totalProp||c.prop);
   document.getElementById('kPropYtd').textContent=c.propYtd||'—';
-  document.getElementById('kPropPct').textContent=c.total>0?Math.round(c.prop/c.total*100)+'% del patrimonio':'—';
-  document.getElementById('kCf').textContent=fmt(c.cf);
+  document.getElementById('kPropPct').textContent=curTotal>0?Math.round((totalProp||c.prop)/curTotal*100)+'% del patrimonio':'—';
+  document.getElementById('kLiq').textContent=fmt(totalLiq);
+
+  // Update goal bar with auto total
   document.getElementById('kGoalLbl').textContent='USD '+fmt(c.goal);
-  const pct=c.goal>0?Math.min(100,Math.round(c.total/c.goal*100)):0;
+  const pct=c.goal>0?Math.min(100,Math.round(curTotal/c.goal*100)):0;
   document.getElementById('kGoalBar').style.width=pct+'%';
 
   // Perf chart
@@ -882,21 +929,20 @@ function renderPatrimony(c) {
     `<div class="alloc-item"><div class="alloc-left"><div class="dot8" style="background:${ALLOC_COLORS[i]};"></div>${ALLOC_LABELS[i]}</div><div class="alloc-pct">${v}%</div></div>`
   ).join('');
 
-  // Inv table
-  const inv=c.investments||[];
-  const tot=inv.reduce((s,i)=>s+Number(i.value),0);
+  // Inv table — show by institution
   document.getElementById('invTable').innerHTML=inv.map(i=>{
-    const pos=!String(i.varMes).startsWith('-');
-    const posY=!String(i.ytd).startsWith('-');
-    return `<tr><td>${i.name}<span class="tag">${i.tag||''}</span></td><td>${i.broker}</td><td>USD ${fmt(i.value)}</td>
-      <td class="${pos?'pos':'neg'}">${i.varMes||'—'}</td><td class="${posY?'pos':'neg'}">${i.ytd||'—'}</td>
-      <td class="${i.sinceInception&&!String(i.sinceInception).startsWith('-')?'pos':'neg'}">${i.sinceInception||'—'}</td>
-      <td>${tot>0?(i.value/tot*100).toFixed(1)+'%':'—'}</td></tr>`;
-  }).join('')+(inv.length?`<tr class="total-row"><td>Total cartera financiera</td><td></td><td>USD ${fmt(tot)}</td><td></td><td></td><td>100%</td></tr>`
-    :'<tr><td colspan="6" style="text-align:center;color:var(--white-dim);padding:20px;">Sin inversiones cargadas</td></tr>');
+    const posSI=!String(i.sinceInception||'').startsWith('-');
+    return `<tr>
+      <td><strong>${i.name}</strong></td>
+      <td><span class="tag">${i.tag||'Inversión'}</span></td>
+      <td>USD ${fmt(i.value)}</td>
+      <td class="${posSI?'pos':'neg'}">${i.sinceInception||'—'}</td>
+      <td>${totalInv>0?(Number(i.value)/totalInv*100).toFixed(1)+'%':'—'}</td>
+    </tr>`;
+  }).join('')+(inv.length?`<tr class="total-row"><td>Total cuentas</td><td></td><td>USD ${fmt(totalInv)}</td><td></td><td>100%</td></tr>`
+    :'<tr><td colspan="5" style="text-align:center;color:var(--white-dim);padding:20px;">Sin cuentas cargadas</td></tr>');
 
   // Props
-  const props=c.properties||[];
   document.getElementById('propList').innerHTML=props.length?props.map(p=>`
     <div class="prop-item">
       <div class="prop-icon">${p.icon||'🏠'}</div>
@@ -910,6 +956,17 @@ function renderPatrimony(c) {
         </div>
       </div>
     </div>`).join(''):'<div style="color:var(--white-dim);font-size:.75rem;padding:12px 0;">Sin inmuebles cargados</div>';
+
+  // Liquidity
+  document.getElementById('liqList').innerHTML=liqs.length?liqs.map(l=>`
+    <div class="prop-item" style="border-bottom:1px solid rgba(245,242,237,0.05);padding:12px 0;">
+      <div class="prop-icon">💵</div>
+      <div style="flex:1;">
+        <div class="prop-name">${l.desc||'—'}</div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--green);margin-top:4px;">USD ${fmt(l.amount)}</div>
+      </div>
+    </div>`).join(''):'<div style="color:var(--white-dim);font-size:.75rem;padding:12px 0;">Sin items cargados</div>';
+  document.getElementById('liqTotal').innerHTML=liqs.length?`<strong style="color:var(--gold);">Total liquidez: USD ${fmt(totalLiq)}</strong>`:'';
 
   // Notes
   const notes=c.notes||[];
@@ -926,7 +983,7 @@ function renderPatrimony(c) {
         <div class="progress-label"><span>${g.label}</span><span>${g.target}</span></div>
         <div class="progress-track" style="margin-bottom:12px;"><div class="progress-fill" style="width:${Math.min(100,g.pct||0)}%"></div></div>
       `).join('')}
-    </div>`:'' ;
+    </div>`:'';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -966,6 +1023,7 @@ function selectClient(idx) {
   const alloc=c.alloc||[28,21,41,7,3];
   ['a1','a2','a3','a4','a5'].forEach((id,i)=>document.getElementById('ef-'+id).value=alloc[i]||0);
   renderInvRows(c.investments||[]);
+  renderLiqRows(c.liquidity||[]);
   renderPropRows(c.properties||[]);
   renderNoteRows(c.notes||[]);
   renderGoalRows(c.goals||[]);
@@ -982,20 +1040,37 @@ function setEditTab(name, el) {
 // Investment rows
 function renderInvRows(arr) {
   document.getElementById('invRows').innerHTML=arr.map((inv,i)=>
-    `<div class="item-row inv">
-      <div><input class="item-input" value="${inv.name||''}" placeholder="Instrumento" onchange="upInv(${i},'name',this.value)"/>
-      <input class="item-input" value="${inv.tag||''}" placeholder="Tipo (ej: Acciones)" style="margin-top:4px;font-size:.62rem;" onchange="upInv(${i},'tag',this.value)"/></div>
-      <input class="item-input" value="${inv.broker||''}" placeholder="Broker" onchange="upInv(${i},'broker',this.value)"/>
-      <input class="item-input" type="number" value="${inv.value||0}" onchange="upInv(${i},'value',Number(this.value))"/>
-      <input class="item-input" value="${inv.varMes||''}" placeholder="+0%" onchange="upInv(${i},'varMes',this.value)"/>
-      <input class="item-input" value="${inv.ytd||''}" placeholder="+0%" onchange="upInv(${i},'ytd',this.value)"/>
-      <input class="item-input" value="${inv.sinceInception||''}" placeholder="+0%" onchange="upInv(${i},'sinceInception',this.value)"/>
+    `<div class="item-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 26px;gap:8px;align-items:start;background:var(--white-faint);padding:10px 12px;margin-bottom:7px;border:1px solid rgba(201,169,110,0.07);">
+      <input class="item-input" value="${inv.name||''}" placeholder="Institución (ej: BNY Pershing)" onchange="upInv(${i},'name',this.value)"/>
+      <input class="item-input" value="${inv.tag||''}" placeholder="Tipo (ej: Inversión)" onchange="upInv(${i},'tag',this.value)"/>
+      <input class="item-input" type="number" value="${inv.value||0}" placeholder="USD" onchange="upInv(${i},'value',Number(this.value))"/>
+      <input class="item-input" value="${inv.sinceInception||''}" placeholder="+0% desde inicio" onchange="upInv(${i},'sinceInception',this.value)"/>
       <button class="btn-del" onclick="delInv(${i})">✕</button>
     </div>`).join('');
 }
 function upInv(i,f,v){clients[selIdx].investments[i][f]=v;}
 function delInv(i){clients[selIdx].investments.splice(i,1);renderInvRows(clients[selIdx].investments);}
-function addInv(){clients[selIdx].investments.push({name:'',tag:'',broker:'',value:0,varMes:'',ytd:'',sinceInception:''});renderInvRows(clients[selIdx].investments);}
+function addInv(){clients[selIdx].investments.push({name:'',tag:'Inversión',value:0,sinceInception:''});renderInvRows(clients[selIdx].investments);}
+
+// Liquidity rows
+function renderLiqRows(arr) {
+  document.getElementById('liqRows').innerHTML=(arr||[]).map((l,i)=>
+    `<div class="item-row" style="display:grid;grid-template-columns:2fr 1fr 26px;gap:8px;align-items:center;background:var(--white-faint);padding:10px 12px;margin-bottom:7px;border:1px solid rgba(201,169,110,0.07);">
+      <input class="item-input" value="${l.desc||''}" placeholder="Ej: Caja de seguridad, Cash disponible" onchange="upLiq(${i},'desc',this.value)"/>
+      <input class="item-input" type="number" value="${l.amount||0}" placeholder="USD" onchange="upLiq(${i},'amount',Number(this.value));updateLiqTotal()"/>
+      <button class="btn-del" onclick="delLiq(${i})">✕</button>
+    </div>`).join('');
+  updateLiqTotal();
+}
+function updateLiqTotal() {
+  const liqs = clients[selIdx].liquidity||[];
+  const total = liqs.reduce((s,l)=>s+Number(l.amount||0),0);
+  const el = document.getElementById('liqTotalAdmin');
+  if(el) el.textContent = `Total liquidez: USD ${fmt(total)}`;
+}
+function upLiq(i,f,v){if(!clients[selIdx].liquidity)clients[selIdx].liquidity=[];clients[selIdx].liquidity[i][f]=v;updateLiqTotal();}
+function delLiq(i){clients[selIdx].liquidity.splice(i,1);renderLiqRows(clients[selIdx].liquidity);}
+function addLiq(){if(!clients[selIdx].liquidity)clients[selIdx].liquidity=[];clients[selIdx].liquidity.push({desc:'',amount:0});renderLiqRows(clients[selIdx].liquidity);}
 
 // Property rows
 function renderPropRows(arr) {
@@ -1092,7 +1167,7 @@ async function addClient() {
   const name=document.getElementById('nc-name').value.trim();
   const pass=document.getElementById('nc-pass').value.trim();
   if(!name||!pass) return;
-  const nc={name,pass,total:0,ytd:'+0% YTD',bench:'',inv:0,invYtd:'+0%',cf:0,prop:0,propYtd:'+0%',goal:0,alloc:[28,21,41,7,3],investments:[],properties:[],notes:[],goals:[],reports:[]};
+  const nc={name,pass,total:0,ytd:'+0% YTD',bench:'',inv:0,invYtd:'+0%',cf:0,prop:0,propYtd:'+0%',goal:0,alloc:[40,20,30,10,0],investments:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]};
   if(SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co') {
     const {data,error}=await db.from('clients').insert([nc]).select();
     if(!error&&data) nc.id=data[0].id;
@@ -1117,19 +1192,8 @@ function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 
 // Handle ?client= param for direct client access
-const urlParams=new URLSearchParams(window.location.search);
-const clientParam=urlParams.get('client');
-
 init().then(()=>{
-  if(clientParam!==null) {
-    const idx=parseInt(clientParam);
-    if(clients[idx]) {
-      selIdx=idx;
-      setTab('client');
-      const sel=document.getElementById('clientSelect');
-      if(sel) sel.value=idx;
-    }
-  }
+  // showLogin() already handles the ?client= param routing safely
 });
 </script>
 </body>
