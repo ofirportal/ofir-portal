@@ -550,7 +550,7 @@ function showView(name,el){
 }
 
 function renderP(c){
-  if(!c)return;
+  if(!c){console.warn('renderP: no client');return;}
   try{
   const t=calcT(c);
   document.getElementById('kTotal').textContent=fmt(t.total);
@@ -588,12 +588,14 @@ function renderP(c){
   }
 
   // Perf chart
-  if(perfChart)perfChart.destroy();
-  const pCtx=document.getElementById('perfChart').getContext('2d');
+  if(perfChart){try{perfChart.destroy();}catch(e){}perfChart=null;}
+  const perfEl=document.getElementById('perfChart');if(!perfEl||typeof Chart==='undefined')return;
+  const pCtx=perfEl.getContext('2d');
   let months=['Ene 24','Mar 24','May 24','Jul 24','Sep 24','Nov 24','Ene 25','Mar 25','May 25','Jul 25','Sep 25','Nov 25','Mar 26'];
   if(c.startDate){const st=new Date(c.startDate),now=new Date();months=[];let d=new Date(st);while(d<=now){months.push(d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}));d.setMonth(d.getMonth()+2);}if(months.length<3)months=['Inicio','','','','Hoy'];}
   const sv=c.inceptionValue||Math.round(t.total*.72);
-  const od=months.map((_,i)=>Math.round(sv+(t.total-sv)*(i/(months.length-1))+(Math.random()-.38)*t.total*.025));
+  const od=months.map((_,i)=>Math.round(sv+(t.total-sv)*(months.length>1?i/(months.length-1):1)+(Math.random()-.38)*t.total*.025));
+  if(od.length>0) od[od.length-1]=t.total;
   od[od.length-1]=t.total;
   perfChart=new Chart(pCtx,{type:'line',data:{labels:months,datasets:[{data:od,borderColor:'#c9a96e',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.22)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#f5f2ed',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}});
 
@@ -601,8 +603,9 @@ function renderP(c){
   const acc=c.accounts||[],props=c.properties||[],liqs=c.liquidity||[];
   const ad=[acc.filter(a=>a.type==='inversion').reduce((s,a)=>s+Number(a.value||0),0),acc.filter(a=>a.type==='banco').reduce((s,a)=>s+Number(a.value||0),0),t.tProp,t.tLiq,0];
   const ap=ad.map(v=>t.total>0?Math.round(v/t.total*100):0);
-  if(donutChart)donutChart.destroy();
-  donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:AC,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,callbacks:{label:ctx=>`${AL[ctx.dataIndex]}: ${ctx.raw}%`}}}}});
+  if(donutChart){try{donutChart.destroy();}catch(e){}donutChart=null;}
+  const donutEl=document.getElementById('donutChart');if(!donutEl)return;
+  donutChart=new Chart(donutEl.getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:AC,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,callbacks:{label:ctx=>`${AL[ctx.dataIndex]}: ${ctx.raw}%`}}}}});
   document.getElementById('allocLegend').innerHTML=AL.map((l,i)=>`<div class="alloc-item"><div class="alloc-left"><div class="dot8" style="background:${AC[i]};"></div>${l}</div><div style="font-weight:600;">${ap[i]}%</div></div>`).join('');
 
   // Income charts
@@ -795,7 +798,15 @@ function copyLink(){navigator.clipboard.writeText(document.getElementById('share
 function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 
-init();
+// Ensure Chart.js loaded before init
+if(typeof Chart==='undefined'){
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  s.onload=()=>init();
+  document.head.appendChild(s);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
