@@ -52,7 +52,7 @@ main{flex:1;padding:36px 44px 60px;max-width:1400px;margin:0 auto;width:100%;}
 .page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;}
 .page-header h1{font-family:var(--serif);font-size:2.2rem;font-weight:300;}
 .page-header h1 span{color:var(--gold);font-style:italic;}
-.yield-box{background:var(--gold-dim);border:1px solid rgba(201,169,110,0.25);padding:18px 24px;margin-bottom:24px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;}
+.yield-box{background:var(--gold-dim);border:1px solid rgba(201,169,110,0.25);padding:16px 24px;margin-bottom:24px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:start;}
 .yield-item .lbl{font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--white-dim);margin-bottom:4px;}
 .yield-item .val{font-family:var(--serif);font-size:1.4rem;font-weight:300;color:var(--gold-light);}
 .kpi-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:18px;margin-bottom:24px;}
@@ -237,10 +237,12 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
       </div>
 
       <div class="yield-box">
-        <div class="yield-item"><div class="lbl">Yield ponderado total</div><div class="val" id="yW">—</div></div>
-        <div class="yield-item"><div class="lbl">Ingreso anual estimado</div><div class="val" id="yA">—</div></div>
-        <div class="yield-item"><div class="lbl">Ingreso mensual estimado</div><div class="val" id="yM">—</div></div>
-        <div class="yield-item"><div class="lbl">Retorno desde inicio</div><div class="val" id="yR">—</div></div>
+        <div class="yield-item"><div class="lbl">Alquileres — Mensual</div><div class="val" id="yRentM">—</div></div>
+        <div class="yield-item"><div class="lbl">Alquileres — Anual</div><div class="val" id="yRentA">—</div></div>
+        <div class="yield-item"><div class="lbl">Retorno inversiones (acum.)</div><div class="val" id="yInvPct">—</div></div>
+        <div class="yield-item"><div class="lbl">Retorno inversiones (USD)</div><div class="val" id="yInvUSD">—</div></div>
+        <div class="yield-item"><div class="lbl">Retorno desde inicio (%)</div><div class="val" id="yR">—</div></div>
+        <div class="yield-item"><div class="lbl">Retorno desde inicio (USD)</div><div class="val" id="yRusd">—</div></div>
       </div>
 
       <div class="kpi-row">
@@ -516,11 +518,29 @@ function renderP(c){
   document.getElementById('kLiqPct').textContent=t.total>0?Math.round(t.tLiq/t.total*100)+'% del patrimonio':'—';
   document.getElementById('kGoalLbl').textContent='USD '+fmt(c.goal);
   document.getElementById('kGoalBar').style.width=c.goal>0?Math.min(100,Math.round(t.total/c.goal*100))+'%':'0%';
-  document.getElementById('yW').textContent=t.wYield.toFixed(2)+'% anual';
-  document.getElementById('yA').textContent='USD '+fmt(Math.round(t.aIncome));
-  document.getElementById('yM').textContent='USD '+fmt(Math.round(t.mIncome));
-  if(c.inceptionValue>0&&t.total>0){const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);document.getElementById('yR').textContent=(r>0?'+':'')+r+'%';}
-  else document.getElementById('yR').textContent='—';
+  // Real estate cash flow (real)
+  const rentM=props.reduce((s,p)=>s+Number(p.rent||0),0);
+  document.getElementById('yRentM').textContent='USD '+fmt(rentM);
+  document.getElementById('yRentA').textContent='USD '+fmt(rentM*12);
+  // Investment return (capital growth)
+  const invRetUSD=acc.reduce((s,a)=>{
+    const pct=parseFloat(String(a.sinceInception||'').replace('%','').replace('+',''));
+    return s+(isNaN(pct)?0:Math.round(Number(a.value||0)*pct/100));
+  },0);
+  const invTotal=t.tInv;
+  const invRetPct=invTotal>0?(invRetUSD/invTotal*100).toFixed(1):0;
+  document.getElementById('yInvPct').textContent=(invRetPct>0?'+':'')+invRetPct+'%';
+  document.getElementById('yInvUSD').textContent='USD '+fmt(invRetUSD);
+  // Patrimony since inception
+  if(c.inceptionValue>0&&t.total>0){
+    const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
+    const rusd=t.total-c.inceptionValue;
+    document.getElementById('yR').textContent=(r>0?'+':'')+r+'%';
+    document.getElementById('yRusd').textContent=(rusd>=0?'':'-')+'USD '+fmt(Math.abs(rusd));
+  } else {
+    document.getElementById('yR').textContent='—';
+    document.getElementById('yRusd').textContent='—';
+  }
 
   // Perf chart
   if(perfChart)perfChart.destroy();
@@ -560,7 +580,7 @@ function renderP(c){
     if(a.sinceInception && a.sinceInception!=='') {
       const pct=parseFloat(a.sinceInception.replace('%','').replace('+',''));
       if(!isNaN(pct)&&val>0) {
-        const usd=Math.round(val*pct/100/(1+pct/100));
+        const usd=Math.round(val*pct/100);
         const pos=pct>=0;
         retHTML=`<span class="${pos?'pos':'neg'}">${pos?'+':''}${pct.toFixed(1)}% · USD ${fmt(usd)}</span>`;
       } else retHTML=`<span class="${a.sinceInception.startsWith('-')?'neg':'pos'}">${a.sinceInception}</span>`;
