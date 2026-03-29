@@ -52,7 +52,7 @@ main{flex:1;padding:36px 44px 60px;max-width:1400px;margin:0 auto;width:100%;}
 .page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;}
 .page-header h1{font-family:var(--serif);font-size:2.2rem;font-weight:300;}
 .page-header h1 span{color:var(--gold);font-style:italic;}
-.yield-box{background:var(--gold-dim);border:1px solid rgba(201,169,110,0.25);padding:16px 24px;margin-bottom:24px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:start;}
+.yield-box{background:var(--gold-dim);border:1px solid rgba(201,169,110,0.25);padding:16px 24px;margin-bottom:24px;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
 .yield-item .lbl{font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--white-dim);margin-bottom:4px;}
 .yield-item .val{font-family:var(--serif);font-size:1.4rem;font-weight:300;color:var(--gold-light);}
 .kpi-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:18px;margin-bottom:24px;}
@@ -237,9 +237,9 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
       </div>
 
       <div class="yield-box">
-        <div class="yield-item"><div class="lbl">Alquileres — Mensual</div><div class="val" id="yRentM">—</div></div>
-        <div class="yield-item"><div class="lbl">Alquileres — Anual</div><div class="val" id="yRentA">—</div></div>
-        <div class="yield-item"><div class="lbl">Retorno inversiones (acum.)</div><div class="val" id="yInvPct">—</div></div>
+        <div class="yield-item"><div class="lbl">Alquileres mensual</div><div class="val" id="yRentM">—</div></div>
+        <div class="yield-item"><div class="lbl">Alquileres anual</div><div class="val" id="yRentA">—</div></div>
+        <div class="yield-item"><div class="lbl">Retorno inversiones</div><div class="val" id="yInvPct">—</div></div>
         <div class="yield-item"><div class="lbl">Retorno inversiones (USD)</div><div class="val" id="yInvUSD">—</div></div>
         <div class="yield-item"><div class="lbl">Retorno desde inicio (%)</div><div class="val" id="yR">—</div></div>
         <div class="yield-item"><div class="lbl">Retorno desde inicio (USD)</div><div class="val" id="yRusd">—</div></div>
@@ -270,7 +270,7 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
       </div>
 
       <div class="two-grid">
-        <div class="panel"><div class="panel-title">Flujo de alquileres mensual (real)</div><div class="chart-area"><canvas id="incomeChart"></canvas></div></div>
+        <div class="panel"><div class="panel-title">Flujo de alquileres mensual</div><div class="chart-area"><canvas id="incomeChart"></canvas></div></div>
         <div class="panel"><div class="panel-title">Alquileres por inmueble (anual)</div><div class="chart-area"><canvas id="incomeDonut"></canvas></div></div>
       </div>
 
@@ -444,59 +444,15 @@ function calcT(c){
 
 async function init(){
   const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
-  if(useSb){
-    try{
-      const{data,error}=await db.from('clients').select('*').order('created_at');
-      if(error)throw error;
-      if(data&&data.length){
-        const sample=getSample();
-        clients=data.map((r,i)=>{
-          const mapped=mapR(r);
-          // Merge with sample by index if arrays empty in DB
-          const s=sample[i]||sample.find(s=>s.name===mapped.name)||null;
-          if(s){
-            if(!mapped.accounts||!mapped.accounts.length) mapped.accounts=s.accounts;
-            if(!mapped.properties||!mapped.properties.length) mapped.properties=s.properties;
-            if(!mapped.liquidity||!mapped.liquidity.length) mapped.liquidity=s.liquidity;
-            if(!mapped.notes||!mapped.notes.length) mapped.notes=s.notes;
-            if(!mapped.goals||!mapped.goals.length) mapped.goals=s.goals;
-            if(!mapped.goal) mapped.goal=s.goal;
-            if(!mapped.inceptionValue) mapped.inceptionValue=s.inceptionValue;
-            if(!mapped.startDate) mapped.startDate=s.startDate;
-            if(!mapped.ytd||mapped.ytd==='+0% YTD') mapped.ytd=s.ytd;
-          }
-          return mapped;
-        });
-      } else {
-        clients=getSample();
-      }
-    }catch(e){
-      console.warn('Supabase error, using sample:',e);
-      clients=getSample();
-    }
-  } else {
-    clients=JSON.parse(localStorage.getItem('ofir_v8')||'null')||getSample();
-  }
+  if(useSb){try{const{data,error}=await db.from('clients').select('*').order('created_at');if(error)throw error;clients=data.length?data.map(mapR):getSample();}catch{clients=getSample();}}
+  else{clients=JSON.parse(localStorage.getItem('ofir_v8')||'null')||getSample();}
   document.getElementById('loadingScreen').style.display='none';
   const cp=new URLSearchParams(window.location.search).get('client');
   if(cp!==null)window._ci=parseInt(cp);
   showLogin();
 }
 
-function mapR(r){
-  return{
-    id:r.id,name:r.name,pass:r.pass,
-    ytd:r.ytd||'+0% YTD',goal:r.goal||0,
-    startDate:r.start_date||'',inceptionValue:r.inception_value||0,
-    nextMeeting:r.next_meeting||'',
-    accounts:Array.isArray(r.accounts)&&r.accounts.length?r.accounts:[],
-    liquidity:Array.isArray(r.liquidity)&&r.liquidity.length?r.liquidity:[],
-    properties:Array.isArray(r.properties)&&r.properties.length?r.properties:[],
-    notes:Array.isArray(r.notes)?r.notes:[],
-    goals:Array.isArray(r.goals)?r.goals:[],
-    reports:Array.isArray(r.reports)?r.reports:[]
-  };
-}
+function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,nextMeeting:r.next_meeting||'',accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
 
 function getSample(){return[
   {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,
@@ -550,8 +506,7 @@ function showView(name,el){
 }
 
 function renderP(c){
-  if(!c){console.warn('renderP: no client');return;}
-  try{
+  if(!c)return;
   const t=calcT(c);
   document.getElementById('kTotal').textContent=fmt(t.total);
   document.getElementById('kYtd').textContent=c.ytd||'—';
@@ -563,39 +518,33 @@ function renderP(c){
   document.getElementById('kLiqPct').textContent=t.total>0?Math.round(t.tLiq/t.total*100)+'% del patrimonio':'—';
   document.getElementById('kGoalLbl').textContent='USD '+fmt(c.goal);
   document.getElementById('kGoalBar').style.width=c.goal>0?Math.min(100,Math.round(t.total/c.goal*100))+'%':'0%';
-  // Real estate cash flow (real)
-  const rentM=props.reduce((s,p)=>s+Number(p.rent||0),0);
-  document.getElementById('yRentM').textContent='USD '+fmt(rentM);
-  document.getElementById('yRentA').textContent='USD '+fmt(rentM*12);
-  // Investment return (capital growth)
-  const invRetUSD=acc.reduce((s,a)=>{
-    const pct=parseFloat(String(a.sinceInception||'').replace('%','').replace('+',''));
-    return s+(isNaN(pct)?0:Math.round(Number(a.value||0)*pct/100));
-  },0);
-  const invTotal=t.tInv;
-  const invRetPct=invTotal>0?(invRetUSD/invTotal*100).toFixed(1):0;
-  document.getElementById('yInvPct').textContent=(invRetPct>0?'+':'')+invRetPct+'%';
+  // Alquileres reales
+  const rentMreal=(c.properties||[]).reduce((s,p)=>s+Number(p.rent||0),0);
+  document.getElementById('yRentM').textContent='USD '+fmt(rentMreal);
+  document.getElementById('yRentA').textContent='USD '+fmt(rentMreal*12);
+  // Retorno inversiones (capital growth, no flujo)
+  const invRetUSD=(c.accounts||[]).reduce((s,a)=>{const pct=parseFloat(String(a.sinceInception||'').replace('+','').replace('%',''));return s+(isNaN(pct)?0:Math.round(Number(a.value||0)*pct/100));},0);
+  const invRetPct=t.tInv>0?(invRetUSD/t.tInv*100).toFixed(1):0;
+  document.getElementById('yInvPct').textContent=(invRetPct>=0?'+':'')+invRetPct+'%';
   document.getElementById('yInvUSD').textContent='USD '+fmt(invRetUSD);
-  // Patrimony since inception
+  // Retorno desde inicio
   if(c.inceptionValue>0&&t.total>0){
     const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
     const rusd=t.total-c.inceptionValue;
-    document.getElementById('yR').textContent=(r>0?'+':'')+r+'%';
-    document.getElementById('yRusd').textContent=(rusd>=0?'':'-')+'USD '+fmt(Math.abs(rusd));
+    document.getElementById('yR').textContent=(r>=0?'+':'')+r+'%';
+    document.getElementById('yRusd').textContent=(rusd>=0?'':'- ')+'USD '+fmt(Math.abs(rusd));
   } else {
     document.getElementById('yR').textContent='—';
     document.getElementById('yRusd').textContent='—';
   }
 
   // Perf chart
-  if(perfChart){try{perfChart.destroy();}catch(e){}perfChart=null;}
-  const perfEl=document.getElementById('perfChart');if(!perfEl||typeof Chart==='undefined')return;
-  const pCtx=perfEl.getContext('2d');
+  if(perfChart)perfChart.destroy();
+  const pCtx=document.getElementById('perfChart').getContext('2d');
   let months=['Ene 24','Mar 24','May 24','Jul 24','Sep 24','Nov 24','Ene 25','Mar 25','May 25','Jul 25','Sep 25','Nov 25','Mar 26'];
   if(c.startDate){const st=new Date(c.startDate),now=new Date();months=[];let d=new Date(st);while(d<=now){months.push(d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}));d.setMonth(d.getMonth()+2);}if(months.length<3)months=['Inicio','','','','Hoy'];}
   const sv=c.inceptionValue||Math.round(t.total*.72);
-  const od=months.map((_,i)=>Math.round(sv+(t.total-sv)*(months.length>1?i/(months.length-1):1)+(Math.random()-.38)*t.total*.025));
-  if(od.length>0) od[od.length-1]=t.total;
+  const od=months.map((_,i)=>Math.round(sv+(t.total-sv)*(i/(months.length-1))+(Math.random()-.38)*t.total*.025));
   od[od.length-1]=t.total;
   perfChart=new Chart(pCtx,{type:'line',data:{labels:months,datasets:[{data:od,borderColor:'#c9a96e',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.22)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#f5f2ed',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}});
 
@@ -603,34 +552,19 @@ function renderP(c){
   const acc=c.accounts||[],props=c.properties||[],liqs=c.liquidity||[];
   const ad=[acc.filter(a=>a.type==='inversion').reduce((s,a)=>s+Number(a.value||0),0),acc.filter(a=>a.type==='banco').reduce((s,a)=>s+Number(a.value||0),0),t.tProp,t.tLiq,0];
   const ap=ad.map(v=>t.total>0?Math.round(v/t.total*100):0);
-  if(donutChart){try{donutChart.destroy();}catch(e){}donutChart=null;}
-  const donutEl=document.getElementById('donutChart');if(!donutEl)return;
-  donutChart=new Chart(donutEl.getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:AC,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,callbacks:{label:ctx=>`${AL[ctx.dataIndex]}: ${ctx.raw}%`}}}}});
+  if(donutChart)donutChart.destroy();
+  donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:AC,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,callbacks:{label:ctx=>`${AL[ctx.dataIndex]}: ${ctx.raw}%`}}}}});
   document.getElementById('allocLegend').innerHTML=AL.map((l,i)=>`<div class="alloc-item"><div class="alloc-left"><div class="dot8" style="background:${AC[i]};"></div>${l}</div><div style="font-weight:600;">${ap[i]}%</div></div>`).join('');
 
-  // Income charts
-  // Flujo real solo de alquileres (real estate cash flow)
+  // Flujo alquileres (real)
   const rm=props.reduce((s,p)=>s+Number(p.rent||0),0);
   const mos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const rd=mos.map(()=>rm); // flujo constante real
   if(incomeChart)incomeChart.destroy();
-  if(rm>0){
-    incomeChart=new Chart(document.getElementById('incomeChart').getContext('2d'),{type:'bar',data:{labels:mos,datasets:[{label:'Alquileres',data:rd,backgroundColor:'rgba(109,191,158,0.7)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(245,242,237,.35)',font:{size:8}}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8},callback:v=>'USD '+fmt(v)}}}}});
-  } else {
-    const ctx=document.getElementById('incomeChart');
-    const p=ctx.parentElement;p.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--white-dim);font-size:.75rem;">Sin alquileres cargados</div>';
-  }
-  // Distribución por inmueble
+  incomeChart=new Chart(document.getElementById('incomeChart').getContext('2d'),{type:'bar',data:{labels:mos,datasets:[{label:'Alquileres',data:mos.map(()=>rm),backgroundColor:'rgba(109,191,158,0.7)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(245,242,237,.35)',font:{size:8}}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8},callback:v=>'USD '+fmt(v)}}}}});
   if(incomeDonut)incomeDonut.destroy();
-  const propNames=props.filter(p=>Number(p.rent)>0).map(p=>p.name||'Inmueble');
-  const propRents=props.filter(p=>Number(p.rent)>0).map(p=>Math.round(Number(p.rent)*12));
-  const donutColors=['#6dbf9e','#c9a96e','#7ea8c9','#a08080','#9e9e7e'];
-  if(propRents.length>0){
-    incomeDonut=new Chart(document.getElementById('incomeDonut').getContext('2d'),{type:'doughnut',data:{labels:propNames,datasets:[{data:propRents,backgroundColor:donutColors.slice(0,propRents.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>`USD ${fmt(ctx.raw)} / año`}}}}});
-  } else {
-    const ctx2=document.getElementById('incomeDonut');
-    const p2=ctx2.parentElement;p2.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--white-dim);font-size:.75rem;">Sin inmuebles con alquiler</div>';
-  }
+  const pLabels=props.filter(p=>Number(p.rent)>0).map(p=>p.name||'Inmueble');
+  const pData=props.filter(p=>Number(p.rent)>0).map(p=>Number(p.rent)*12);
+  incomeDonut=new Chart(document.getElementById('incomeDonut').getContext('2d'),{type:'doughnut',data:{labels:pLabels.length?pLabels:['Sin alquileres'],datasets:[{data:pData.length?pData:[1],backgroundColor:['#6dbf9e','#c9a96e','#7ea8c9','#a08080'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>`USD ${fmt(ctx.raw)} / año`}}}}});
 
   // Inv table
   document.getElementById('invTable').innerHTML=acc.map(a=>{
@@ -671,7 +605,6 @@ function renderP(c){
   // Goals
   const goals=c.goals||[];
   document.getElementById('goalsSection').innerHTML=goals.length?`<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--white-faint);"><div style="font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Objetivos</div>${goals.map(g=>`<div class="progress-label"><span>${g.label}</span><span>${g.target}</span></div><div class="progress-track" style="margin-bottom:12px;"><div class="progress-fill" style="width:${Math.min(100,g.pct||0)}%"></div></div>`).join('')}</div>`:'';
-  }catch(e){console.error('renderP error:',e);}
 }
 
 function renderReps(c){
@@ -798,15 +731,7 @@ function copyLink(){navigator.clipboard.writeText(document.getElementById('share
 function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 
-// Ensure Chart.js loaded before init
-if(typeof Chart==='undefined'){
-  const s=document.createElement('script');
-  s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
-  s.onload=()=>init();
-  document.head.appendChild(s);
-} else {
-  init();
-}
+init();
 </script>
 </body>
 </html>
