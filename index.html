@@ -270,8 +270,8 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
       </div>
 
       <div class="two-grid">
-        <div class="panel"><div class="panel-title">Flujo de ingresos mensual</div><div class="chart-area"><canvas id="incomeChart"></canvas></div></div>
-        <div class="panel"><div class="panel-title">Composición del ingreso anual</div><div class="chart-area"><canvas id="incomeDonut"></canvas></div></div>
+        <div class="panel"><div class="panel-title">Flujo de alquileres mensual (real)</div><div class="chart-area"><canvas id="incomeChart"></canvas></div></div>
+        <div class="panel"><div class="panel-title">Alquileres por inmueble (anual)</div><div class="chart-area"><canvas id="incomeDonut"></canvas></div></div>
       </div>
 
       <div class="table-panel">
@@ -561,15 +561,28 @@ function renderP(c){
   document.getElementById('allocLegend').innerHTML=AL.map((l,i)=>`<div class="alloc-item"><div class="alloc-left"><div class="dot8" style="background:${AC[i]};"></div>${l}</div><div style="font-weight:600;">${ap[i]}%</div></div>`).join('');
 
   // Income charts
+  // Flujo real solo de alquileres (real estate cash flow)
   const rm=props.reduce((s,p)=>s+Number(p.rent||0),0);
-  const im=acc.reduce((s,a)=>s+(Number(a.value||0)*Number(a.yieldEst||5)/100/12),0);
   const mos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const rd=mos.map(()=>Math.round(rm*(0.92+Math.random()*.16)));
-  const id=mos.map(()=>Math.round(im*(0.92+Math.random()*.16)));
+  const rd=mos.map(()=>rm); // flujo constante real
   if(incomeChart)incomeChart.destroy();
-  incomeChart=new Chart(document.getElementById('incomeChart').getContext('2d'),{type:'bar',data:{labels:mos,datasets:[{label:'Alquileres',data:rd,backgroundColor:'rgba(109,191,158,0.7)',borderRadius:3},{label:'Inversiones',data:id,backgroundColor:'rgba(201,169,110,0.7)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(245,242,237,.35)',font:{size:8}}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8},callback:v=>'USD '+fmt(v)}}}}});
+  if(rm>0){
+    incomeChart=new Chart(document.getElementById('incomeChart').getContext('2d'),{type:'bar',data:{labels:mos,datasets:[{label:'Alquileres',data:rd,backgroundColor:'rgba(109,191,158,0.7)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(245,242,237,.35)',font:{size:8}}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8},callback:v=>'USD '+fmt(v)}}}}});
+  } else {
+    const ctx=document.getElementById('incomeChart');
+    const p=ctx.parentElement;p.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--white-dim);font-size:.75rem;">Sin alquileres cargados</div>';
+  }
+  // Distribución por inmueble
   if(incomeDonut)incomeDonut.destroy();
-  incomeDonut=new Chart(document.getElementById('incomeDonut').getContext('2d'),{type:'doughnut',data:{labels:['Alquileres','Inversiones'],datasets:[{data:[Math.round(rm*12),Math.round(im*12)],backgroundColor:['#6dbf9e','#c9a96e'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>`USD ${fmt(ctx.raw)} / año`}}}}});
+  const propNames=props.filter(p=>Number(p.rent)>0).map(p=>p.name||'Inmueble');
+  const propRents=props.filter(p=>Number(p.rent)>0).map(p=>Math.round(Number(p.rent)*12));
+  const donutColors=['#6dbf9e','#c9a96e','#7ea8c9','#a08080','#9e9e7e'];
+  if(propRents.length>0){
+    incomeDonut=new Chart(document.getElementById('incomeDonut').getContext('2d'),{type:'doughnut',data:{labels:propNames,datasets:[{data:propRents,backgroundColor:donutColors.slice(0,propRents.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(245,242,237,0.5)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1e2a38',callbacks:{label:ctx=>`USD ${fmt(ctx.raw)} / año`}}}}});
+  } else {
+    const ctx2=document.getElementById('incomeDonut');
+    const p2=ctx2.parentElement;p2.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--white-dim);font-size:.75rem;">Sin inmuebles con alquiler</div>';
+  }
 
   // Inv table
   document.getElementById('invTable').innerHTML=acc.map(a=>{
