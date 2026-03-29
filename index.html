@@ -444,7 +444,23 @@ function calcT(c){
 
 async function init(){
   const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
-  if(useSb){try{const{data,error}=await db.from('clients').select('*').order('created_at');if(error)throw error;clients=data.length?data.map(mapR):getSample();}catch{clients=getSample();}}
+  if(useSb){
+    try{
+      const{data,error}=await db.from('clients').select('*').order('created_at');
+      if(error)throw error;
+      const sample=getSample();
+      clients=data.length?data.map((r,i)=>{
+        const m=mapR(r),s=sample[i]||{};
+        if(!m.accounts||!m.accounts.length)m.accounts=s.accounts||[];
+        if(!m.properties||!m.properties.length)m.properties=s.properties||[];
+        if(!m.liquidity||!m.liquidity.length)m.liquidity=s.liquidity||[];
+        if(!m.inceptionValue)m.inceptionValue=s.inceptionValue||0;
+        if(!m.startDate)m.startDate=s.startDate||'';
+        if(!m.goal)m.goal=s.goal||0;
+        return m;
+      }):sample;
+    }catch(e){console.warn(e);clients=getSample();}
+  }
   else{clients=JSON.parse(localStorage.getItem('ofir_v8')||'null')||getSample();}
   document.getElementById('loadingScreen').style.display='none';
   const cp=new URLSearchParams(window.location.search).get('client');
