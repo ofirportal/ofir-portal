@@ -444,15 +444,59 @@ function calcT(c){
 
 async function init(){
   const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
-  if(useSb){try{const{data,error}=await db.from('clients').select('*').order('created_at');if(error)throw error;clients=data.length?data.map(mapR):getSample();}catch{clients=getSample();}}
-  else{clients=JSON.parse(localStorage.getItem('ofir_v8')||'null')||getSample();}
+  if(useSb){
+    try{
+      const{data,error}=await db.from('clients').select('*').order('created_at');
+      if(error)throw error;
+      if(data&&data.length){
+        const sample=getSample();
+        clients=data.map((r,i)=>{
+          const mapped=mapR(r);
+          // Merge with sample by index if arrays empty in DB
+          const s=sample[i]||sample.find(s=>s.name===mapped.name)||null;
+          if(s){
+            if(!mapped.accounts||!mapped.accounts.length) mapped.accounts=s.accounts;
+            if(!mapped.properties||!mapped.properties.length) mapped.properties=s.properties;
+            if(!mapped.liquidity||!mapped.liquidity.length) mapped.liquidity=s.liquidity;
+            if(!mapped.notes||!mapped.notes.length) mapped.notes=s.notes;
+            if(!mapped.goals||!mapped.goals.length) mapped.goals=s.goals;
+            if(!mapped.goal) mapped.goal=s.goal;
+            if(!mapped.inceptionValue) mapped.inceptionValue=s.inceptionValue;
+            if(!mapped.startDate) mapped.startDate=s.startDate;
+            if(!mapped.ytd||mapped.ytd==='+0% YTD') mapped.ytd=s.ytd;
+          }
+          return mapped;
+        });
+      } else {
+        clients=getSample();
+      }
+    }catch(e){
+      console.warn('Supabase error, using sample:',e);
+      clients=getSample();
+    }
+  } else {
+    clients=JSON.parse(localStorage.getItem('ofir_v8')||'null')||getSample();
+  }
   document.getElementById('loadingScreen').style.display='none';
   const cp=new URLSearchParams(window.location.search).get('client');
   if(cp!==null)window._ci=parseInt(cp);
   showLogin();
 }
 
-function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,nextMeeting:r.next_meeting||'',accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
+function mapR(r){
+  return{
+    id:r.id,name:r.name,pass:r.pass,
+    ytd:r.ytd||'+0% YTD',goal:r.goal||0,
+    startDate:r.start_date||'',inceptionValue:r.inception_value||0,
+    nextMeeting:r.next_meeting||'',
+    accounts:Array.isArray(r.accounts)&&r.accounts.length?r.accounts:[],
+    liquidity:Array.isArray(r.liquidity)&&r.liquidity.length?r.liquidity:[],
+    properties:Array.isArray(r.properties)&&r.properties.length?r.properties:[],
+    notes:Array.isArray(r.notes)?r.notes:[],
+    goals:Array.isArray(r.goals)?r.goals:[],
+    reports:Array.isArray(r.reports)?r.reports:[]
+  };
+}
 
 function getSample(){return[
   {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,
@@ -507,6 +551,7 @@ function showView(name,el){
 
 function renderP(c){
   if(!c)return;
+  try{
   const t=calcT(c);
   document.getElementById('kTotal').textContent=fmt(t.total);
   document.getElementById('kYtd').textContent=c.ytd||'—';
@@ -623,6 +668,7 @@ function renderP(c){
   // Goals
   const goals=c.goals||[];
   document.getElementById('goalsSection').innerHTML=goals.length?`<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--white-faint);"><div style="font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Objetivos</div>${goals.map(g=>`<div class="progress-label"><span>${g.label}</span><span>${g.target}</span></div><div class="progress-track" style="margin-bottom:12px;"><div class="progress-fill" style="width:${Math.min(100,g.pct||0)}%"></div></div>`).join('')}</div>`:'';
+  }catch(e){console.error('renderP error:',e);}
 }
 
 function renderReps(c){
