@@ -193,7 +193,77 @@ tbody td:first-child{text-align:left;color:var(--white);font-weight:500;}
 footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex;justify-content:space-between;}
 .footer-l{font-family:var(--serif);font-size:.8rem;color:var(--white-dim);font-style:italic;}
 .footer-r{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,169,110,0.35);}
-@media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr;}.mid-grid,.two-grid,.admin-grid{grid-template-columns:1fr;}header,nav,main,footer{padding-left:20px;padding-right:20px;}.yield-box{gap:16px;}}
+@media(max-width:900px){
+  header,nav,main,footer{padding-left:16px;padding-right:16px;}
+  
+  /* Header compacto */
+  header{padding:10px 16px;}
+  .client-badge{max-width:180px;}
+  .client-badge .cb-name{font-size:.75rem;}
+  .client-badge .cb-sub{font-size:.6rem;}
+  
+  /* Titulo */
+  .page-title{font-size:2rem;}
+  
+  /* Yield box — 2 columnas en mobile */
+  .yield-box{
+    grid-template-columns:1fr 1fr !important;
+    gap:10px;
+    padding:14px 16px;
+  }
+  .yield-item .lbl{font-size:.52rem;}
+  .yield-item .val{font-size:.95rem;}
+  
+  /* KPIs — 2x2 */
+  .kpi-row{grid-template-columns:1fr 1fr;}
+  .kpi-card{padding:16px 14px;}
+  .kpi-main{font-size:1.6rem;}
+  
+  /* Grids — 1 columna */
+  .mid-grid,.two-grid,.admin-grid{grid-template-columns:1fr;}
+  
+  /* Tabla de cuentas — convertir a cards */
+  #invTable{display:block;}
+  #invTable thead{display:none;}
+  #invTable tbody{display:block;}
+  #invTable tr{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:4px 8px;
+    padding:12px 0;
+    border-bottom:1px solid rgba(245,242,237,.08);
+  }
+  #invTable tr.total-row{
+    grid-template-columns:1fr 1fr;
+    background:none;
+  }
+  #invTable td{
+    display:block;
+    font-size:.75rem;
+    padding:2px 0;
+    border:none;
+  }
+  #invTable td:first-child{
+    grid-column:1/-1;
+    font-size:.85rem;
+  }
+  #invTable td:nth-child(4){display:none;}
+  
+  /* Gráficos full width */
+  .chart-area{height:180px;}
+  .panel{padding:16px 14px;}
+  
+  /* Props */
+  .prop-stats{gap:12px;}
+  .prop-stat .val{font-size:.85rem;}
+}
+
+@media(max-width:480px){
+  .yield-box{grid-template-columns:1fr 1fr !important;}
+  .yield-item .val{font-size:.85rem;}
+  .kpi-main{font-size:1.4rem;}
+  .page-title{font-size:1.7rem;}
+}
 </style>
 </head>
 <body>
@@ -560,7 +630,13 @@ function renderP(c){
   let months=['Ene 24','Mar 24','May 24','Jul 24','Sep 24','Nov 24','Ene 25','Mar 25','May 25','Jul 25','Sep 25','Nov 25','Mar 26'];
   if(c.startDate){const st=new Date(c.startDate),now=new Date();months=[];let d=new Date(st);while(d<=now){months.push(d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}));d.setMonth(d.getMonth()+2);}if(months.length<3)months=['Inicio','','','','Hoy'];}
   const sv=c.inceptionValue||Math.round(t.total*.72);
-  const od=months.map((_,i)=>Math.round(sv+(t.total-sv)*(i/(months.length-1))+(Math.random()-.38)*t.total*.025));
+  const od=months.map((_,i)=>{
+    // Deterministic pseudo-random based on client id + index (no Math.random)
+    const seed=(c.id||1)*1000+i;
+    const pseudo=((seed*9301+49297)%233280)/233280;
+    const noise=(pseudo-.38)*t.total*.025;
+    return Math.round(sv+(t.total-sv)*(months.length>1?i/(months.length-1):1)+noise);
+  });
   od[od.length-1]=t.total;
   perfChart=new Chart(pCtx,{type:'line',data:{labels:months,datasets:[{data:od,borderColor:'#c9a96e',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.22)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#f5f2ed',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(245,242,237,.35)',font:{size:8,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}});
 
