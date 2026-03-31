@@ -516,7 +516,7 @@ function calcT(c){
 }
 
 async function init(){
-  const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
+  const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
   if(useSb){
     try{
       const{data,error}=await db.from('clients').select('*').order('created_at');
@@ -846,7 +846,7 @@ async function saveClient(){
   c.nextMeeting=document.getElementById('ef-nextmeeting').value;
   c.managementFee=Number(document.getElementById('ef-fee').value)||0;
   try{
-    const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
+    const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
     if(useSb){const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal,start_date:c.startDate,inception_value:c.inceptionValue,next_meeting:c.nextMeeting,management_fee:c.managementFee||0,accounts:c.accounts,liquidity:c.liquidity,properties:c.properties,notes:c.notes,goals:c.goals,reports:c.reports});if(error)throw error;}
     else localStorage.setItem('ofir_v8',JSON.stringify(clients));
     msg.textContent='✓ Guardado';msg.className='save-msg show';
@@ -861,7 +861,7 @@ async function addClient(){
   const name=document.getElementById('nc-name').value.trim(),pass=document.getElementById('nc-pass').value.trim();
   if(!name||!pass)return;
   const nc={name,pass,ytd:'+0% YTD',goal:0,startDate:'',inceptionValue:0,accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]};
-  const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
+  const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
   if(useSb){const{data,error}=await db.from('clients').insert([{name:nc.name,pass:nc.pass,ytd:nc.ytd,goal:0,accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]}]).select();if(!error&&data)nc.id=data[0].id;}
   clients.push(nc);
   if(!useSb)localStorage.setItem('ofir_v8',JSON.stringify(clients));
