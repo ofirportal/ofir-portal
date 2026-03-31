@@ -358,6 +358,7 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
         <div class="panel-title">Notas & próximas acciones</div>
         <div id="notesList"></div>
         <div id="goalsSection"></div>
+      <div id="feeDisplay"></div>
       </div>
     </div>
 
@@ -370,6 +371,7 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
     <!-- ADMIN -->
     <div id="view-admin" class="view">
       <div class="page-header"><h1>Panel de <span>Administración</span></h1></div>
+      <div id="adminSummary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;"></div>
       <div class="admin-grid">
         <div>
           <div class="client-list-panel">
@@ -410,6 +412,7 @@ footer{border-top:1px solid rgba(201,169,110,0.1);padding:18px 44px;display:flex
                 <div class="edit-field"><label>Patrimonio total <span class="auto-lbl">● auto</span></label><input id="ef-total" readonly/></div>
                 <div class="edit-field"><label>Patrimonio al inicio (USD)</label><input id="ef-inception" type="number" placeholder="ej: 1500000"/></div>
                 <div class="edit-field"><label>Retorno acumulado (USD) <span class="auto-lbl">● auto</span></label><input id="ef-retorno" readonly/></div>
+                <div class="edit-field"><label>Management Fee anual (USD)</label><input id="ef-fee" type="number" placeholder="ej: 15000"/></div>
               </div>
               <div class="edit-row three">
                 <div class="edit-field"><label>Rendimiento YTD</label><input id="ef-ytd" placeholder="+8.4% YTD"/></div>
@@ -538,16 +541,16 @@ async function init(){
   showLogin();
 }
 
-function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,nextMeeting:r.next_meeting||'',accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
+function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,nextMeeting:r.next_meeting||'',managementFee:r.management_fee||0,accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
 
 function getSample(){return[
-  {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,
+  {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,managementFee:15000,
    accounts:[{name:'BNY Pershing',type:'inversion',value:2000000,sinceInception:'+18.5%',yieldEst:6},{name:'Banco Galicia',type:'banco',value:340000,sinceInception:'+3.2%',yieldEst:2}],
    liquidity:[{desc:'Caja de seguridad',amount:200000},{desc:'Cash disponible',amount:80000}],
    properties:[{name:'Oficina Corporativa',addr:'Av. del Libertador 1842, CABA',icon:'🏢',val:780000,rent:3800,yieldCalc:'5.85'},{name:'Departamento Palermo',addr:'Palermo Soho, CABA',icon:'🏠',val:320000,rent:1600,yieldCalc:'6.00'}],
    notes:[{date:'Mar 2026',text:'Revisar rebalanceo. Considerar aumentar renta fija internacional ante expectativa de baja de tasas.'}],
    goals:[{label:'AUM objetivo familiar',target:'USD 6M',pct:80}],reports:[]},
-  {id:2,name:'Jacobo Safdie',pass:'Coki1234',ytd:'+0% YTD',goal:5000000,startDate:'2024-01-01',inceptionValue:1500000,
+  {id:2,name:'Jacobo Safdie',pass:'Coki1234',ytd:'+0% YTD',goal:5000000,startDate:'2024-01-01',inceptionValue:1500000,managementFee:15000,
    accounts:[{name:'BNY Pershing',type:'inversion',value:548000,sinceInception:'',yieldEst:6},{name:'Balanz',type:'inversion',value:89000,sinceInception:'',yieldEst:5},{name:'Allaria',type:'inversion',value:500000,sinceInception:'',yieldEst:5},{name:'Banco Comafi',type:'banco',value:500000,sinceInception:'',yieldEst:2}],
    liquidity:[{desc:'Caja de seguridad',amount:500000}],
    properties:[{name:'Libertador',addr:'',icon:'🏠',val:300000,rent:3000,yieldCalc:'12.00'}],
@@ -589,6 +592,7 @@ function showView(name,el){
   if(el)el.classList.add('active');
   if(name==='patrimony')renderP(clients[selIdx]);
   if(name==='reports')renderReps(clients[selIdx]);
+  if(name==='admin')renderAdminSummary();
 }
 
 function renderP(c){
@@ -697,6 +701,15 @@ function renderP(c){
   // Goals
   const goals=c.goals||[];
   document.getElementById('goalsSection').innerHTML=goals.length?`<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--white-faint);"><div style="font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Objetivos</div>${goals.map(g=>`<div class="progress-label"><span>${g.label}</span><span>${g.target}</span></div><div class="progress-track" style="margin-bottom:12px;"><div class="progress-fill" style="width:${Math.min(100,g.pct||0)}%"></div></div>`).join('')}</div>`:'';
+  // Fee display for client
+  const feeEl=document.getElementById('feeDisplay');
+  if(feeEl){
+    if(c.managementFee&&Number(c.managementFee)>0){
+      feeEl.innerHTML=`<div style="margin-top:18px;padding:16px 20px;border:1px solid rgba(201,169,110,0.2);border-radius:8px;background:rgba(201,169,110,0.05);display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Management Fee Anual</div><div style="font-size:.75rem;color:var(--white-dim);">Servicio de administración patrimonial integral</div></div><div style="font-size:1.2rem;font-weight:600;color:var(--gold);">USD ${fmt(c.managementFee)}</div></div>`;
+    } else {
+      feeEl.innerHTML='';
+    }
+  }
 }
 
 function renderReps(c){
@@ -706,6 +719,30 @@ function renderReps(c){
 }
 
 // ADMIN
+function renderAdminSummary(){
+  const totalAUM=clients.reduce((s,c)=>{
+    const t=calcT(c);
+    return s+t.tInv;
+  },0);
+  const totalPat=clients.reduce((s,c)=>{
+    const t=calcT(c);
+    return s+t.total;
+  },0);
+  const totalFee=clients.reduce((s,c)=>s+Number(c.managementFee||0),0);
+  const el=document.getElementById('adminSummary');
+  if(!el)return;
+  const card=(label,val,sub='')=>`<div style="background:var(--navy-card);border:1px solid rgba(201,169,110,0.15);border-radius:10px;padding:18px 20px;">
+    <div style="font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--white-dim);margin-bottom:6px;">${label}</div>
+    <div style="font-size:1.4rem;font-weight:600;color:var(--gold);">${val}</div>
+    ${sub?`<div style="font-size:.7rem;color:var(--white-dim);margin-top:4px;">${sub}</div>`:''}
+  </div>`;
+  el.innerHTML=
+    card('Clientes activos',clients.length,'familias')+
+    card('AUM bajo gestión','USD '+fmt(totalAUM),'inversiones directas')+
+    card('Patrimonio coordinado','USD '+fmt(totalPat),'patrimonio total')+
+    card('Management fee anual','USD '+fmt(totalFee),'suma todos los clientes');
+}
+
 function renderAdminList(){document.getElementById('clientListAdmin').innerHTML=clients.map((c,i)=>{const t=calcT(c);return`<div class="client-list-item ${i===selIdx?'selected':''}" onclick="selectClient(${i})"><div class="cli-av">${c.name[0]}</div><div><div class="cli-name">${c.name}</div><div class="cli-aum">USD ${fmt(t.total)}</div></div></div>`;}).join('');}
 
 function selectClient(idx){
@@ -725,6 +762,7 @@ function selectClient(idx){
   document.getElementById('ef-startdate').value=c.startDate||'';
   document.getElementById('ef-inception').value=c.inceptionValue||'';
   document.getElementById('ef-nextmeeting').value=c.nextMeeting||'';
+  document.getElementById('ef-fee').value=c.managementFee||'';
   if(c.inceptionValue>0&&t.total>0){
     const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
     const usd=t.total-c.inceptionValue;
@@ -795,9 +833,10 @@ async function saveClient(){
   c.startDate=document.getElementById('ef-startdate').value;
   c.inceptionValue=Number(document.getElementById('ef-inception').value)||0;
   c.nextMeeting=document.getElementById('ef-nextmeeting').value;
+  c.managementFee=Number(document.getElementById('ef-fee').value)||0;
   try{
     const useSb=SUPABASE_URL!=='https://jpegcujzyzqfjvlumzpm.supabase.co';
-    if(useSb){const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal,start_date:c.startDate,inception_value:c.inceptionValue,next_meeting:c.nextMeeting,accounts:c.accounts,liquidity:c.liquidity,properties:c.properties,notes:c.notes,goals:c.goals,reports:c.reports});if(error)throw error;}
+    if(useSb){const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal,start_date:c.startDate,inception_value:c.inceptionValue,next_meeting:c.nextMeeting,management_fee:c.managementFee||0,accounts:c.accounts,liquidity:c.liquidity,properties:c.properties,notes:c.notes,goals:c.goals,reports:c.reports});if(error)throw error;}
     else localStorage.setItem('ofir_v8',JSON.stringify(clients));
     msg.textContent='✓ Guardado';msg.className='save-msg show';
     document.getElementById('editTitle').textContent=c.name;
