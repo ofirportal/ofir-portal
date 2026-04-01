@@ -502,17 +502,13 @@ const fmt=n=>Number(n||0).toLocaleString('es-AR');
 
 function calcT(c){
   const acc=c.accounts||[], props=c.properties||[], liqs=c.liquidity||[];
-  const tInv=acc.reduce((s,a)=>s+Number(a.value||0),0);
-  const tProp=props.reduce((s,p)=>s+Number(p.val||0),0);
-  const tLiq=liqs.reduce((s,l)=>s+Number(l.amount||0),0);
-  const total=tInv+tProp+tLiq;
-  const rentM=props.reduce((s,p)=>s+Number(p.rent||0),0);
-  const invM=acc.reduce((s,a)=>s+(Number(a.value||0)*Number(a.yieldEst||5)/100/12),0);
-  const mIncome=rentM+invM;
-  const aIncome=mIncome*12;
-  const wYield=total>0?(aIncome/total*100):0;
+  const tInv  = acc.reduce((s,a)=>s+Number(a.value||0),0)  || c._inv  || 0;
+  const tProp = props.reduce((s,p)=>s+Number(p.val||0),0)  || c._prop || 0;
+  const tLiq  = liqs.reduce((s,l)=>s+Number(l.amount||0),0)|| c._cf   || 0;
+  const total = tInv+tProp+tLiq || c._total || 0;
+  const rentM = props.reduce((s,p)=>s+Number(p.rent||0),0);
   props.forEach(p=>{if(Number(p.val)>0&&Number(p.rent)>0)p.yieldCalc=(Number(p.rent)*12/Number(p.val)*100).toFixed(2);});
-  return{tInv,tProp,tLiq,total,mIncome,aIncome,wYield};
+  return{tInv,tProp,tLiq,total,rentM};
 }
 
 async function init(){
@@ -533,7 +529,41 @@ async function init(){
   showLogin();
 }
 
-function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,nextMeeting:r.next_meeting||'',managementFee:r.management_fee||0,accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
+function mapR(r){
+  // El schema real usa: investments (jsonb), properties (jsonb), notes (jsonb), goals (jsonb)
+  // + columnas numéricas: total, inv, prop, cf, inv_ytd, prop_ytd
+  // + metadata extra guardada dentro de notes como objeto {__meta:true,...}
+  const notesRaw = r.notes || [];
+  const meta = notesRaw.find(n => n.__meta) || {startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[]};
+  const cleanNotes = notesRaw.filter(n => !n.__meta);
+  return {
+    id: r.id,
+    name: r.name,
+    pass: r.pass,
+    ytd: r.ytd || '+0% YTD',
+    goal: Number(r.goal || 0),
+    // totales desde columnas numéricas
+    _total: Number(r.total || 0),
+    _inv:   Number(r.inv   || 0),
+    _prop:  Number(r.prop  || 0),
+    _cf:    Number(r.cf    || 0),
+    // rendimientos
+    invYtd:  r.inv_ytd  || '+0%',
+    propYtd: r.prop_ytd || '+0%',
+    // arrays JSONB con nombres correctos
+    accounts:   r.investments || [],   // Supabase: investments
+    properties: r.properties  || [],
+    notes:      cleanNotes,
+    goals:      r.goals       || [],
+    // desde __meta embebido en notes
+    startDate:    meta.startDate    || '',
+    inceptionValue: Number(meta.inceptionValue || 0),
+    nextMeeting:  meta.nextMeeting  || '',
+    managementFee: Number(meta.managementFee || 0),
+    liquidity: meta.liquidity || [],
+    reports:   meta.reports   || [],
+  };
+}
 
 function getSample(){return[
   {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,managementFee:15000,
@@ -839,7 +869,32 @@ async function saveClient(){
   c.managementFee=Number(document.getElementById('ef-fee').value)||0;
   try{
     const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
-    if(useSb){const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal,start_date:c.startDate,inception_value:c.inceptionValue,next_meeting:c.nextMeeting,management_fee:c.managementFee||0,accounts:c.accounts,liquidity:c.liquidity,properties:c.properties,notes:c.notes,goals:c.goals,reports:c.reports});if(error)throw error;}
+    if(useSb){
+      const t=calcT(c);
+      // Campos que no tienen columna propia van embebidos en notes como {__meta:true,...}
+      const meta={__meta:true,startDate:c.startDate||'',inceptionValue:c.inceptionValue||0,
+        nextMeeting:c.nextMeeting||'',managementFee:c.managementFee||0,
+        liquidity:c.liquidity||[],reports:c.reports||[]};
+      const notesWithMeta=[...( c.notes||[]), meta];
+      const{error}=await db.from('clients').upsert({
+        id:           c.id,
+        name:         c.name,
+        pass:         c.pass,
+        ytd:          c.ytd,
+        goal:         c.goal||0,
+        total:        t.total,
+        inv:          t.tInv,
+        prop:         t.tProp,
+        cf:           t.tLiq,
+        inv_ytd:      c.invYtd  ||'+0%',
+        prop_ytd:     c.propYtd ||'+0%',
+        investments:  c.accounts   ||[],   // columna real = investments
+        properties:   c.properties ||[],
+        notes:        notesWithMeta,
+        goals:        c.goals      ||[],
+      });
+      if(error)throw error;
+    }
     else localStorage.setItem('ofir_v8',JSON.stringify(clients));
     msg.textContent='✓ Guardado';msg.className='save-msg show';
     document.getElementById('editTitle').textContent=c.name;
@@ -854,7 +909,7 @@ async function addClient(){
   if(!name||!pass)return;
   const nc={name,pass,ytd:'+0% YTD',goal:0,startDate:'',inceptionValue:0,accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]};
   const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
-  if(useSb){const{data,error}=await db.from('clients').insert([{name:nc.name,pass:nc.pass,ytd:nc.ytd,goal:0,accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]}]).select();if(!error&&data)nc.id=data[0].id;}
+  if(useSb){const{data,error}=await db.from('clients').insert([{name:nc.name,pass:nc.pass,ytd:nc.ytd,goal:0,total:0,inv:0,prop:0,cf:0,inv_ytd:'+0%',prop_ytd:'+0%',investments:[],properties:[],notes:[{__meta:true,startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[]}],goals:[]}]).select();if(!error&&data)nc.id=data[0].id;}
   clients.push(nc);
   if(!useSb)localStorage.setItem('ofir_v8',JSON.stringify(clients));
   closeModal();renderAdminList();selectClient(clients.length-1);
