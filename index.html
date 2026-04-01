@@ -8,22 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{
-  --navy:#1a2940;
-  --navy-mid:#1e3050;
-  --navy-light:#243660;
-  --navy-card:#1e3050;
-  --gold:#c9a96e;
-  --gold-light:#c9a96e;
-  --gold-dim:rgba(201,169,110,0.1);
-  --white:#ffffff;
-  --white-dim:rgba(255,255,255,0.45);
-  --white-faint:rgba(255,255,255,0.06);
-  --green:#6dbf9e;
-  --red:#e07b6a;
-  --serif:'Cormorant Garamond',Georgia,serif;
-  --sans:'Montserrat',sans-serif;
-}
+:root{--navy:#1a2940;--navy-mid:#1e3050;--navy-light:#243660;--navy-card:#1e3050;--gold:#c9a96e;--gold-light:#c9a96e;--gold-dim:rgba(201,169,110,0.1);--white:#ffffff;--white-dim:rgba(255,255,255,0.45);--white-faint:rgba(255,255,255,0.06);--green:#6dbf9e;--red:#e07b6a;--serif:'Cormorant Garamond',Georgia,serif;--sans:'Montserrat',sans-serif;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--navy);color:var(--white);font-family:var(--sans);min-height:100vh;}
 #loadingScreen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;z-index:999;}
@@ -67,21 +52,43 @@ main{flex:1;padding:36px 44px 60px;max-width:1400px;margin:0 auto;width:100%;}
 .page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;}
 .page-header h1{font-family:var(--serif);font-size:2.2rem;font-weight:300;}
 .page-header h1 span{color:var(--gold);font-style:italic;}
-.yield-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);padding:16px 24px;margin-bottom:24px;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
-.yield-item .lbl{font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--white-dim);margin-bottom:4px;}
-.yield-item .val{font-family:var(--serif);font-size:1.4rem;font-weight:300;color:var(--white);}
-.kpi-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:18px;margin-bottom:24px;}
-.kpi-card{background:var(--navy-card);border:1px solid rgba(201,169,110,0.1);padding:26px 28px;position:relative;overflow:hidden;transition:.2s;}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:rgba(255,255,255,0.3);opacity:0;transition:.3s;}
-.kpi-card:hover::before{opacity:1;}
-.kpi-card.main{background:linear-gradient(135deg,var(--navy-light),var(--navy-mid));border-color:rgba(201,169,110,0.25);}
-.kpi-card.main::before{opacity:1;}
-.kpi-label{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--white-dim);margin-bottom:12px;}
-.kpi-value{font-family:var(--serif);font-size:2rem;font-weight:300;line-height:1;margin-bottom:8px;}
-.kpi-card.main .kpi-value{font-size:2.6rem;color:var(--white);}
-.kpi-cur{font-size:.85rem;color:rgba(255,255,255,0.35);vertical-align:super;margin-right:2px;}
+/* ── HERO BLOCK ── */
+.hero-block{display:grid;grid-template-columns:1fr auto;border:1px solid rgba(255,255,255,0.1);margin-bottom:20px;position:relative;overflow:hidden;}
+.hero-block::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);}
+.hero-left{padding:36px 40px;border-right:1px solid rgba(255,255,255,0.06);}
+.hero-eyebrow{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;}
+.hero-lbl{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px;}
+.hero-num{font-family:var(--serif);font-size:4rem;font-weight:300;color:var(--white);line-height:1;letter-spacing:-.01em;}
+.hero-cur{font-size:1.5rem;color:rgba(255,255,255,0.3);vertical-align:super;margin-right:4px;font-family:var(--sans);font-weight:300;}
+.hero-meta{display:flex;align-items:center;gap:12px;margin-top:14px;}
+.hero-since{font-size:.62rem;color:rgba(255,255,255,0.3);letter-spacing:.04em;}
+.hero-right{padding:36px 44px;display:flex;flex-direction:column;justify-content:center;gap:0;min-width:290px;background:rgba(255,255,255,0.025);}
+.hero-stat{padding:4px 0;}
+.hero-stat-lbl{font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px;}
+.hero-stat-num{font-family:var(--serif);font-size:2.2rem;font-weight:300;color:var(--white);line-height:1;}
+.hero-stat-sub{font-size:.65rem;color:rgba(255,255,255,0.3);margin-top:4px;}
+.hero-divider{height:1px;background:rgba(255,255,255,0.07);margin:18px 0;}
+/* ── PILLARS ── */
+.pillars-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.pillar{background:var(--navy-card);border:1px solid rgba(255,255,255,0.08);padding:24px 26px 20px;position:relative;overflow:hidden;transition:.2s;}
+.pillar:hover{border-color:rgba(255,255,255,0.14);}
+.pillar-icon{font-size:1rem;color:rgba(255,255,255,0.12);margin-bottom:14px;display:block;}
+.pillar-lbl{font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;}
+.pillar-num{font-family:var(--serif);font-size:2.1rem;font-weight:300;color:var(--white);line-height:1;margin-bottom:5px;}
+.pillar-cur{font-size:.8rem;color:rgba(255,255,255,0.3);vertical-align:super;margin-right:2px;}
+.pillar-pct{font-size:.62rem;color:rgba(255,255,255,0.28);margin-bottom:10px;}
+.pillar-ret{font-size:.68rem;margin-bottom:12px;min-height:1.2em;}
+.pillar-bar{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;overflow:hidden;}
+.pillar-fill{height:100%;border-radius:1px;transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+.pillar-fill.inv{background:rgba(126,168,201,0.55);}
+.pillar-fill.re{background:rgba(109,191,158,0.55);}
+.pillar-fill.liq{background:rgba(255,255,255,0.25);}
+/* legacy compat */
 .badge{display:inline-flex;align-items:center;gap:3px;font-size:.6rem;font-weight:600;padding:3px 9px;}
 .badge.pos{background:rgba(109,191,158,.12);color:var(--green);}
+.kpi-label{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--white-dim);margin-bottom:12px;}
+.kpi-value{font-family:var(--serif);font-size:2rem;font-weight:300;line-height:1;margin-bottom:8px;}
+.kpi-cur{font-size:.85rem;color:rgba(255,255,255,0.35);vertical-align:super;margin-right:2px;}
 .kpi-sub{font-size:.58rem;color:var(--white-dim);margin-top:6px;}
 .progress-wrap{margin-top:14px;}
 .progress-label{display:flex;justify-content:space-between;font-size:.56rem;color:var(--white-dim);margin-bottom:4px;}
@@ -104,7 +111,7 @@ main{flex:1;padding:36px 44px 60px;max-width:1400px;margin:0 auto;width:100%;}
 table{width:100%;border-collapse:collapse;}
 thead th{font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--white-dim);padding:0 0 12px;text-align:left;border-bottom:1px solid rgba(201,169,110,0.12);font-weight:500;}
 thead th:not(:first-child){text-align:right;}
-tbody tr{border-bottom:1px solid rgba(255,255,255,0.05);transition:.15s;}
+tbody tr{border-bottom:1px solid rgba(245,242,237,0.05);transition:.15s;}
 tbody tr:hover{background:rgba(255,255,255,0.03);}
 tbody td{padding:14px 0;font-size:.73rem;color:var(--white-dim);text-align:right;}
 tbody td:first-child{text-align:left;color:var(--white);font-weight:500;}
@@ -127,7 +134,7 @@ tbody td:first-child{text-align:left;color:var(--white);font-weight:500;}
 .note-text{font-size:.7rem;color:var(--white-dim);line-height:1.6;}
 .reports-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
 .report-card{background:var(--navy-card);border:1px solid rgba(201,169,110,0.1);padding:24px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;transition:.2s;}
-.report-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:rgba(255,255,255,0.3);opacity:0;transition:.3s;}
+.report-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--gold);opacity:0;transition:.3s;}
 .report-card:hover::before{opacity:1;}
 .report-quarter{font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:500;}
 .report-title{font-family:var(--serif);font-size:1.2rem;font-weight:300;}
@@ -161,7 +168,7 @@ tbody td:first-child{text-align:left;color:var(--white);font-weight:500;}
 .edit-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
 .edit-row.three{grid-template-columns:1fr 1fr 1fr;}
 .edit-field label{display:block;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--white-dim);margin-bottom:6px;}
-.edit-field input,.edit-field textarea,.edit-field select{width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:var(--white);font-family:var(--sans);font-size:.73rem;outline:none;transition:border-color .2s;resize:vertical;}
+.edit-field input,.edit-field textarea,.edit-field select{width:100%;padding:10px 12px;background:rgba(245,242,237,0.05);border:1px solid rgba(255,255,255,0.12);color:var(--white);font-family:var(--sans);font-size:.73rem;outline:none;transition:border-color .2s;resize:vertical;}
 .edit-field input:focus,.edit-field textarea:focus,.edit-field select:focus{border-color:rgba(255,255,255,0.4);}
 .edit-field input[readonly]{opacity:.55;cursor:default;}
 .edit-field textarea{min-height:65px;}
@@ -316,31 +323,64 @@ footer{border-top:1px solid rgba(255,255,255,0.07);padding:18px 44px;display:fle
 
     <!-- PATRIMONY -->
     <div id="view-patrimony" class="view active">
-      <div class="page-header">
-        <h1>Patrimonio <span>Consolidado</span></h1>
-        <div style="text-align:right;"><div style="font-size:.56rem;color:var(--white-dim);letter-spacing:.1em;text-transform:uppercase;">Actualizado al</div><div style="font-size:.74rem;color:var(--white-dim);margin-top:2px;" id="updateDate"></div></div>
-      </div>
-
-      <div class="yield-box">
-        <div class="yield-item"><div class="lbl">Flujo mensual</div><div class="val" id="yRentM">—</div></div>
-        <div class="yield-item"><div class="lbl">Flujo anual</div><div class="val" id="yRentA">—</div></div>
-        <div class="yield-item"><div class="lbl">Retorno inversiones</div><div class="val" id="yInvPct">—</div></div>
-        <div class="yield-item"><div class="lbl">Retorno inv. acumulado</div><div class="val" id="yInvUSD">—</div></div>
-        <div class="yield-item"><div class="lbl">Retorno desde inicio (%)</div><div class="val" id="yR">—</div></div>
-        <div class="yield-item"><div class="lbl">Retorno desde inicio (USD)</div><div class="val" id="yRusd">—</div></div>
-      </div>
-
-      <div class="kpi-row">
-        <div class="kpi-card main">
-          <div class="kpi-label">Patrimonio Total Neto</div>
-          <div class="kpi-value"><span class="kpi-cur">USD</span><span id="kTotal">—</span></div>
-          <div style="margin-top:8px;"><span class="badge pos" id="kYtd">—</span></div>
-          <div class="progress-wrap"><div class="progress-label"><span>Meta objetivo</span><span id="kGoalLbl">—</span></div><div class="progress-track"><div class="progress-fill" id="kGoalBar" style="width:0%"></div></div></div>
+      <!-- HERO -->
+      <div class="hero-block">
+        <div class="hero-left">
+          <div class="hero-eyebrow" id="updateDate"></div>
+          <div class="hero-lbl">Patrimonio Total Neto</div>
+          <div class="hero-num"><span class="hero-cur">USD</span><span id="kTotal">—</span></div>
+          <div class="hero-meta">
+            <span class="badge pos" id="kYtd">—</span>
+            <span class="hero-since" id="heroSince"></span>
+          </div>
         </div>
-        <div class="kpi-card"><div class="kpi-label">Cuentas de Inversión</div><div class="kpi-value" style="font-size:1.8rem;"><span class="kpi-cur" style="font-size:.75rem;">USD</span><span id="kInv">—</span></div><div class="kpi-sub" id="kInvPct"></div></div>
-        <div class="kpi-card"><div class="kpi-label">Real Estate</div><div class="kpi-value" style="font-size:1.8rem;"><span class="kpi-cur" style="font-size:.75rem;">USD</span><span id="kProp">—</span></div><div class="kpi-sub" id="kPropPct"></div></div>
-        <div class="kpi-card"><div class="kpi-label">Liquidez & Cash</div><div class="kpi-value" style="font-size:1.8rem;"><span class="kpi-cur" style="font-size:.75rem;">USD</span><span id="kLiq">—</span></div><div class="kpi-sub" id="kLiqPct"></div></div>
+        <div class="hero-right">
+          <div class="hero-stat">
+            <div class="hero-stat-lbl">Generado desde el inicio</div>
+            <div class="hero-stat-num" id="yRusd">—</div>
+            <div class="hero-stat-sub" id="yR"></div>
+          </div>
+          <div class="hero-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-lbl">Flujo mensual (alquileres)</div>
+            <div class="hero-stat-num" id="yRentM">—</div>
+            <div class="hero-stat-sub" id="yRentA"></div>
+          </div>
+        </div>
       </div>
+
+      <!-- PILLARS -->
+      <div class="pillars-row">
+        <div class="pillar">
+          <span class="pillar-icon">◈</span>
+          <div class="pillar-lbl">Cuentas de Inversión</div>
+          <div class="pillar-num"><span class="pillar-cur">USD</span><span id="kInv">—</span></div>
+          <div class="pillar-pct" id="kInvPct"></div>
+          <div class="pillar-ret" id="pillarInvRet"></div>
+          <div class="pillar-bar"><div class="pillar-fill inv" id="pillarInvBar" style="width:0%"></div></div>
+        </div>
+        <div class="pillar">
+          <span class="pillar-icon">⬡</span>
+          <div class="pillar-lbl">Real Estate</div>
+          <div class="pillar-num"><span class="pillar-cur">USD</span><span id="kProp">—</span></div>
+          <div class="pillar-pct" id="kPropPct"></div>
+          <div class="pillar-ret" id="pillarPropRet"></div>
+          <div class="pillar-bar"><div class="pillar-fill re" id="pillarPropBar" style="width:0%"></div></div>
+        </div>
+        <div class="pillar">
+          <span class="pillar-icon">◇</span>
+          <div class="pillar-lbl">Liquidez & Cash</div>
+          <div class="pillar-num"><span class="pillar-cur">USD</span><span id="kLiq">—</span></div>
+          <div class="pillar-pct" id="kLiqPct"></div>
+          <div class="pillar-ret" id="pillarLiqRet"></div>
+          <div class="pillar-bar"><div class="pillar-fill liq" id="pillarLiqBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <!-- hidden ids for JS compat -->
+      <span id="yInvPct" style="display:none"></span>
+      <span id="yInvUSD" style="display:none"></span>
+      <span id="kGoalLbl" style="display:none"></span>
+      <span id="kGoalBar" style="display:none"></span>
 
       <div class="mid-grid">
         <div class="panel">
@@ -516,7 +556,7 @@ const AL=['Cuentas de inversión','Banco comercial','Inmuebles','Liquidez','Otro
 const fmt=n=>Number(n||0).toLocaleString('es-AR');
 
 function calcT(c){
-  const acc=c.accounts||[],props=c.properties||[],liqs=c.liquidity||[];
+  const acc=c.accounts||[], props=c.properties||[], liqs=c.liquidity||[];
   const tInv=acc.reduce((s,a)=>s+Number(a.value||0),0)||c._inv||0;
   const tProp=props.reduce((s,p)=>s+Number(p.val||0),0)||c._prop||0;
   const tLiq=liqs.reduce((s,l)=>s+Number(l.amount||0),0)||c._cf||0;
@@ -623,35 +663,57 @@ function showView(name,el){
 function renderP(c){
   if(!c)return;
   const t=calcT(c);
+  // ── HERO ──
   document.getElementById('kTotal').textContent=fmt(t.total);
-  document.getElementById('kYtd').textContent=c.ytd||'—';
-  document.getElementById('kInv').textContent=fmt(t.tInv);
-  document.getElementById('kInvPct').textContent=t.total>0?Math.round(t.tInv/t.total*100)+'% del patrimonio':'—';
-  document.getElementById('kProp').textContent=fmt(t.tProp);
-  document.getElementById('kPropPct').textContent=t.total>0?Math.round(t.tProp/t.total*100)+'% del patrimonio':'—';
-  document.getElementById('kLiq').textContent=fmt(t.tLiq);
-  document.getElementById('kLiqPct').textContent=t.total>0?Math.round(t.tLiq/t.total*100)+'% del patrimonio':'—';
-  document.getElementById('kGoalLbl').textContent='USD '+fmt(c.goal);
-  document.getElementById('kGoalBar').style.width=c.goal>0?Math.min(100,Math.round(t.total/c.goal*100))+'%':'0%';
-  // Alquileres reales
-  const rentMreal=(c.properties||[]).reduce((s,p)=>s+Number(p.rent||0),0);
+  document.getElementById('kYtd').textContent=c.ytd||'+0% YTD';
+  document.getElementById('updateDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Desde inicio
+  if(c.inceptionValue>0&&t.total>0){
+    const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
+    const rusd=t.total-c.inceptionValue;
+    document.getElementById('yR').textContent=(r>=0?'+':'')+r+'% desde el inicio';
+    document.getElementById('yRusd').textContent=(rusd>=0?'':'−')+'USD '+fmt(Math.abs(rusd));
+    document.getElementById('heroSince').textContent=c.startDate?'Asesorado desde '+new Date(c.startDate+'T00:00:00').toLocaleDateString('es-AR',{month:'long',year:'numeric'}):'';
+  } else {
+    document.getElementById('yR').textContent='';
+    document.getElementById('yRusd').textContent='—';
+    document.getElementById('heroSince').textContent='';
+  }
+  // Flujo mensual real (solo alquileres)
+  const rentMreal=(c.properties||[]).reduce((s,p)=>s+Number(p.rent||0),0)||0;
   document.getElementById('yRentM').textContent='USD '+fmt(rentMreal);
-  document.getElementById('yRentA').textContent='USD '+fmt(rentMreal*12);
-  // Retorno inversiones (capital growth, no flujo)
+  document.getElementById('yRentA').textContent=rentMreal>0?'USD '+fmt(rentMreal*12)+' anuales':'—';
+  // ── PILLARS ──
+  const pctInv=t.total>0?Math.round(t.tInv/t.total*100):0;
+  const pctProp=t.total>0?Math.round(t.tProp/t.total*100):0;
+  const pctLiq=t.total>0?Math.round(t.tLiq/t.total*100):0;
+  document.getElementById('kInv').textContent=fmt(t.tInv);
+  document.getElementById('kInvPct').textContent=pctInv+'% del patrimonio';
+  document.getElementById('pillarInvBar').style.width=pctInv+'%';
+  // Retorno acumulado inversiones
   const invRetUSD=(c.accounts||[]).reduce((s,a)=>{const pct=parseFloat(String(a.sinceInception||'').replace('+','').replace('%',''));return s+(isNaN(pct)?0:Math.round(Number(a.value||0)*pct/100));},0);
   const invRetPct=t.tInv>0?(invRetUSD/t.tInv*100).toFixed(1):0;
   document.getElementById('yInvPct').textContent=(invRetPct>=0?'+':'')+invRetPct+'%';
   document.getElementById('yInvUSD').textContent='USD '+fmt(invRetUSD);
-  // Retorno desde inicio
-  if(c.inceptionValue>0&&t.total>0){
-    const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
-    const rusd=t.total-c.inceptionValue;
-    document.getElementById('yR').textContent=(r>=0?'+':'')+r+'%';
-    document.getElementById('yRusd').textContent=(rusd>=0?'':'- ')+'USD '+fmt(Math.abs(rusd));
-  } else {
-    document.getElementById('yR').textContent='—';
-    document.getElementById('yRusd').textContent='—';
-  }
+  if(invRetUSD!==0){
+    const pos=invRetUSD>=0;
+    document.getElementById('pillarInvRet').innerHTML=`<span class="${pos?'pos':'neg'}">${pos?'+':''}${invRetPct}% retorno acumulado</span>`;
+  } else if(c.invYtd&&c.invYtd!=='+0%'){
+    document.getElementById('pillarInvRet').innerHTML=`<span class="pos">${c.invYtd} rendimiento</span>`;
+  } else { document.getElementById('pillarInvRet').textContent=''; }
+  document.getElementById('kProp').textContent=fmt(t.tProp);
+  document.getElementById('kPropPct').textContent=pctProp+'% del patrimonio';
+  document.getElementById('pillarPropBar').style.width=pctProp+'%';
+  if(rentMreal>0&&t.tProp>0){
+    const yld=(rentMreal*12/t.tProp*100).toFixed(1);
+    document.getElementById('pillarPropRet').innerHTML=`<span class="pos">${yld}% yield · USD ${fmt(rentMreal)}/mes</span>`;
+  } else { document.getElementById('pillarPropRet').textContent=''; }
+  document.getElementById('kLiq').textContent=fmt(t.tLiq);
+  document.getElementById('kLiqPct').textContent=pctLiq+'% del patrimonio';
+  document.getElementById('pillarLiqBar').style.width=pctLiq+'%';
+  document.getElementById('pillarLiqRet').innerHTML='<span style="color:rgba(255,255,255,0.25)">Reserva disponible</span>';
+  // kGoalLbl/kGoalBar hidden compat
+  document.getElementById('kGoalLbl').textContent='';
 
   // Perf chart
   if(perfChart)perfChart.destroy();
@@ -667,21 +729,21 @@ function renderP(c){
     return Math.round(sv+(t.total-sv)*(months.length>1?i/(months.length-1):1)+noise);
   });
   od[od.length-1]=t.total;
-  perfChart=new Chart(pCtx,{type:'line',data:{labels:months,datasets:[{data:od,borderColor:'#c9a96e',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.22)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2940',borderColor:'rgba(255,255,255,.15)',borderWidth:1,titleColor:'rgba(255,255,255,0.7)',bodyColor:'#ffffff',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(255,255,255,.3)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(255,255,255,.3)',font:{size:8,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}});
+  perfChart=new Chart(pCtx,{type:'line',data:{labels:months,datasets:[{data:od,borderColor:'#c9a96e',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.22)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(255,255,255,.15)',borderWidth:1,titleColor:'rgba(255,255,255,0.7)',bodyColor:'#ffffff',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(255,255,255,.3)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(255,255,255,.3)',font:{size:8,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}});
 
   // Alloc donut
   const acc=c.accounts||[],props=c.properties||[],liqs=c.liquidity||[];
   const ad=[acc.filter(a=>a.type==='inversion').reduce((s,a)=>s+Number(a.value||0),0),acc.filter(a=>a.type==='banco').reduce((s,a)=>s+Number(a.value||0),0),t.tProp,t.tLiq,0];
   const ap=ad.map(v=>t.total>0?Math.round(v/t.total*100):0);
   if(donutChart)donutChart.destroy();
-  donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:AC,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2940',borderColor:'rgba(255,255,255,.15)',borderWidth:1,callbacks:{label:ctx=>`${AL[ctx.dataIndex]}: ${ctx.raw}%`}}}}});
+  donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:AC,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(255,255,255,.15)',borderWidth:1,callbacks:{label:ctx=>`${AL[ctx.dataIndex]}: ${ctx.raw}%`}}}}});
   document.getElementById('allocLegend').innerHTML=AL.map((l,i)=>`<div class="alloc-item"><div class="alloc-left"><div class="dot8" style="background:${AC[i]};"></div>${l}</div><div style="font-weight:600;">${ap[i]}%</div></div>`).join('');
 
   // Flujo alquileres (real)
   const rm=props.reduce((s,p)=>s+Number(p.rent||0),0);
   const mos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   if(incomeChart)incomeChart.destroy();
-  incomeChart=new Chart(document.getElementById('incomeChart').getContext('2d'),{type:'bar',data:{labels:mos,datasets:[{label:'Alquileres',data:mos.map(()=>rm),backgroundColor:'rgba(109,191,158,0.7)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'rgba(255,255,255,0.4)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1a2940',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(255,255,255,.3)',font:{size:8}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(255,255,255,.3)',font:{size:8},callback:v=>'USD '+fmt(v)}}}}});
+  incomeChart=new Chart(document.getElementById('incomeChart').getContext('2d'),{type:'bar',data:{labels:mos,datasets:[{label:'Alquileres',data:mos.map(()=>rm),backgroundColor:'rgba(109,191,158,0.7)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'rgba(255,255,255,0.4)',font:{size:9,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'#1a2940',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(255,255,255,.3)',font:{size:8}}},y:{grid:{color:'rgba(245,242,237,.04)'},ticks:{color:'rgba(255,255,255,.3)',font:{size:8},callback:v=>'USD '+fmt(v)}}}}});
   if(incomeDonut)incomeDonut.destroy();
   const pLabels=props.filter(p=>Number(p.rent)>0).map(p=>p.name||'Inmueble');
   const pData=props.filter(p=>Number(p.rent)>0).map(p=>Number(p.rent)*12);
@@ -862,17 +924,9 @@ async function saveClient(){
   try{
     const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
     if(useSb){
-      const t=calcT(c);
-      const meta={__meta:true,startDate:c.startDate||'',inceptionValue:c.inceptionValue||0,
-        nextMeeting:c.nextMeeting||'',managementFee:c.managementFee||0,
-        liquidity:c.liquidity||[],reports:c.reports||[]};
-      const{error}=await db.from('clients').upsert({
-        id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal||0,
-        total:t.total,inv:t.tInv,prop:t.tProp,cf:t.tLiq,
-        inv_ytd:c.invYtd||'+0%',prop_ytd:c.propYtd||'+0%',
-        investments:c.accounts||[],properties:c.properties||[],
-        notes:[...(c.notes||[]),meta],goals:c.goals||[]
-      });
+      const t2=calcT(c);
+      const meta={__meta:true,startDate:c.startDate||'',inceptionValue:c.inceptionValue||0,nextMeeting:c.nextMeeting||'',managementFee:c.managementFee||0,liquidity:c.liquidity||[],reports:c.reports||[]};
+      const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal||0,total:t2.total,inv:t2.tInv,prop:t2.tProp,cf:t2.tLiq,inv_ytd:c.invYtd||'+0%',prop_ytd:c.propYtd||'+0%',investments:c.accounts||[],properties:c.properties||[],notes:[...(c.notes||[]),meta],goals:c.goals||[]});
       if(error)throw error;
     }
     else localStorage.setItem('ofir_v8',JSON.stringify(clients));
