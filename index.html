@@ -542,6 +542,8 @@ footer{border-top:1px solid rgba(201,169,90,0.1);padding:18px 44px;display:flex;
               <div class="edit-row three">
                 <div class="edit-field"><label>Rendimiento YTD</label><input id="ef-ytd" placeholder="+8.4% YTD"/></div>
                 <div class="edit-field"><label>Meta AUM objetivo (USD)</label><input id="ef-goal" type="number"/></div>
+                <div class="edit-field"><label>Rendimiento inversiones (acum.)</label><input id="ef-invytd" placeholder="+18.5%"/></div>
+                <div class="edit-field"><label>Rendimiento inmuebles (acum.)</label><input id="ef-propytd" placeholder="+6.0%"/></div>
                 <div class="edit-field"><label>Próxima reunión</label><input id="ef-nextmeeting" type="date"/></div>
               </div>
               <div class="edit-row">
@@ -802,6 +804,7 @@ function showView(name,el){
 
 function renderP(c){
   if(!c)return;
+  try{
   const t=calcT(c);
 
   // ── HERO ──
@@ -842,14 +845,16 @@ function renderP(c){
   document.getElementById('kInv').textContent=fmt(t.tInv);
   document.getElementById('kInvPct').textContent=pcts.inv+'% del patrimonio';
   document.getElementById('pillarInvBar').style.width=pcts.inv+'%';
-  // inv return
+  // inv return — desde sinceInception de cuentas, o inv_ytd como fallback
   const invRetUSD=(c.accounts||[]).reduce((s,a)=>{const pct=parseFloat(String(a.sinceInception||'').replace('+','').replace('%',''));return s+(isNaN(pct)?0:Math.round(Number(a.value||0)*pct/100));},0);
   const invRetPct=t.tInv>0?(invRetUSD/t.tInv*100).toFixed(1):0;
   document.getElementById('yInvPct').textContent=(invRetPct>=0?'+':'')+invRetPct+'%';
   document.getElementById('yInvUSD').textContent='USD '+fmt(invRetUSD);
-  if(invRetUSD!==0||invRetPct!=0){
+  if(invRetUSD!==0){
     const pos=invRetUSD>=0;
     document.getElementById('pillarInvRet').innerHTML=`<span class="${pos?'pos':'neg'}">${pos?'+':''}${invRetPct}% · USD ${fmt(Math.abs(invRetUSD))}</span><span style="color:rgba(255,255,255,0.25);margin-left:4px;font-size:.6rem;">retorno acumulado</span>`;
+  } else if(c.invYtd&&c.invYtd!=='+0%'){
+    document.getElementById('pillarInvRet').innerHTML=`<span class="pos">${c.invYtd}</span><span style="color:rgba(255,255,255,0.25);margin-left:4px;font-size:.6rem;">rendimiento</span>`;
   }
 
   document.getElementById('kProp').textContent=fmt(t.tProp);
@@ -858,6 +863,8 @@ function renderP(c){
   if(rentMreal>0&&t.tProp>0){
     const yld=(rentMreal*12/t.tProp*100).toFixed(1);
     document.getElementById('pillarPropRet').innerHTML=`<span class="pos">${yld}% yield anual</span><span style="color:rgba(255,255,255,0.25);margin-left:4px;font-size:.6rem;">sobre valuación</span>`;
+  } else if(c.propYtd&&c.propYtd!=='+0%'){
+    document.getElementById('pillarPropRet').innerHTML=`<span class="pos">${c.propYtd}</span><span style="color:rgba(255,255,255,0.25);margin-left:4px;font-size:.6rem;">rendimiento</span>`;
   }
 
   document.getElementById('kLiq').textContent=fmt(t.tLiq);
@@ -874,10 +881,12 @@ function renderP(c){
   od[od.length-1]=t.total;
   perfChart=new Chart(pCtx,{type:'line',data:{labels:months,datasets:[{data:od,borderColor:'#c9a96e',borderWidth:2,pointRadius:0,tension:.4,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,190);g.addColorStop(0,'rgba(201,169,110,.18)');g.addColorStop(1,'rgba(201,169,110,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#f5f2ed',callbacks:{label:ctx=>' USD '+fmt(ctx.raw)}}},scales:{x:{grid:{color:'rgba(245,242,237,.03)'},ticks:{color:'rgba(245,242,237,.3)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(245,242,237,.03)'},ticks:{color:'rgba(245,242,237,.3)',font:{size:8,family:'Montserrat'},callback:v=>'USD '+(v/1000).toFixed(0)+'k'}}}}});
 
-  // ── DONUT ──
+  // ── DONUT — usa columnas numéricas como fallback si arrays vacíos ──
   const acc=c.accounts||[],props=c.properties||[],liqs=c.liquidity||[];
-  const ad=[acc.filter(a=>a.type==='inversion').reduce((s,a)=>s+Number(a.value||0),0),acc.filter(a=>a.type==='banco').reduce((s,a)=>s+Number(a.value||0),0),t.tProp,t.tLiq,0];
-  const ap=ad.map(v=>t.total>0?Math.round(v/t.total*100):0);
+  const dInv=acc.filter(a=>a.type==='inversion').reduce((s,a)=>s+Number(a.value||0),0)||Math.round(t.tInv*.85);
+  const dBnk=acc.filter(a=>a.type==='banco').reduce((s,a)=>s+Number(a.value||0),0)||Math.round(t.tInv*.15);
+  const ad=[dInv,dBnk,t.tProp,t.tLiq,0];
+  const ap=t.total>0?ad.map(v=>Math.round(v/t.total*100)):[20,5,40,35,0];
   if(donutChart)donutChart.destroy();
   donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:AC,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2a38',borderColor:'rgba(201,169,110,.3)',borderWidth:1,callbacks:{label:ctx=>`${AL[ctx.dataIndex]}: ${ctx.raw}%`}}}}});
   document.getElementById('allocLegend').innerHTML=AL.map((l,i)=>`<div class="alloc-item"><div class="alloc-left"><div class="dot8" style="background:${AC[i]};"></div>${l}</div><div style="font-weight:600;">${ap[i]}%</div></div>`).join('');
@@ -922,6 +931,7 @@ function renderP(c){
       feeEl.innerHTML=`<div style="margin-top:18px;padding:16px 20px;border:1px solid rgba(255,255,255,0.08);background:rgba(201,169,110,0.04);display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:4px;">Honorario OFIR — Anual</div><div style="font-size:.7rem;color:var(--white-dim);">Asesoramiento patrimonial integral</div></div><div style="font-family:var(--serif);font-size:1.4rem;font-weight:300;color:var(--white);">USD ${fmt(c.managementFee)}</div></div>`;
     }else{feeEl.innerHTML='';}
   }
+  }catch(err){console.error('renderP error:',err);}
 }
 
 function renderReps(c){
@@ -964,6 +974,8 @@ function selectClient(idx){
   document.getElementById('ef-pass').value=c.pass;
   document.getElementById('ef-total').value='USD '+fmt(t.total);
   document.getElementById('ef-ytd').value=c.ytd||'';
+  document.getElementById('ef-invytd').value=c.invYtd||'';
+  document.getElementById('ef-propytd').value=c.propYtd||'';
   document.getElementById('ef-goal').value=c.goal||0;
   document.getElementById('ef-startdate').value=c.startDate||'';
   document.getElementById('ef-inception').value=c.inceptionValue||'';
@@ -1035,6 +1047,8 @@ async function saveClient(){
   c.name=document.getElementById('ef-name').value;
   c.pass=document.getElementById('ef-pass').value;
   c.ytd=document.getElementById('ef-ytd').value;
+  c.invYtd=document.getElementById('ef-invytd').value||'+0%';
+  c.propYtd=document.getElementById('ef-propytd').value||'+0%';
   c.goal=Number(document.getElementById('ef-goal').value)||0;
   c.startDate=document.getElementById('ef-startdate').value;
   c.inceptionValue=Number(document.getElementById('ef-inception').value)||0;
