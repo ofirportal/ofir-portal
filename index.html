@@ -625,20 +625,113 @@ const AC=['#c9a96e','#7ea8c9','#6dbf9e','#a08080','#9e9e7e'];
 const AL=['Cuentas de inversión','Banco comercial','Inmuebles','Liquidez','Otros'];
 const fmt=n=>Number(n||0).toLocaleString('es-AR');
 
+// ─── DATA LAYER — alineado 100% al schema real de Supabase ───────────────────
+// Schema: id, created_at, name, pass, total(numeric), ytd, bench,
+//         inv(numeric), inv_ytd, cf(numeric), prop(numeric), prop_ytd,
+//         goal(numeric), alloc(jsonb), investments(jsonb), properties(jsonb),
+//         notes(jsonb), goals(jsonb)
+//
+// Campos que no existen como columna se guardan en notes como objeto __meta:
+//   { __meta: true, startDate, inceptionValue, nextMeeting, managementFee,
+//     liquidity: [...], reports: [...] }
+
+function getMeta(notesArr){
+  const m=(notesArr||[]).find(n=>n.__meta);
+  return m||{__meta:true,startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[]};
+}
+function getCleanNotes(notesArr){
+  return(notesArr||[]).filter(n=>!n.__meta);
+}
+
+function mapR(r){
+  const notesRaw=r.notes||[];
+  const meta=getMeta(notesRaw);
+  const notes=getCleanNotes(notesRaw);
+  // investments = [{name,type,value,sinceInception,yieldEst}]
+  // properties  = [{name,addr,icon,val,rent,yieldCalc}]
+  return{
+    id:r.id,
+    name:r.name,
+    pass:r.pass,
+    ytd:r.ytd||'+0% YTD',
+    invYtd:r.inv_ytd||'+0%',
+    propYtd:r.prop_ytd||'+0%',
+    goal:Number(r.goal||0),
+    // totales guardados en columnas numéricas
+    _inv:Number(r.inv||0),
+    _prop:Number(r.prop||0),
+    _cf:Number(r.cf||0),
+    _total:Number(r.total||0),
+    alloc:r.alloc||[28,21,41,7,3],
+    // arrays JSONB
+    accounts:r.investments||[],
+    properties:r.properties||[],
+    notes:notes,
+    goals:r.goals||[],
+    // desde __meta en notes
+    startDate:meta.startDate||'',
+    inceptionValue:Number(meta.inceptionValue||0),
+    nextMeeting:meta.nextMeeting||'',
+    managementFee:Number(meta.managementFee||0),
+    liquidity:meta.liquidity||[],
+    reports:meta.reports||[],
+  };
+}
+
 function calcT(c){
   const acc=c.accounts||[], props=c.properties||[], liqs=c.liquidity||[];
-  const tInv=acc.reduce((s,a)=>s+Number(a.value||0),0);
-  const tProp=props.reduce((s,p)=>s+Number(p.val||0),0);
-  const tLiq=liqs.reduce((s,l)=>s+Number(l.amount||0),0);
-  const total=tInv+tProp+tLiq;
+  const tInv=acc.reduce((s,a)=>s+Number(a.value||0),0)||c._inv||0;
+  const tProp=props.reduce((s,p)=>s+Number(p.val||0),0)||c._prop||0;
+  const tLiq=liqs.reduce((s,l)=>s+Number(l.amount||0),0)||c._cf||0;
+  const total=tInv+tProp+tLiq||c._total||0;
   const rentM=props.reduce((s,p)=>s+Number(p.rent||0),0);
-  const invM=acc.reduce((s,a)=>s+(Number(a.value||0)*Number(a.yieldEst||5)/100/12),0);
-  const mIncome=rentM+invM;
-  const aIncome=mIncome*12;
-  const wYield=total>0?(aIncome/total*100):0;
   props.forEach(p=>{if(Number(p.val)>0&&Number(p.rent)>0)p.yieldCalc=(Number(p.rent)*12/Number(p.val)*100).toFixed(2);});
-  return{tInv,tProp,tLiq,total,mIncome,aIncome,wYield};
+  return{tInv,tProp,tLiq,total,rentM};
 }
+
+function buildUpsert(c){
+  const t=calcT(c);
+  // Reconstruimos notes con __meta al final
+  const meta={__meta:true,startDate:c.startDate||'',inceptionValue:c.inceptionValue||0,
+    nextMeeting:c.nextMeeting||'',managementFee:c.managementFee||0,
+    liquidity:c.liquidity||[],reports:c.reports||[]};
+  const notesWithMeta=[...c.notes, meta];
+  return{
+    id:c.id,
+    name:c.name,
+    pass:c.pass,
+    ytd:c.ytd,
+    inv_ytd:c.invYtd||'+0%',
+    prop_ytd:c.propYtd||'+0%',
+    goal:c.goal||0,
+    total:t.total,
+    inv:t.tInv,
+    prop:t.tProp,
+    cf:t.tLiq,
+    investments:c.accounts||[],
+    properties:c.properties||[],
+    notes:notesWithMeta,
+    goals:c.goals||[],
+  };
+}
+
+function getSample(){return[
+  {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',invYtd:'+18.5%',propYtd:'+6%',
+   goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,managementFee:15000,
+   _inv:2340000,_prop:1100000,_cf:280000,_total:3720000,
+   accounts:[{name:'BNY Pershing',type:'inversion',value:2000000,sinceInception:'+18.5%',yieldEst:6},{name:'Banco Galicia',type:'banco',value:340000,sinceInception:'+3.2%',yieldEst:2}],
+   liquidity:[{desc:'Caja de seguridad',amount:200000},{desc:'Cash disponible',amount:80000}],
+   properties:[{name:'Oficina Corporativa',addr:'Av. del Libertador 1842, CABA',icon:'🏢',val:780000,rent:3800,yieldCalc:'5.85'},{name:'Departamento Palermo',addr:'Palermo Soho, CABA',icon:'🏠',val:320000,rent:1600,yieldCalc:'6.00'}],
+   notes:[{date:'Mar 2026',text:'Revisar rebalanceo. Considerar aumentar renta fija internacional ante expectativa de baja de tasas.'}],
+   goals:[{label:'AUM objetivo familiar',target:'USD 6M',pct:80}],reports:[]},
+  {id:2,name:'Jacobo Safdie',pass:'Coki1234',ytd:'+0% YTD',invYtd:'+0%',propYtd:'+12%',
+   goal:5000000,startDate:'2024-01-01',inceptionValue:1500000,managementFee:15000,
+   _inv:1637000,_prop:300000,_cf:500000,_total:2437000,
+   accounts:[{name:'BNY Pershing',type:'inversion',value:548000,sinceInception:'',yieldEst:6},{name:'Balanz',type:'inversion',value:89000,sinceInception:'',yieldEst:5},{name:'Allaria',type:'inversion',value:500000,sinceInception:'',yieldEst:5},{name:'Banco Comafi',type:'banco',value:500000,sinceInception:'',yieldEst:2}],
+   liquidity:[{desc:'Caja de seguridad',amount:500000}],
+   properties:[{name:'Libertador',addr:'',icon:'🏠',val:300000,rent:3000,yieldCalc:'12.00'}],
+   notes:[],goals:[],reports:[]}
+];}
 
 async function init(){
   const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
@@ -657,22 +750,6 @@ async function init(){
   if(cp!==null)window._ci=parseInt(cp);
   showLogin();
 }
-
-function mapR(r){return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:r.goal||0,startDate:r.start_date||'',inceptionValue:r.inception_value||0,nextMeeting:r.next_meeting||'',managementFee:r.management_fee||0,accounts:r.accounts||[],liquidity:r.liquidity||[],properties:r.properties||[],notes:r.notes||[],goals:r.goals||[],reports:r.reports||[]};}
-
-function getSample(){return[
-  {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,managementFee:15000,
-   accounts:[{name:'BNY Pershing',type:'inversion',value:2000000,sinceInception:'+18.5%',yieldEst:6},{name:'Banco Galicia',type:'banco',value:340000,sinceInception:'+3.2%',yieldEst:2}],
-   liquidity:[{desc:'Caja de seguridad',amount:200000},{desc:'Cash disponible',amount:80000}],
-   properties:[{name:'Oficina Corporativa',addr:'Av. del Libertador 1842, CABA',icon:'🏢',val:780000,rent:3800,yieldCalc:'5.85'},{name:'Departamento Palermo',addr:'Palermo Soho, CABA',icon:'🏠',val:320000,rent:1600,yieldCalc:'6.00'}],
-   notes:[{date:'Mar 2026',text:'Revisar rebalanceo. Considerar aumentar renta fija internacional ante expectativa de baja de tasas.'}],
-   goals:[{label:'AUM objetivo familiar',target:'USD 6M',pct:80}],reports:[]},
-  {id:2,name:'Jacobo Safdie',pass:'Coki1234',ytd:'+0% YTD',goal:5000000,startDate:'2024-01-01',inceptionValue:1500000,managementFee:15000,
-   accounts:[{name:'BNY Pershing',type:'inversion',value:548000,sinceInception:'',yieldEst:6},{name:'Balanz',type:'inversion',value:89000,sinceInception:'',yieldEst:5},{name:'Allaria',type:'inversion',value:500000,sinceInception:'',yieldEst:5},{name:'Banco Comafi',type:'banco',value:500000,sinceInception:'',yieldEst:2}],
-   liquidity:[{desc:'Caja de seguridad',amount:500000}],
-   properties:[{name:'Libertador',addr:'',icon:'🏠',val:300000,rent:3000,yieldCalc:'12.00'}],
-   notes:[],goals:[],reports:[]}
-];}
 
 function showLogin(){document.getElementById('loginScreen').style.display='flex';}
 
@@ -855,14 +932,8 @@ function renderReps(c){
 
 // ADMIN
 function renderAdminSummary(){
-  const totalAUM=clients.reduce((s,c)=>{
-    const t=calcT(c);
-    return s+t.tInv;
-  },0);
-  const totalPat=clients.reduce((s,c)=>{
-    const t=calcT(c);
-    return s+t.total;
-  },0);
+  const totalAUM=clients.reduce((s,c)=>s+calcT(c).tInv,0);
+  const totalPat=clients.reduce((s,c)=>s+calcT(c).total,0);
   const totalFee=clients.reduce((s,c)=>s+Number(c.managementFee||0),0);
   const el=document.getElementById('adminSummary');
   if(!el)return;
@@ -971,8 +1042,10 @@ async function saveClient(){
   c.managementFee=Number(document.getElementById('ef-fee').value)||0;
   try{
     const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
-    if(useSb){const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal,start_date:c.startDate,inception_value:c.inceptionValue,next_meeting:c.nextMeeting,management_fee:c.managementFee||0,accounts:c.accounts,liquidity:c.liquidity,properties:c.properties,notes:c.notes,goals:c.goals,reports:c.reports});if(error)throw error;}
-    else localStorage.setItem('ofir_v8',JSON.stringify(clients));
+    if(useSb){
+      const{error}=await db.from('clients').upsert(buildUpsert(c));
+      if(error)throw error;
+    } else localStorage.setItem('ofir_v8',JSON.stringify(clients));
     msg.textContent='✓ Guardado';msg.className='save-msg show';
     document.getElementById('editTitle').textContent=c.name;
     document.getElementById('editPass').textContent='Contraseña: '+c.pass;
@@ -984,9 +1057,15 @@ async function saveClient(){
 async function addClient(){
   const name=document.getElementById('nc-name').value.trim(),pass=document.getElementById('nc-pass').value.trim();
   if(!name||!pass)return;
-  const nc={name,pass,ytd:'+0% YTD',goal:0,startDate:'',inceptionValue:0,accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]};
+  const nc={name,pass,ytd:'+0% YTD',invYtd:'+0%',propYtd:'+0%',goal:0,
+    startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,
+    _inv:0,_prop:0,_cf:0,_total:0,
+    accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]};
   const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
-  if(useSb){const{data,error}=await db.from('clients').insert([{name:nc.name,pass:nc.pass,ytd:nc.ytd,goal:0,accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]}]).select();if(!error&&data)nc.id=data[0].id;}
+  if(useSb){
+    const{data,error}=await db.from('clients').insert([buildUpsert(nc)]).select();
+    if(!error&&data)nc.id=data[0].id;
+  }
   clients.push(nc);
   if(!useSb)localStorage.setItem('ofir_v8',JSON.stringify(clients));
   closeModal();renderAdminList();selectClient(clients.length-1);
