@@ -431,9 +431,12 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
             <div class="card-hd">Evolución patrimonial — desde inicio</div>
             <div class="chart-h"><canvas id="perfChart"></canvas></div>
           </div>
-          <div class="chart-card">
+          <div class="chart-card" style="display:flex;flex-direction:column;">
             <div class="card-hd">Distribución de activos</div>
-            <div class="chart-h" style="height:150px"><canvas id="donutChart"></canvas></div>
+            <div style="display:flex;align-items:center;gap:20px;flex:1;">
+              <div style="width:120px;height:120px;flex-shrink:0;position:relative;"><canvas id="donutChart"></canvas></div>
+              <div id="donutLegend" style="flex:1;display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -485,8 +488,8 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
 
       <!-- RECOMMENDATIONS -->
       <div class="recs-section" id="recsSection" style="display:none">
-        <div class="section-title" style="color:var(--goldl)">Recomendaciones &amp; observaciones</div>
-        <div class="recs-grid" id="recsList"></div>
+        <div class="section-title" style="color:var(--goldl)">Recomendaciones &amp; observaciones de OFIR</div>
+        <div id="recsList"></div>
       </div>
 
     </div><!-- /dashboard -->
@@ -596,6 +599,11 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
                   <div class="col-h" style="display:grid;grid-template-columns:2fr 1fr 1fr 26px;gap:5px"><span>Objetivo</span><span>Meta</span><span>% completado</span><span></span></div>
                   <div id="goalRows" class="ils"></div>
                   <button class="btn-ar" onclick="addGoal()">＋ Agregar objetivo</button>
+                  <div class="s-lbl" style="margin-top:20px">Recomendaciones para el cliente</div>
+                  <div class="ibox">Estas recomendaciones son visibles para el cliente en su dashboard.</div>
+                  <div class="col-h" style="display:grid;grid-template-columns:0.8fr 2fr 0.8fr 28px;gap:5px"><span>Tipo</span><span>Texto</span><span>Detalle</span><span></span></div>
+                  <div id="recsRows" class="ils"></div>
+                  <button class="btn-ar" onclick="addRec()">＋ Agregar recomendación</button>
                 </div>
                 <div id="edit-reportes" class="es">
                   <div class="s-lbl">Reportes trimestrales</div>
@@ -664,7 +672,7 @@ function sumArr(arr,f){return(arr||[]).reduce((s,i)=>s+Number(i[f]||0),0);}
 function mapR(r){
   if(!r)return null;
   const nr=r.notes||[];
-  const m=nr.find(n=>n.__meta)||{startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[],productivos:[]};
+  const m=nr.find(n=>n.__meta)||{startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[],productivos:[],recs:[]};
   return{
     id:r.id,name:r.name,pass:r.pass||'',
     ytd:r.ytd||'+0% YTD',goal:Number(r.goal||0),
@@ -674,7 +682,7 @@ function mapR(r){
     notes:nr.filter(n=>!n.__meta),goals:r.goals||[],
     startDate:m.startDate||'',inceptionValue:Number(m.inceptionValue||0),
     nextMeeting:m.nextMeeting||'',managementFee:Number(m.managementFee||0),
-    liquidity:m.liquidity||[],reports:m.reports||[],productivos:m.productivos||[]
+    liquidity:m.liquidity||[],reports:m.reports||[],productivos:m.productivos||[],recs:m.recs||[]
   };
 }
 
@@ -859,14 +867,19 @@ function renderDash(c){
   donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{
     type:'doughnut',
     data:{datasets:[{data:ap,backgroundColor:acols,borderWidth:0,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',
+    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',
       plugins:{
-        legend:{display:true,position:'right',labels:{color:'rgba(244,241,236,.4)',font:{size:9,family:'Montserrat'},boxWidth:8,padding:8}},
+        legend:{display:false},
         tooltip:{backgroundColor:'rgba(15,30,46,.95)',borderColor:'rgba(184,153,90,.3)',borderWidth:1,
           callbacks:{label:function(ctx){return al2[ctx.dataIndex]+': '+ctx.raw+'%';}}}
       }
     }
   });
+  var dl=document.getElementById('donutLegend');
+  if(dl){
+    var donutItems=al2.map(function(l,i){return {l:l,c:acols[i],p:ap[i]};}).filter(function(x){return x.p>0;});
+    dl.innerHTML=donutItems.map(function(x){return '<div style="display:flex;align-items:center;gap:7px;font-size:.6rem;color:rgba(244,241,236,.5)"><div style="width:7px;height:7px;border-radius:50%;background:'+x.c+';flex-shrink:0"></div><span style="flex:1">'+x.l+'</span><span style="color:#f4f1ec;font-weight:500">'+x.p+'%</span></div>';}).join('');
+  }
   var acc=c.accounts||[];
   document.getElementById('invTable').innerHTML=acc.map(function(a){
     var val=Number(a.value||0); var rh='&mdash;';
@@ -924,28 +937,15 @@ function renderDash(c){
 
 
 function renderRecs(c,t){
-  var recs=[];
-  var lP=t.total>0?t.tLiq/t.total:0;
-  if(lP>0.15) recs.push({tp:'info',ico:'&#x25CE;',tl:'Alta liquidez disponible',bd:'El '+Math.round(lP*100)+'% del patrimonio esta en liquidez. Considera reasignar parte hacia activos que generen retorno.'});
-  if(lP<0.03&&t.total>500000) recs.push({tp:'warn',ico:'&#x25CE;',tl:'Reserva de liquidez baja',bd:'La liquidez es menor al 3%. Mantene al menos 3-6 meses de flujo como reserva.'});
-  var iP=t.total>0?t.tInv/t.total:0;
-  if(iP>0.75) recs.push({tp:'info',ico:'&#x25C8;',tl:'Alta concentracion en inversiones',bd:'El '+Math.round(iP*100)+'% esta en cuentas financieras. Mayor diversificacion reduce volatilidad.'});
-  var props=c.properties||[];
-  var lowY=props.filter(function(p){return Number(p.val)>0&&Number(p.rent)>0&&(Number(p.rent)*12/Number(p.val)*100)<3;});
-  if(lowY.length>0) recs.push({tp:'warn',ico:'&#x2B21;',tl:'Inmuebles con yield bajo',bd:lowY.map(function(p){return p.name;}).join(', ')+' generan menos del 3% anual. Revisa si el alquiler esta actualizado a mercado.'});
-  if(t.tProp===0&&t.total>1000000) recs.push({tp:'opp',ico:'&#x2B21;',tl:'Sin exposicion a Real Estate',bd:'Incorporar inmuebles puede aportar estabilidad y flujo de caja recurrente al patrimonio.'});
-  if(!c.nextMeeting) recs.push({tp:'info',ico:'&#x25C6;',tl:'Sin reunion programada',bd:'No hay reunion de seguimiento agendada. Recomendamos una revision trimestral del patrimonio.'});
-  var goals=c.goals||[];
-  var nearG=goals.filter(function(g){return (g.pct||0)>=80&&(g.pct||0)<100;});
-  if(nearG.length>0) recs.push({tp:'opp',ico:'&#x25C8;',tl:'Objetivo cerca de cumplirse',bd:nearG[0].label+' esta al '+nearG[0].pct+'%. Momento ideal para planificar el proximo objetivo.'});
+  var recs=c.recs||[];
   var el=document.getElementById('recsSection'); if(!el)return;
   if(!recs.length){el.style.display='none';return;}
   el.style.display='block';
-  var tm={info:{bc:'rgba(74,125,181,.28)',bg:'rgba(74,125,181,.08)',tc:'#7ea8c9'},warn:{bc:'rgba(184,90,74,.28)',bg:'rgba(184,90,74,.07)',tc:'#c26a5a'},opp:{bc:'rgba(79,168,128,.28)',bg:'rgba(79,168,128,.07)',tc:'#4fa880'}};
-  document.getElementById('recsList').innerHTML=recs.map(function(r){
-    var s=tm[r.tp]||tm.info;
-    return '<div style="padding:16px 18px;border:1px solid '+s.bc+';background:'+s.bg+';display:flex;gap:14px;align-items:flex-start"><span style="font-size:.75rem;color:'+s.tc+';flex-shrink:0;margin-top:2px">'+r.ico+'</span><div><div style="font-size:.7rem;font-weight:500;color:#f4f1ec;margin-bottom:4px">'+r.tl+'</div><div style="font-size:.64rem;color:rgba(244,241,236,.45);line-height:1.6">'+r.bd+'</div></div></div>';
-  }).join('');
+  var typeMap={info:{bc:'rgba(74,125,181,.28)',bg:'rgba(74,125,181,.08)',tc:'#7ea8c9'},warn:{bc:'rgba(184,90,74,.28)',bg:'rgba(184,90,74,.07)',tc:'#c26a5a'},opp:{bc:'rgba(79,168,128,.28)',bg:'rgba(79,168,128,.07)',tc:'#4fa880'},gold:{bc:'rgba(184,153,90,.28)',bg:'rgba(184,153,90,.07)',tc:'#cdb47a'}};
+  document.getElementById('recsList').innerHTML='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">'+recs.map(function(r){
+    var s=typeMap[r.tipo||'info']||typeMap.info;
+    return '<div style="padding:16px 18px;border:1px solid '+s.bc+';background:'+s.bg+';display:flex;gap:14px;align-items:flex-start"><span style="font-size:.7rem;color:'+s.tc+';flex-shrink:0;margin-top:2px">&#x25C8;</span><div><div style="font-size:.7rem;font-weight:500;color:#f4f1ec;margin-bottom:4px">'+r.titulo+'</div><div style="font-size:.64rem;color:rgba(244,241,236,.45);line-height:1.6">'+r.detalle+'</div></div></div>';
+  }).join('')+'</div>';
 }
 function renderReports(c){
   if(!c)return;
@@ -1176,7 +1176,7 @@ async function saveClient(){
   const newPw=document.getElementById('ef-pass').value.trim();
   const meta={__meta:true,startDate:c.startDate||'',inceptionValue:c.inceptionValue||0,
     nextMeeting:c.nextMeeting||'',managementFee:c.managementFee||0,
-    liquidity:c.liquidity||[],reports:c.reports||[],productivos:c.productivos||[]};
+    liquidity:c.liquidity||[],reports:c.reports||[],productivos:c.productivos||[],recs:c.recs||[]};
   const notesWM=[...(c.notes||[]),meta];
   try{
     const{error}=await db.rpc('save_client_admin',{
@@ -1203,7 +1203,7 @@ async function addClient(){
   try{
     const{data:newId,error}=await db.rpc('add_client_admin',{p_admin_pass:ADM_PW,p_name:name,p_pass:pass});
     if(error)throw error;
-    const nc={id:newId,name,pass,ytd:'+0% YTD',goal:0,_total:0,_inv:0,_prop:0,_cf:0,invYtd:'+0%',propYtd:'+0%',accounts:[],properties:[],notes:[],goals:[],startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[],productivos:[]};
+    const nc={id:newId,name,pass,ytd:'+0% YTD',goal:0,_total:0,_inv:0,_prop:0,_cf:0,invYtd:'+0%',propYtd:'+0%',accounts:[],properties:[],notes:[],goals:[],startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[],productivos:[],recs:[]};
     clients.push(nc);renderClList();renderAdmMet();selClient(clients.length-1);
     closeModal();document.getElementById('nc-name').value='';document.getElementById('nc-pass').value='';
   }catch(e){alert('Error: '+e.message);}
@@ -1227,6 +1227,28 @@ async function deleteClient(i){
       document.getElementById('shCard').style.display='none';
     }
   }catch(e){ alert('Error: '+e.message); }
+}
+
+function rRecs(arr){
+  if(!arr)arr=[];
+  document.getElementById('recsRows').innerHTML=arr.map(function(r,i){
+    return '<div class="ir" style="display:grid;grid-template-columns:0.8fr 2fr 0.8fr 28px;gap:5px">'
+      +'<select class="ii" onchange="clients[selIdx].recs['+i+'].tipo=this.value">'
+      +'<option value="info"'+(r.tipo==='info'?' selected':'')+'>Info</option>'
+      +'<option value="opp"'+(r.tipo==='opp'?' selected':'')+'>Oportunidad</option>'
+      +'<option value="warn"'+(r.tipo==='warn'?' selected':'')+'>Alerta</option>'
+      +'<option value="gold"'+(r.tipo==='gold'?' selected':'')+'>Accion</option>'
+      +'</select>'
+      +'<input class="ii" value="'+(r.titulo||'')+'" placeholder="Titulo de la recomendacion" oninput="clients[selIdx].recs['+i+'].titulo=this.value"/>'
+      +'<input class="ii" value="'+(r.detalle||'')+'" placeholder="Descripcion breve" oninput="clients[selIdx].recs['+i+'].detalle=this.value"/>'
+      +'<button class="bd" onclick="clients[selIdx].recs.splice('+i+',1);rRecs(clients[selIdx].recs)">&#x2715;</button>'
+      +'</div>';
+  }).join('');
+}
+function addRec(){
+  if(!clients[selIdx].recs)clients[selIdx].recs=[];
+  clients[selIdx].recs.push({tipo:'info',titulo:'',detalle:''});
+  rRecs(clients[selIdx].recs);
 }
 function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
