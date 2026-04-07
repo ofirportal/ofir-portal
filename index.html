@@ -557,7 +557,21 @@ let perfChart, donutChart, incomeChart, incomeDonut;
 const _fmtIntl = new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}); const fmt = n => { if(n==null||isNaN(Number(n)))return '\u2014'; return _fmtIntl.format(Number(n)); };
 
 // ── Utility ────────────────────────────────────────────────────────────────
-function calcT(arr,field){ if(!arr)return{total:0,tInv:0,tProp:0,tCF:0}; if(Array.isArray(arr))return arr.reduce((s,i)=>s+Number(i[field]||0),0); const c=arr; return{total:c._total||0,tInv:c._inv||0,tProp:c._prop||0,tCF:c._cf||0}; }
+function calcT(arr,field){
+  // Called with (array, field) from saveClient — returns a number
+  if(Array.isArray(arr)) return arr.reduce((s,i)=>s+Number(i[field]||0),0);
+  // Called with (clientObject) from renderP — returns totals object
+  if(!arr) return{total:0,tInv:0,tProp:0,tLiq:0,rentM:0};
+  const c=arr;
+  const acc=c.accounts||[], props=c.properties||[], liqs=c.liquidity||[];
+  const tInv=acc.reduce((s,a)=>s+Number(a.value||0),0)||Number(c._inv||0);
+  const tProp=props.reduce((s,p)=>s+Number(p.val||0),0)||Number(c._prop||0);
+  const tLiq=liqs.reduce((s,l)=>s+Number(l.amount||0),0)||Number(c._cf||0);
+  const total=tInv+tProp+tLiq||Number(c._total||0);
+  const rentM=props.reduce((s,p)=>s+Number(p.rent||0),0);
+  props.forEach(p=>{if(Number(p.val)>0&&Number(p.rent)>0)p.yieldCalc=(Number(p.rent)*12/Number(p.val)*100).toFixed(2);});
+  return{tInv,tProp,tLiq,total,rentM};
+}
 
 function mapR(r){
   if(!r) return null;
