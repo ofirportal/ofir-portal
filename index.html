@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OFIR — Multi Family Office</title>
+<title>OFIR - Multi Family Office</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -635,7 +635,6 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
 </div>
 
 <script>
-
 const SB_URL='https://jpegcujzyzqfjvlumzpm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWdjdWp6eXpxZmp2bHVtenBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzgzNzEsImV4cCI6MjA5MDIxNDM3MX0.A6cx3covHatuMa6PgkLVquDyrZAjzRCk3Knt0nKq2tQ';
 const ADM_PW='ofir2025';
@@ -767,113 +766,187 @@ const AL=['Cuentas inv.','Cuentas banco','Real Estate','Liquidez','Act. Producti
 
 function renderDash(c){
   if(!c)return;
-  const t=calcT(c);
+  var t=calcT(c);
   document.getElementById('heroDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('heroName').textContent=c.name||'';
+  var hn=document.getElementById('heroName'); if(hn)hn.textContent=c.name||'';
   document.getElementById('kTotal').textContent=fmt(t.total);
-  const chips=[];
-  chips.push({cls:'green',txt:c.ytd||'+0% YTD'});
-  if(c.startDate)chips.push({cls:'dim',txt:'Desde '+new Date(c.startDate+'T00:00:00').toLocaleDateString('es-AR',{month:'long',year:'numeric'})});
-  document.getElementById('heroChips').innerHTML=chips.map(ch=>`<span class="chip ${ch.cls}">${ch.txt}</span>`).join('');
-  const heroRight=document.getElementById('heroRight');
-  let hrHTML='';
-  if(c.inceptionValue>0&&t.total>0){const ru=t.total-c.inceptionValue,rp=((ru/c.inceptionValue)*100).toFixed(1);hrHTML+=`<div class="hero-kpi"><div class="hero-kpi-l">Generado desde el inicio</div><div class="hero-kpi-v">${ru>=0?'+':'-'}${Math.abs(rp)}%</div><div class="hero-kpi-s">${ru>=0?'':'-'}USD ${fmt(Math.abs(ru))}</div></div>`;}
-  const totalFlow=(t.rentM||0)+(t.prodM||0);
-  if(totalFlow>0)hrHTML+=`<div class="hero-kpi"><div class="hero-kpi-l">Flujo mensual total</div><div class="hero-kpi-v">USD ${fmt(totalFlow)}</div><div class="hero-kpi-s">USD ${fmt(totalFlow*12)} anuales</div></div>`;
-  heroRight.innerHTML=hrHTML;
-  const segs=[{v:t.tInv,c:'#b8995a',l:'Inversiones'},{v:t.tProp,c:'#5aab8a',l:'Real Estate'},{v:t.tLiq,c:'#4a7db5',l:'Liquidez'},{v:t.tProd,c:'#c9a96e',l:'Act. Productivos'}].filter(s=>s.v>0);
-  document.getElementById('allocBar').innerHTML=segs.map(s=>`<div class="alloc-seg" style="width:${t.total>0?(s.v/t.total*100).toFixed(1):0}%;background:${s.c}"></div>`).join('');
-  document.getElementById('allocLabels').innerHTML=segs.map(s=>`<div class="alloc-lbl"><div class="alloc-dot" style="background:${s.c}"></div><span>${s.l}</span>&nbsp;<span class="alloc-val">USD ${fmt(s.v)}</span><span style="color:var(--w4);margin-left:4px">${t.total>0?Math.round(s.v/t.total*100)+'%':''}</span></div>`).join('');
-  const iRU=(c.accounts||[]).reduce((s,a)=>{const p=parseFloat(String(a.sinceInception||'').replace(/[+%]/g,''));return s+(isNaN(p)?0:Math.round(Number(a.value||0)*p/100));},0);
-  const iRP=t.tInv>0?(iRU/t.tInv*100).toFixed(1):null;
-  const propYield=t.tProp>0&&t.rentM>0?(t.rentM*12/t.tProp*100).toFixed(2):null;
-  const liqPct=t.total>0?Math.round(t.tLiq/t.total*100):0;
-  const metrics=[
-    {ico:'◈',lbl:'Cuentas de Inversión',val:t.tInv,pp:pct(t.tInv,t.total),sub:iRP?`<span class="pos">+${iRP}% retorno acumulado</span>`:'',cls:'inv'},
-    {ico:'⬡',lbl:'Real Estate',val:t.tProp,pp:pct(t.tProp,t.total),sub:propYield?`<span class="pos">${propYield}% yield · USD ${fmt(t.rentM)}/mes`:'',cls:'re'},
-    {ico:'◎',lbl:'Liquidez & Cash',val:t.tLiq,pp:liqPct,sub:`<span class="gold">${liqPct}% del patrimonio</span>`,cls:'liq'},
-    ...(t.tProd>0?[{ico:'◆',lbl:'Activos Productivos',val:t.tProd,pp:pct(t.tProd,t.total),sub:t.prodM>0?`<span class="pos">${(t.prodM*12/t.tProd*100).toFixed(2)}% yield</span>`:'',cls:'prod'}]:[]),
-  ];
-  const fc={inv:'rgba(184,153,90,.5)',re:'rgba(90,171,138,.5)',liq:'rgba(74,125,181,.5)',prod:'rgba(201,169,110,.5)'};
-  document.getElementById('metricsGrid').innerHTML=metrics.map(m=>`<div class="metric"><span class="metric-ico">${m.ico}</span><div class="metric-lbl">${m.lbl}</div><div class="metric-val"><span class="metric-cur">USD</span>${fmt(m.val)}</div><div class="metric-sub">${m.sub||'&nbsp;'}</div><div class="metric-bar"><div class="metric-fill" style="width:${m.pp}%;background:${fc[m.cls]}"></div></div></div>`).join('');
+  var hc=document.getElementById('heroChips');
+  if(hc){
+    var chips='<span class="chip green">'+(c.ytd||'+0% YTD')+'</span>';
+    if(c.startDate)chips+=' <span class="chip dim">Desde '+new Date(c.startDate+'T00:00:00').toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'</span>';
+    hc.innerHTML=chips;
+  }
+  var hr=document.getElementById('heroRight');
+  if(hr){
+    var h='';
+    if(c.inceptionValue>0&&t.total>0){
+      var ru=t.total-c.inceptionValue, rp=((ru/c.inceptionValue)*100).toFixed(1);
+      h+='<div class="hero-kpi"><div class="hero-kpi-l">Generado desde el inicio</div><div class="hero-kpi-v">'+(ru>=0?'+':'')+rp+'%</div><div class="hero-kpi-s">'+(ru>=0?'':'-')+'USD '+fmt(Math.abs(ru))+'</div></div>';
+    }
+    var tf=(t.rentM||0)+(t.prodM||0);
+    if(tf>0) h+='<div class="hero-kpi"><div class="hero-kpi-l">Flujo mensual total</div><div class="hero-kpi-v">USD '+fmt(tf)+'</div><div class="hero-kpi-s">USD '+fmt(tf*12)+' anuales</div></div>';
+    hr.innerHTML=h;
+  }
+  var ab=document.getElementById('allocBar'), alb=document.getElementById('allocLabels');
+  if(ab&&alb){
+    var segs=[{v:t.tInv,c:'#b8995a',l:'Inversiones'},{v:t.tProp,c:'#5aab8a',l:'Real Estate'},{v:t.tLiq,c:'#4a7db5',l:'Liquidez'},{v:t.tProd,c:'#c9a96e',l:'Act. Productivos'}].filter(function(s){return s.v>0;});
+    ab.innerHTML=segs.map(function(s){return '<div class="alloc-seg" style="width:'+(t.total>0?(s.v/t.total*100).toFixed(1):0)+'%;background:'+s.c+'"></div>';}).join('');
+    alb.innerHTML=segs.map(function(s){return '<div class="alloc-lbl"><div class="alloc-dot" style="background:'+s.c+'"></div><span>'+s.l+'</span>&nbsp;<span class="alloc-val">USD '+fmt(s.v)+'</span><span style="color:rgba(244,241,236,.25);margin-left:4px">'+(t.total>0?Math.round(s.v/t.total*100)+'%':'')+'</span></div>';}).join('');
+  }
+  var mg=document.getElementById('metricsGrid');
+  if(mg){
+    var iRU=(c.accounts||[]).reduce(function(s,a){var p=parseFloat(String(a.sinceInception||'').replace(/[+%]/g,''));return s+(isNaN(p)?0:Math.round(Number(a.value||0)*p/100));},0);
+    var iRP=t.tInv>0?(iRU/t.tInv*100).toFixed(1):null;
+    var pYld=t.tProp>0&&t.rentM>0?(t.rentM*12/t.tProp*100).toFixed(2):null;
+    var lP=t.total>0?Math.round(t.tLiq/t.total*100):0;
+    var mets=[
+      {ico:'&#x25C8;',lbl:'Cuentas de Inversi&oacute;n',val:t.tInv,pp:pct(t.tInv,t.total),sub:iRP?'<span class="pos">+'+iRP+'% retorno acumulado</span>':'',cls:'inv'},
+      {ico:'&#x2B21;',lbl:'Real Estate',val:t.tProp,pp:pct(t.tProp,t.total),sub:pYld?'<span class="pos">'+pYld+'% yield &middot; USD '+fmt(t.rentM)+'/mes</span>':'',cls:'re'},
+      {ico:'&#x25CE;',lbl:'Liquidez &amp; Cash',val:t.tLiq,pp:lP,sub:'<span class="gold">'+lP+'% del patrimonio</span>',cls:'liq'}
+    ];
+    if(t.tProd>0) mets.push({ico:'&#x25C6;',lbl:'Activos Productivos',val:t.tProd,pp:pct(t.tProd,t.total),sub:t.prodM>0?'<span class="pos">'+(t.prodM*12/t.tProd*100).toFixed(2)+'% yield</span>':'',cls:'prod'});
+    var fc={inv:'rgba(184,153,90,.5)',re:'rgba(90,171,138,.5)',liq:'rgba(74,125,181,.5)',prod:'rgba(201,169,110,.5)'};
+    mg.innerHTML=mets.map(function(m){return '<div class="metric"><span class="metric-ico">'+m.ico+'</span><div class="metric-lbl">'+m.lbl+'</div><div class="metric-val"><span class="metric-cur">USD</span>'+fmt(m.val)+'</div><div class="metric-sub">'+(m.sub||'&nbsp;')+'</div><div class="metric-bar"><div class="metric-fill" style="width:'+m.pp+'%;background:'+fc[m.cls]+'"></div></div></div>';}).join('');
+  }
   if(perfChart)perfChart.destroy();
-  let months=['Ene 24','Mar 24','May 24','Jul 24','Sep 24','Nov 24','Ene 25','Mar 25','May 25','Jul 25','Sep 25','Nov 25','Abr 26'];
-  if(c.startDate){const st=new Date(c.startDate),now=new Date();months=[];let d=new Date(st);while(d<=now){months.push(d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}));d.setMonth(d.getMonth()+2);}if(months.length<3)months=['Inicio','','Hoy'];}
-  const sv=c.inceptionValue||Math.round(t.total*.72);
-  const od=months.map((_,i)=>{const seed=(c.id||1)*1000+i;const ps=((seed*9301+49297)%233280)/233280;return Math.round(sv+(t.total-sv)*(months.length>1?i/(months.length-1):1)+(ps-.38)*t.total*.018);});
+  var months=['Ene 24','Mar 24','May 24','Jul 24','Sep 24','Nov 24','Ene 25','Mar 25','May 25','Jul 25','Sep 25','Nov 25','Abr 26'];
+  if(c.startDate){
+    var st=new Date(c.startDate), now=new Date(); months=[];
+    var d=new Date(st);
+    while(d<=now){ months.push(d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'})); d.setMonth(d.getMonth()+2); }
+    if(months.length<3) months=['Inicio','','Hoy'];
+  }
+  var sv=c.inceptionValue||Math.round(t.total*.72);
+  var od=months.map(function(_,i){ var seed=(c.id||1)*1000+i; var ps=((seed*9301+49297)%233280)/233280; return Math.round(sv+(t.total-sv)*(months.length>1?i/(months.length-1):1)+(ps-.38)*t.total*.018); });
   od[od.length-1]=t.total;
-  perfChart=new Chart(document.getElementById('perfChart').getContext('2d'),{type:'line',data:{labels:months,datasets:[{data:od,borderColor:'rgba(184,153,90,.7)',borderWidth:1.5,pointRadius:0,tension:.4,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,180);g.addColorStop(0,'rgba(184,153,90,.13)');g.addColorStop(1,'rgba(184,153,90,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,30,46,.95)',borderColor:'rgba(184,153,90,.3)',borderWidth:1,titleColor:'rgba(244,241,236,.5)',bodyColor:'#f4f1ec',padding:10,callbacks:{label:ctx=>'  USD '+fmt(ctx.raw)}}},scales:{x:{grid:{color:'rgba(244,241,236,.03)'},ticks:{color:'rgba(244,241,236,.25)',font:{size:8,family:'Montserrat'},maxRotation:0}},y:{grid:{color:'rgba(244,241,236,.03)'},ticks:{color:'rgba(244,241,236,.25)',font:{size:8,family:'Montserrat'},callback:v=>'$'+(v>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'k')}}}}}});
+  var perfCtx=document.getElementById('perfChart').getContext('2d');
+  perfChart=new Chart(perfCtx,{
+    type:'line',
+    data:{labels:months,datasets:[{
+      data:od,borderColor:'rgba(184,153,90,.7)',borderWidth:1.5,
+      pointRadius:0,tension:.4,fill:true,
+      backgroundColor:function(ctx){
+        var g=ctx.chart.ctx.createLinearGradient(0,0,0,180);
+        g.addColorStop(0,'rgba(184,153,90,.13)');
+        g.addColorStop(1,'rgba(184,153,90,0)');
+        return g;
+      }
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'rgba(15,30,46,.95)',borderColor:'rgba(184,153,90,.3)',borderWidth:1,
+          titleColor:'rgba(244,241,236,.5)',bodyColor:'#f4f1ec',padding:10,
+          callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(244,241,236,.03)'},ticks:{color:'rgba(244,241,236,.25)',font:{size:8,family:'Montserrat'},maxRotation:0}},
+        y:{grid:{color:'rgba(244,241,236,.03)'},ticks:{color:'rgba(244,241,236,.25)',font:{size:8,family:'Montserrat'},
+          callback:function(v){return '$'+(v>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'k');}}}
+      }
+    }
+  });
   if(donutChart)donutChart.destroy();
-  const ad=[(c.accounts||[]).filter(a=>a.type==='inversion').reduce((s,a)=>s+Number(a.value||0),0),(c.accounts||[]).filter(a=>a.type==='banco').reduce((s,a)=>s+Number(a.value||0),0),t.tProp,t.tLiq,t.tProd];
-  const al=['Cuentas inv.','Cuentas banco','Real Estate','Liquidez','Act. Prod.'];
-  const acols=['#b8995a','#4a7db5','#5aab8a','#8fa0b8','#c9a96e'];
-  const ap=ad.map(v=>t.total>0?Math.round(v/t.total*100):0);
-  donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{datasets:[{data:ap,backgroundColor:acols,borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:true,position:'right',labels:{color:'rgba(244,241,236,.4)',font:{size:9,family:'Montserrat'},boxWidth:8,padding:8}},tooltip:{backgroundColor:'rgba(15,30,46,.95)',borderColor:'rgba(184,153,90,.3)',borderWidth:1,callbacks:{label:ctx=>`${al[ctx.dataIndex]}: ${ctx.raw}%`}}}}}}); 
-  const acc=c.accounts||[];
-  document.getElementById('invTable').innerHTML=acc.map(a=>{const val=Number(a.value||0);let rh='—';if(a.sinceInception){const p=parseFloat(String(a.sinceInception).replace(/[+%]/g,''));if(!isNaN(p)&&val>0){const u=Math.round(val*p/100);rh=`<span class="${p>=0?'pos':'neg'}">${p>=0?'+':''}${p.toFixed(1)}% · USD ${fmt(u)}</span>`;}}return`<tr><td><span class="tn">${a.name}</span><span class="tag ${a.type==='banco'?'bk':'inv'}">${a.type==='banco'?'Banco':'Inversión'}</span></td><td>${a.type==='banco'?'Banco':'Inversión'}</td><td>USD ${fmt(val)}</td><td>${t.tInv>0?(val/t.tInv*100).toFixed(1)+'%':'—'}</td><td>${rh}</td></tr>`;}).join('')+(acc.length?`<tr class="tbl-total"><td colspan="2">Total</td><td>USD ${fmt(t.tInv)}</td><td>100%</td><td></td></tr>`:`<tr><td colspan="5" class="empty">Sin cuentas cargadas</td></tr>`);
-  const props=c.properties||[];const liqs=c.liquidity||[];const prods=c.productivos||[];
-  let assHtml='';
-  if(props.length)assHtml+=`<div class="asset-card"><div class="asset-card-hd"><div class="asset-card-title">Real Estate</div><div class="asset-card-total">USD ${fmt(t.tProp)}</div></div><div class="asset-list">${props.map(p=>`<div class="asset-row"><div class="asset-ico">${p.icon||'🏠'}</div><div><div class="asset-name">${p.name}</div><div class="asset-sub">${p.addr||''}</div></div><div class="asset-right"><div class="asset-val">USD ${fmt(p.val)}</div><div class="asset-yield">${Number(p.rent)>0?`USD ${fmt(p.rent)}/mes${Number(p.yieldCalc)>0?' · '+p.yieldCalc+'%':''}`:''}</div></div></div>`).join('')}</div></div>`;
-  if(liqs.length||prods.length){assHtml+=`<div class="asset-card"><div class="asset-card-hd"><div class="asset-card-title">Liquidez${prods.length?' &amp; Activos Productivos':''}</div><div class="asset-card-total">USD ${fmt(t.tLiq+t.tProd)}</div></div><div class="asset-list">`;assHtml+=liqs.map(l=>`<div class="asset-row"><div class="asset-ico">💵</div><div><div class="asset-name">${l.desc||'—'}</div></div><div class="asset-right"><div class="asset-val">USD ${fmt(l.amount)}</div></div></div>`).join('');assHtml+=prods.map(p=>`<div class="asset-row"><div class="asset-ico">🌾</div><div><div class="asset-name">${p.name}</div><div class="asset-sub">${p.tipo||''}</div></div><div class="asset-right"><div class="asset-val">USD ${fmt(p.val)}</div><div class="asset-yield" style="color:var(--goldl)">${Number(p.income)>0?`USD ${fmt(p.income)}/mes${Number(p.yieldCalc)>0?' · '+p.yieldCalc+'%':''}`:''}</div></div></div>`).join('');assHtml+=`</div></div>`;}
-  document.getElementById('assetsGrid').innerHTML=assHtml;
+  var ad=[
+    (c.accounts||[]).filter(function(a){return a.type==='inversion';}).reduce(function(s,a){return s+Number(a.value||0);},0),
+    (c.accounts||[]).filter(function(a){return a.type==='banco';}).reduce(function(s,a){return s+Number(a.value||0);},0),
+    t.tProp,t.tLiq,t.tProd
+  ];
+  var al2=['Inv.','Banco','Real Estate','Liquidez','Act. Prod.'];
+  var acols=['#b8995a','#4a7db5','#5aab8a','#8fa0b8','#c9a96e'];
+  var ap=ad.map(function(v){return t.total>0?Math.round(v/t.total*100):0;});
+  donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{
+    type:'doughnut',
+    data:{datasets:[{data:ap,backgroundColor:acols,borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',
+      plugins:{
+        legend:{display:true,position:'right',labels:{color:'rgba(244,241,236,.4)',font:{size:9,family:'Montserrat'},boxWidth:8,padding:8}},
+        tooltip:{backgroundColor:'rgba(15,30,46,.95)',borderColor:'rgba(184,153,90,.3)',borderWidth:1,
+          callbacks:{label:function(ctx){return al2[ctx.dataIndex]+': '+ctx.raw+'%';}}}
+      }
+    }
+  });
+  var acc=c.accounts||[];
+  document.getElementById('invTable').innerHTML=acc.map(function(a){
+    var val=Number(a.value||0); var rh='&mdash;';
+    if(a.sinceInception){
+      var p=parseFloat(String(a.sinceInception).replace(/[+%]/g,''));
+      if(!isNaN(p)&&val>0){ var u=Math.round(val*p/100); rh='<span class="'+(p>=0?'pos':'neg')+'">'+(p>=0?'+':'')+p.toFixed(1)+'% &middot; USD '+fmt(u)+'</span>'; }
+    }
+    return '<tr><td><span class="tn">'+a.name+'</span><span class="tag '+(a.type==='banco'?'bk':'inv')+'">'+(a.type==='banco'?'Banco':'Inversi&oacute;n')+'</span></td><td>'+(a.type==='banco'?'Banco':'Inversi&oacute;n')+'</td><td>USD '+fmt(val)+'</td><td>'+(t.tInv>0?(val/t.tInv*100).toFixed(1)+'%':'&mdash;')+'</td><td>'+rh+'</td></tr>';
+  }).join('')+(acc.length?'<tr class="tbl-total"><td colspan="2">Total</td><td>USD '+fmt(t.tInv)+'</td><td>100%</td><td></td></tr>':'<tr><td colspan="5" style="text-align:center;padding:20px;color:rgba(244,241,236,.3);font-style:italic">Sin cuentas cargadas</td></tr>');
+  var props=c.properties||[], liqs=c.liquidity||[], prods=c.productivos||[];
+  var assH='';
+  if(props.length){
+    assH+='<div class="asset-card"><div class="asset-card-hd"><div class="asset-card-title">Real Estate</div><div class="asset-card-total">USD '+fmt(t.tProp)+'</div></div><div class="asset-list">';
+    assH+=props.map(function(p){ return '<div class="asset-row"><div class="asset-ico">'+(p.icon||'&#x1F3E0;')+'</div><div><div class="asset-name">'+p.name+'</div><div class="asset-sub">'+(p.addr||'')+'</div></div><div class="asset-right"><div class="asset-val">USD '+fmt(p.val)+'</div><div class="asset-yield">'+(Number(p.rent)>0?'USD '+fmt(p.rent)+'/mes'+(Number(p.yieldCalc)>0?' &middot; '+p.yieldCalc+'%':''):'')+'</div></div></div>'; }).join('');
+    assH+='</div></div>';
+  }
+  if(liqs.length||prods.length){
+    assH+='<div class="asset-card"><div class="asset-card-hd"><div class="asset-card-title">Liquidez'+(prods.length?' &amp; Act. Productivos':'')+'</div><div class="asset-card-total">USD '+fmt(t.tLiq+t.tProd)+'</div></div><div class="asset-list">';
+    assH+=liqs.map(function(l){ return '<div class="asset-row"><div class="asset-ico">&#x1F4B5;</div><div><div class="asset-name">'+(l.desc||'&mdash;')+'</div></div><div class="asset-right"><div class="asset-val">USD '+fmt(l.amount)+'</div></div></div>'; }).join('');
+    assH+=prods.map(function(p){ return '<div class="asset-row"><div class="asset-ico">&#x1F33E;</div><div><div class="asset-name">'+p.name+'</div><div class="asset-sub">'+(p.tipo||'')+'</div></div><div class="asset-right"><div class="asset-val">USD '+fmt(p.val)+'</div><div class="asset-yield" style="color:#cdb47a">'+(Number(p.income)>0?'USD '+fmt(p.income)+'/mes'+(Number(p.yieldCalc)>0?' &middot; '+p.yieldCalc+'%':''):'')+'</div></div></div>'; }).join('');
+    assH+='</div></div>';
+  }
+  var ag=document.getElementById('assetsGrid'); if(ag)ag.innerHTML=assH;
   if(incChart)incChart.destroy();
-  const mos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const ds=[];
-  if(t.rentM>0)ds.push({label:'Real Estate',data:mos.map(()=>t.rentM),backgroundColor:'rgba(90,171,138,.45)',borderColor:'rgba(90,171,138,.7)',borderWidth:1,borderRadius:2});
-  if(t.prodM>0)ds.push({label:'Act. Productivos',data:mos.map(()=>t.prodM),backgroundColor:'rgba(184,153,90,.35)',borderColor:'rgba(184,153,90,.65)',borderWidth:1,borderRadius:2});
-  incChart=new Chart(document.getElementById('incChart').getContext('2d'),{type:'bar',data:{labels:mos,datasets:ds.length?ds:[{label:'Sin ingresos',data:mos.map(()=>0),backgroundColor:'rgba(244,241,236,.05)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:ds.length>1,labels:{color:'rgba(244,241,236,.4)',font:{size:8,family:'Montserrat'},boxWidth:10}},tooltip:{backgroundColor:'rgba(15,30,46,.95)',callbacks:{label:ctx=>`${ctx.dataset.label}: USD ${fmt(ctx.raw)}`}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(244,241,236,.25)',font:{size:8}}},y:{grid:{color:'rgba(244,241,236,.03)'},ticks:{color:'rgba(244,241,236,.25)',font:{size:8},callback:v=>'USD '+fmt(v)}}}}}}); 
+  var mos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var ds=[];
+  if(t.rentM>0) ds.push({label:'Real Estate',data:mos.map(function(){return t.rentM;}),backgroundColor:'rgba(90,171,138,.45)',borderColor:'rgba(90,171,138,.7)',borderWidth:1,borderRadius:2});
+  if(t.prodM>0) ds.push({label:'Act. Productivos',data:mos.map(function(){return t.prodM;}),backgroundColor:'rgba(184,153,90,.35)',borderColor:'rgba(184,153,90,.65)',borderWidth:1,borderRadius:2});
+  incChart=new Chart(document.getElementById('incChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:mos,datasets:ds.length?ds:[{label:'Sin ingresos',data:mos.map(function(){return 0;}),backgroundColor:'rgba(244,241,236,.05)'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:ds.length>1,labels:{color:'rgba(244,241,236,.4)',font:{size:8,family:'Montserrat'},boxWidth:10}},
+        tooltip:{backgroundColor:'rgba(15,30,46,.95)',callbacks:{label:function(ctx){return ctx.dataset.label+': USD '+fmt(ctx.raw);}}}},
+      scales:{x:{grid:{display:false},ticks:{color:'rgba(244,241,236,.25)',font:{size:8}}},y:{grid:{color:'rgba(244,241,236,.03)'},ticks:{color:'rgba(244,241,236,.25)',font:{size:8},callback:function(v){return 'USD '+fmt(v);}}}}}
+  });
   if(incDonut)incDonut.destroy();
-  const allFlow=[...props.filter(p=>Number(p.rent)>0).map(p=>({name:p.name,v:Number(p.rent)*12})),...prods.filter(p=>Number(p.income)>0).map(p=>({name:p.name,v:Number(p.income)*12}))];
-  incDonut=new Chart(document.getElementById('incDonut').getContext('2d'),{type:'doughnut',data:{labels:allFlow.length?allFlow.map(i=>i.name):['Sin ingresos'],datasets:[{data:allFlow.length?allFlow.map(i=>i.v):[1],backgroundColor:['#5aab8a','#b8995a','#7ea8c9','#a08080','#9aab6e'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(244,241,236,.4)',font:{size:9,family:'Montserrat'},boxWidth:8,padding:6}},tooltip:{backgroundColor:'rgba(15,30,46,.95)',callbacks:{label:ctx=>`USD ${fmt(ctx.raw)} / año`}}}}}});
-  const notes=c.notes||[];
-  document.getElementById('mtgBanner').innerHTML=c.nextMeeting?`<div class="mtg-banner"><div><div class="mtg-label">Próxima reunión</div><div class="mtg-val">${new Date(c.nextMeeting+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div></div>`:'';
-  document.getElementById('notesList').innerHTML=notes.length?notes.map(n=>`<div class="note-item"><div class="note-date">${n.date}</div><div class="note-txt">${n.text}</div></div>`).join(''):'<div class="empty">Sin notas</div>';
-  const goals=c.goals||[];
-  document.getElementById('goalsSection').innerHTML=goals.length?goals.map(g=>`<div class="goal-item"><div class="goal-row"><span>${g.label}</span><span>${g.target} · ${g.pct||0}%</span></div><div class="goal-track"><div class="goal-fill" style="width:${Math.min(100,g.pct||0)}%"></div></div></div>`).join(''):'';
-  document.getElementById('feeDisplay').innerHTML=(c.managementFee&&Number(c.managementFee)>0)?`<div class="fee-strip"><div><div class="fee-label">Honorario OFIR — Anual</div><div class="fee-hint">Administración patrimonial integral</div></div><div class="fee-val">USD ${fmt(c.managementFee)}</div></div>`:'';
+  var allFlow=props.filter(function(p){return Number(p.rent)>0;}).map(function(p){return {name:p.name,v:Number(p.rent)*12};}).concat(prods.filter(function(p){return Number(p.income)>0;}).map(function(p){return {name:p.name,v:Number(p.income)*12};}));
+  incDonut=new Chart(document.getElementById('incDonut').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:allFlow.length?allFlow.map(function(i){return i.name;}):['Sin ingresos'],datasets:[{data:allFlow.length?allFlow.map(function(i){return i.v;}):[1],backgroundColor:['#5aab8a','#b8995a','#7ea8c9','#a08080','#9aab6e'],borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(244,241,236,.4)',font:{size:9,family:'Montserrat'},boxWidth:8,padding:6}},
+        tooltip:{backgroundColor:'rgba(15,30,46,.95)',callbacks:{label:function(ctx){return 'USD '+fmt(ctx.raw)+' / año';}}}}}
+  });
+  var notes=c.notes||[];
+  document.getElementById('mtgBanner').innerHTML=c.nextMeeting?'<div class="mtg-banner"><div><div class="mtg-label">Proxima reunion</div><div class="mtg-val">'+new Date(c.nextMeeting+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</div></div></div>':'';
+  document.getElementById('notesList').innerHTML=notes.length?notes.map(function(n){return '<div class="note-item"><div class="note-date">'+n.date+'</div><div class="note-txt">'+n.text+'</div></div>';}).join(''):'<div style="padding:16px 0;font-style:italic;color:rgba(244,241,236,.3);font-size:.7rem">Sin notas</div>';
+  var goals=c.goals||[];
+  document.getElementById('goalsSection').innerHTML=goals.length?goals.map(function(g){return '<div class="goal-item"><div class="goal-row"><span>'+g.label+'</span><span>'+g.target+' &middot; '+Math.round(g.pct||0)+'%</span></div><div class="goal-track"><div class="goal-fill" style="width:'+Math.min(100,g.pct||0)+'%"></div></div></div>';}).join(''):'';
+  document.getElementById('feeDisplay').innerHTML=(c.managementFee&&Number(c.managementFee)>0)?'<div class="fee-strip"><div><div class="fee-label">Honorario OFIR &mdash; Anual</div><div class="fee-hint">Administración patrimonial integral</div></div><div class="fee-val">USD '+fmt(c.managementFee)+'</div></div>':'';
   renderRecs(c,t);
 }
 
 
-function renderRecs(c,t){
-  const recs=[];
-  // Liquidity
-  const liqPct=t.total>0?t.tLiq/t.total:0;
-  if(liqPct>0.15)recs.push({type:'info',ico:'◎',title:'Alta liquidez ociosa',body:`El ${Math.round(liqPct*100)}% del patrimonio está en liquidez. Podrías considerar reasignar parte hacia activos que generen retorno.`});
-  if(liqPct<0.03&&t.total>500000)recs.push({type:'warn',ico:'◎',title:'Reserva de liquidez baja',body:'La liquidez disponible representa menos del 3% del patrimonio. Recomendamos mantener al menos 3-6 meses de flujo en reserva.'});
-  // Diversification
-  const invPct=t.total>0?t.tInv/t.total:0;
-  if(invPct>0.75)recs.push({type:'info',ico:'◈',title:'Alta concentración en inversiones financieras',body:`El ${Math.round(invPct*100)}% del patrimonio está en cuentas de inversión. Una mayor diversificación hacia real estate o activos productivos puede reducir volatilidad.`});
-  // Rental yield
-  const props=c.properties||[];
-  const lowYield=props.filter(p=>Number(p.val)>0&&Number(p.rent)>0&&(Number(p.rent)*12/Number(p.val)*100)<3);
-  if(lowYield.length>0)recs.push({type:'warn',ico:'⬡',title:'Inmuebles con yield bajo',body:`${lowYield.map(p=>p.name).join(', ')} generan menos del 3% anual. Vale revisar si el precio de alquiler está actualizado a mercado.`});
-  // No real estate
-  if(t.tProp===0&&t.total>1000000)recs.push({type:'opp',ico:'⬡',title:'Sin exposición a Real Estate',body:'Incorporar activos inmobiliarios puede aportar estabilidad y flujo de caja recurrente al patrimonio.'});
-  // Next meeting
-  if(!c.nextMeeting)recs.push({type:'info',ico:'📅',title:'Próxima reunión sin agendar',body:'No hay una reunión de seguimiento programada. Recomendamos una revisión trimestral del patrimonio.'});
-  // Goals
-  const goals=c.goals||[];
-  const nearGoals=goals.filter(g=>(g.pct||0)>=80&&(g.pct||0)<100);
-  if(nearGoals.length>0)recs.push({type:'opp',ico:'◆',title:'Objetivos cerca de cumplirse',body:`${nearGoals.map(g=>g.label).join(', ')} está al ${nearGoals[0].pct}% del objetivo. Momento de planificar el siguiente paso.`});
 
-  const el=document.getElementById('recsSection');
-  if(!el)return;
+function renderRecs(c,t){
+  var recs=[];
+  var lP=t.total>0?t.tLiq/t.total:0;
+  if(lP>0.15) recs.push({tp:'info',ico:'&#x25CE;',tl:'Alta liquidez disponible',bd:'El '+Math.round(lP*100)+'% del patrimonio esta en liquidez. Considera reasignar parte hacia activos que generen retorno.'});
+  if(lP<0.03&&t.total>500000) recs.push({tp:'warn',ico:'&#x25CE;',tl:'Reserva de liquidez baja',bd:'La liquidez es menor al 3%. Mantene al menos 3-6 meses de flujo como reserva.'});
+  var iP=t.total>0?t.tInv/t.total:0;
+  if(iP>0.75) recs.push({tp:'info',ico:'&#x25C8;',tl:'Alta concentracion en inversiones',bd:'El '+Math.round(iP*100)+'% esta en cuentas financieras. Mayor diversificacion reduce volatilidad.'});
+  var props=c.properties||[];
+  var lowY=props.filter(function(p){return Number(p.val)>0&&Number(p.rent)>0&&(Number(p.rent)*12/Number(p.val)*100)<3;});
+  if(lowY.length>0) recs.push({tp:'warn',ico:'&#x2B21;',tl:'Inmuebles con yield bajo',bd:lowY.map(function(p){return p.name;}).join(', ')+' generan menos del 3% anual. Revisa si el alquiler esta actualizado a mercado.'});
+  if(t.tProp===0&&t.total>1000000) recs.push({tp:'opp',ico:'&#x2B21;',tl:'Sin exposicion a Real Estate',bd:'Incorporar inmuebles puede aportar estabilidad y flujo de caja recurrente al patrimonio.'});
+  if(!c.nextMeeting) recs.push({tp:'info',ico:'&#x25C6;',tl:'Sin reunion programada',bd:'No hay reunion de seguimiento agendada. Recomendamos una revision trimestral del patrimonio.'});
+  var goals=c.goals||[];
+  var nearG=goals.filter(function(g){return (g.pct||0)>=80&&(g.pct||0)<100;});
+  if(nearG.length>0) recs.push({tp:'opp',ico:'&#x25C8;',tl:'Objetivo cerca de cumplirse',bd:nearG[0].label+' esta al '+nearG[0].pct+'%. Momento ideal para planificar el proximo objetivo.'});
+  var el=document.getElementById('recsSection'); if(!el)return;
   if(!recs.length){el.style.display='none';return;}
   el.style.display='block';
-  const typeMap={info:{c:'rgba(74,125,181,.12)',bc:'rgba(74,125,181,.3)',tc:'#7ea8c9'},warn:{c:'rgba(194,106,90,.1)',bc:'rgba(194,106,90,.3)',tc:'#c26a5a'},opp:{c:'rgba(90,171,138,.1)',bc:'rgba(90,171,138,.3)',tc:'#5aab8a'}};
-  document.getElementById('recsList').innerHTML=recs.map(r=>{
-    const s=typeMap[r.type]||typeMap.info;
-    return`<div style="padding:18px 22px;border:1px solid ${s.bc};background:${s.c};display:flex;gap:16px;align-items:flex-start;">
-      <span style="font-size:.8rem;color:${s.tc};flex-shrink:0;margin-top:2px">${r.ico}</span>
-      <div>
-        <div style="font-size:.72rem;font-weight:500;color:var(--w);margin-bottom:4px">${r.title}</div>
-        <div style="font-size:.66rem;color:var(--w3);line-height:1.6">${r.body}</div>
-      </div>
-    </div>`;
+  var tm={info:{bc:'rgba(74,125,181,.28)',bg:'rgba(74,125,181,.08)',tc:'#7ea8c9'},warn:{bc:'rgba(184,90,74,.28)',bg:'rgba(184,90,74,.07)',tc:'#c26a5a'},opp:{bc:'rgba(79,168,128,.28)',bg:'rgba(79,168,128,.07)',tc:'#4fa880'}};
+  document.getElementById('recsList').innerHTML=recs.map(function(r){
+    var s=tm[r.tp]||tm.info;
+    return '<div style="padding:16px 18px;border:1px solid '+s.bc+';background:'+s.bg+';display:flex;gap:14px;align-items:flex-start"><span style="font-size:.75rem;color:'+s.tc+';flex-shrink:0;margin-top:2px">'+r.ico+'</span><div><div style="font-size:.7rem;font-weight:500;color:#f4f1ec;margin-bottom:4px">'+r.tl+'</div><div style="font-size:.64rem;color:rgba(244,241,236,.45);line-height:1.6">'+r.bd+'</div></div></div>';
   }).join('');
 }
-
 function renderReports(c){
   if(!c)return;
   const r=c.reports||[];
@@ -900,10 +973,9 @@ function renderAdmMet(){
 
 function renderClList(){
   document.getElementById('clList').innerHTML=clients.map((c,i)=>`
-    <div class="cl-it${i===selIdx?' sel':''}" onclick="selClient(${i})" style="position:relative">
+    <div class="cl-it${i===selIdx?' sel':''}" onclick="selClient(${i})">
       <div class="cl-av">${(c.name||'?')[0].toUpperCase()}</div>
-      <div style="flex:1"><div class="cl-cn">${c.name}</div><div class="cl-ct">USD ${fmt(calcT(c).total)}</div></div>
-      <button onclick="event.stopPropagation();deleteClient(${i})" title="Eliminar cliente" style="background:transparent;border:none;color:rgba(194,106,90,.5);cursor:pointer;font-size:.7rem;padding:4px 6px;transition:color .2s;flex-shrink:0" onmouseover="this.style.color='#c26a5a'" onmouseout="this.style.color='rgba(194,106,90,.5)'">✕</button>
+      <div style="flex:1"><div class="cl-cn">${c.name}</div><div class="cl-ct">USD ${fmt(calcT(c).total)}</div></div><button onclick="event.stopPropagation();deleteClient(${i})" style="background:transparent;border:none;color:rgba(194,106,90,.4);cursor:pointer;font-size:.65rem;padding:3px 5px;flex-shrink:0" onmouseover="this.style.color='#c26a5a'" onmouseout="this.style.color='rgba(194,106,90,.4)'">&#x2715;</button>
     </div>`).join('');
 }
 
@@ -1140,24 +1212,26 @@ async function addClient(){
 
 async function deleteClient(i){
   if(!isAdmin)return;
-  const c=clients[i];if(!c)return;
-  if(!confirm('¿Eliminar a '+c.name+'? Esta acción no se puede deshacer.'))return;
+  var c=clients[i]; if(!c)return;
+  if(!confirm('Eliminar a '+c.name+'? Esta accion no se puede deshacer.'))return;
   try{
-    const{error}=await db.rpc('delete_client_admin',{p_admin_pass:ADM_PW,p_id:c.id});
-    if(error)throw error;
+    var res=await db.rpc('delete_client_admin',{p_admin_pass:ADM_PW,p_id:c.id});
+    if(res.error)throw res.error;
     clients.splice(i,1);
     if(selIdx>=clients.length)selIdx=Math.max(0,clients.length-1);
-    renderClList();renderAdmMet();
-    if(clients.length){selClient(selIdx);}
-    else{document.getElementById('noSel').style.display='block';document.getElementById('efForm').style.display='none';document.getElementById('shCard').style.display='none';}
-  }catch(e){alert('Error: '+e.message);}
+    renderClList(); renderAdmMet();
+    if(clients.length) selClient(selIdx);
+    else{
+      document.getElementById('noSel').style.display='block';
+      document.getElementById('efForm').style.display='none';
+      document.getElementById('shCard').style.display='none';
+    }
+  }catch(e){ alert('Error: '+e.message); }
 }
-
 function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 init();
-
 </script>
 </body>
 </html>
