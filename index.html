@@ -554,10 +554,10 @@ let selIdx  = 0;
 let isAdmin = false;
 let currentClient = null;  // Only the logged-in client's own data
 let perfChart, donutChart, incomeChart, incomeDonut;
-const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+const _fmtIntl = new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}); const fmt = n => { if(n==null||isNaN(Number(n)))return '\u2014'; return _fmtIntl.format(Number(n)); };
 
 // ── Utility ────────────────────────────────────────────────────────────────
-function calcT(arr, field){ return (arr||[]).reduce((s,i)=>s+Number(i[field]||0),0); }
+function calcT(arr,field){ if(!arr)return{total:0,tInv:0,tProp:0,tCF:0}; if(Array.isArray(arr))return arr.reduce((s,i)=>s+Number(i[field]||0),0); const c=arr; return{total:c._total||0,tInv:c._inv||0,tProp:c._prop||0,tCF:c._cf||0}; }
 
 function mapR(r){
   if(!r) return null;
@@ -648,8 +648,8 @@ function enterApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
   const c = isAdmin ? (clients[selIdx]||clients[0]) : currentClient;
-  document.getElementById('hAvatar').textContent = (c?.name||'?')[0];
-  document.getElementById('hName').textContent   = c?.name||'';
+  document.getElementById('hAvatar').textContent = isAdmin ? 'A' : (c?.name||'?')[0];
+  document.getElementById('hName').textContent   = isAdmin ? 'Alan Naem' : (c?.name||'');
   document.getElementById('hRole').textContent   = isAdmin ? 'Administrador' : 'Cliente';
   document.getElementById('adminBadge').style.display = isAdmin ? 'inline-flex':'none';
   document.getElementById('updateDate').textContent = 'Actualizado al '+new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
@@ -678,6 +678,9 @@ function showView(name,el){
   if(name==='reports')renderReps(clients[selIdx]);
   if(name==='admin')renderAdminSummary();
 }
+
+const AC=['#c9a96e','#4a7db5','#6dbf9e','#8fa0b8'];
+const AL=['Cuentas de Inversion','Cuentas bancarias','Real Estate','Liquidez & Cash'];
 
 function renderP(c){
   if(!c)return;
