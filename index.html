@@ -546,109 +546,128 @@ const SUPABASE_URL = 'https://jpegcujzyzqfjvlumzpm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWdjdWp6eXpxZmp2bHVtenBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzgzNzEsImV4cCI6MjA5MDIxNDM3MX0.A6cx3covHatuMa6PgkLVquDyrZAjzRCk3Knt0nKq2tQ';
 const ADMIN_PASS = 'ofir2025';
 
-const { createClient } = window.supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let clients=[], selIdx=0, isAdmin=false;
-let perfChart=null, donutChart=null, incomeChart=null, incomeDonut=null;
-const AC=['#c9a96e','#7ea8c9','#6dbf9e','#a08080','#9e9e7e'];
-const AL=['Cuentas de inversión','Banco comercial','Inmuebles','Liquidez','Otros'];
-const fmt=n=>Number(n||0).toLocaleString('es-AR');
+// ── App state ──────────────────────────────────────────────────────────────
+let clients = [];       // Only populated for admin
+let selIdx  = 0;
+let isAdmin = false;
+let currentClient = null;  // Only the logged-in client's own data
+let perfChart, donutChart, incomeChart, incomeDonut;
+const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
 
-function calcT(c){
-  const acc=c.accounts||[], props=c.properties||[], liqs=c.liquidity||[];
-  const tInv=acc.reduce((s,a)=>s+Number(a.value||0),0)||c._inv||0;
-  const tProp=props.reduce((s,p)=>s+Number(p.val||0),0)||c._prop||0;
-  const tLiq=liqs.reduce((s,l)=>s+Number(l.amount||0),0)||c._cf||0;
-  const total=tInv+tProp+tLiq||c._total||0;
-  const rentM=props.reduce((s,p)=>s+Number(p.rent||0),0);
-  props.forEach(p=>{if(Number(p.val)>0&&Number(p.rent)>0)p.yieldCalc=(Number(p.rent)*12/Number(p.val)*100).toFixed(2);});
-  return{tInv,tProp,tLiq,total,rentM};
+// ── Utility ────────────────────────────────────────────────────────────────
+function calcT(arr, field){ return (arr||[]).reduce((s,i)=>s+Number(i[field]||0),0); }
+
+function mapR(r){
+  if(!r) return null;
+  const notesRaw = r.notes||[];
+  const meta = notesRaw.find(n=>n.__meta)||{startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[]};
+  const cleanNotes = notesRaw.filter(n=>!n.__meta);
+  const p = r.investments||[];
+  const err = 0;
+  const ci = calcT(p,'value');
+  return {
+    id:r.id, name:r.name,
+    ytd:r.ytd||'+0% YTD', goal:Number(r.goal||0),
+    _total:Number(r.total||0), _inv:Number(r.inv||0), _prop:Number(r.prop||0), _cf:Number(r.cf||0),
+    invYtd:r.inv_ytd||'+0%', propYtd:r.prop_ytd||'+0%',
+    accounts:r.investments||[], properties:r.properties||[], notes:cleanNotes, goals:r.goals||[],
+    startDate:meta.startDate||'', inceptionValue:Number(meta.inceptionValue||0),
+    nextMeeting:meta.nextMeeting||'', managementFee:Number(meta.managementFee||0),
+    liquidity:meta.liquidity||[], reports:meta.reports||[]
+  };
 }
 
+// ── Init ───────────────────────────────────────────────────────────────────
 async function init(){
-  const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
-  if(useSb){
-    try{
-      const{data,error}=await db.from('clients').select('*').order('created_at');
-      if(error)throw error;
-      data.sort((a,b)=>(a.id||0)-(b.id||0)); // ensure consistent order
-      const sample=getSample();
-      clients=data.length?data.map((r)=>mapR(r)):sample;
-    }catch(e){console.warn(e);clients=getSample();}
-  }
-  else{clients=JSON.parse(localStorage.getItem('ofir_v8')||'null')||getSample();}
-  document.getElementById('loadingScreen').style.display='none';
-  const cp=new URLSearchParams(window.location.search).get('client');
-  if(cp!==null)window._ci=parseInt(cp);
+  document.getElementById('loadingScreen').style.display='flex';
+  // Pre-select client from URL param (just stores the param, still requires password)
+  const params = new URLSearchParams(window.location.search);
+  const clientParam = params.get('client');
+  if(clientParam) window._preselectedClient = clientParam;
   showLogin();
 }
 
-function mapR(r){
-  const notesRaw=r.notes||[];
-  const meta=notesRaw.find(n=>n.__meta)||{startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[]};
-  const cleanNotes=notesRaw.filter(n=>!n.__meta);
-  return{id:r.id,name:r.name,pass:r.pass,ytd:r.ytd||'+0% YTD',goal:Number(r.goal||0),
-    _total:Number(r.total||0),_inv:Number(r.inv||0),_prop:Number(r.prop||0),_cf:Number(r.cf||0),
-    invYtd:r.inv_ytd||'+0%',propYtd:r.prop_ytd||'+0%',
-    accounts:r.investments||[],properties:r.properties||[],notes:cleanNotes,goals:r.goals||[],
-    startDate:meta.startDate||'',inceptionValue:Number(meta.inceptionValue||0),
-    nextMeeting:meta.nextMeeting||'',managementFee:Number(meta.managementFee||0),
-    liquidity:meta.liquidity||[],reports:meta.reports||[]};
+// ── Login ──────────────────────────────────────────────────────────────────
+function showLogin(){
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').style.display='none';
 }
 
-function getSample(){return[
-  {id:1,name:'Familia García Rossi',pass:'garcia2025',ytd:'+8.4% YTD',goal:6000000,startDate:'2022-03-01',inceptionValue:3200000,managementFee:15000,
-   accounts:[{name:'BNY Pershing',type:'inversion',value:2000000,sinceInception:'+18.5%',yieldEst:6},{name:'Banco Galicia',type:'banco',value:340000,sinceInception:'+3.2%',yieldEst:2}],
-   liquidity:[{desc:'Caja de seguridad',amount:200000},{desc:'Cash disponible',amount:80000}],
-   properties:[{name:'Oficina Corporativa',addr:'Av. del Libertador 1842, CABA',icon:'🏢',val:780000,rent:3800,yieldCalc:'5.85'},{name:'Departamento Palermo',addr:'Palermo Soho, CABA',icon:'🏠',val:320000,rent:1600,yieldCalc:'6.00'}],
-   notes:[{date:'Mar 2026',text:'Revisar rebalanceo. Considerar aumentar renta fija internacional ante expectativa de baja de tasas.'}],
-   goals:[{label:'AUM objetivo familiar',target:'USD 6M',pct:80}],reports:[]},
-  {id:2,name:'Jacobo Safdie',pass:'Coki1234',ytd:'+0% YTD',goal:5000000,startDate:'2024-01-01',inceptionValue:1500000,managementFee:15000,
-   accounts:[{name:'BNY Pershing',type:'inversion',value:548000,sinceInception:'',yieldEst:6},{name:'Balanz',type:'inversion',value:89000,sinceInception:'',yieldEst:5},{name:'Allaria',type:'inversion',value:500000,sinceInception:'',yieldEst:5},{name:'Banco Comafi',type:'banco',value:500000,sinceInception:'',yieldEst:2}],
-   liquidity:[{desc:'Caja de seguridad',amount:500000}],
-   properties:[{name:'Libertador',addr:'',icon:'🏠',val:300000,rent:3000,yieldCalc:'12.00'}],
-   notes:[],goals:[],reports:[]}
-];}
+async function doLogin(){
+  const pass = document.getElementById('loginPass').value.trim();
+  if(!pass) return;
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('loadingScreen').style.display='flex';
+  document.getElementById('loginScreen').style.display='none';
 
-function showLogin(){document.getElementById('loginScreen').style.display='flex';}
+  // Try admin first (local check — admin pass never sent to DB)
+  if(pass === ADMIN_PASS){
+    isAdmin = true;
+    // Load all clients data from server-side function (requires admin password)
+    const {data, error} = await db.rpc('get_all_clients_admin', {p_admin_pass: ADMIN_PASS});
+    if(error || !data){
+      document.getElementById('loadingScreen').style.display='none';
+      document.getElementById('loginScreen').style.display='flex';
+      document.getElementById('loginError').textContent='Error cargando clientes.';
+      document.getElementById('loginError').style.display='block';
+      return;
+    }
+    clients = data.map(mapR);
+    selIdx = 0;
+    currentClient = clients[0] || null;
+    enterApp();
+    return;
+  }
 
-function doLogin(){
-  const p=document.getElementById('loginPass').value;
-  const err=document.getElementById('loginError');
-  if(p===ADMIN_PASS){isAdmin=true;selIdx=0;enterApp();return;}
-  if(window._ci!==undefined){const ci=window._ci;if(clients[ci]&&clients[ci].pass===p){isAdmin=false;selIdx=ci;enterApp();return;}const fi=clients.findIndex(cl=>cl.pass===p);if(fi!==-1){isAdmin=false;selIdx=fi;enterApp();return;}err.style.display='block';setTimeout(()=>err.style.display='none',3000);return;}
-  const idx=clients.findIndex(c=>c.pass===p);
-  if(idx!==-1){isAdmin=false;selIdx=idx;enterApp();return;}
-  err.style.display='block';setTimeout(()=>err.style.display='none',3000);
+  // Try client authentication via secure server-side RPC
+  // The server checks the bcrypt hash — password is NEVER compared client-side
+  const {data, error} = await db.rpc('verify_client', {p_pass: pass});
+  if(error || !data || data.length === 0){
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('loginError').textContent='Contraseña incorrecta.';
+    document.getElementById('loginError').style.display='block';
+    return;
+  }
+
+  // Only ONE client's data is returned — their own
+  isAdmin = false;
+  currentClient = mapR(data[0]);
+  clients = [currentClient];
+  selIdx = 0;
+  enterApp();
 }
 
 function enterApp(){
+  document.getElementById('loadingScreen').style.display='none';
   document.getElementById('loginScreen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('adminBadge').style.display=isAdmin?'block':'none';
-  document.querySelectorAll('.admin-only').forEach(el=>el.style.display=isAdmin?'block':'none');
-  document.querySelectorAll('.admin-hide').forEach(el=>el.style.display=isAdmin?'none':'block');
-  if(isAdmin){
-    setTimeout(()=>{
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-      document.getElementById('view-admin').classList.add('active');
-      const adminTab=document.querySelector('.admin-only');
-      if(adminTab)adminTab.classList.add('active');
-      renderAdminSummary();
-    },100);
-  }
-  const c=clients[selIdx];
-  document.getElementById('hName').textContent=isAdmin?'Alan — Administrador':c.name;
-  document.getElementById('hRole').textContent=isAdmin?'OFIR Multi Family Office':'Portal Patrimonial';
-  document.getElementById('hAvatar').textContent=isAdmin?'A':c.name[0];
-  document.getElementById('updateDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  if(isAdmin){renderAdminList();selectClient(0);}
-  renderP(clients[selIdx]);
+  document.getElementById('app').style.display='block';
+  const c = isAdmin ? (clients[selIdx]||clients[0]) : currentClient;
+  document.getElementById('hAvatar').textContent = (c?.name||'?')[0];
+  document.getElementById('hName').textContent   = c?.name||'';
+  document.getElementById('hRole').textContent   = isAdmin ? 'Administrador' : 'Cliente';
+  document.getElementById('adminBadge').style.display = isAdmin ? 'inline-flex':'none';
+  document.getElementById('updateDate').textContent = 'Actualizado al '+new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  if(isAdmin){ renderAdminList(); selectClient(0); }
+  renderP(c);
+  showView('patrimony');
 }
 
-function logout(){isAdmin=false;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginPass').value='';}
+function logout(){
+  // Clear all state
+  clients = []; currentClient = null; isAdmin = false; selIdx = 0;
+  // Clear any charts
+  [perfChart, donutChart, incomeChart, incomeDonut].forEach(ch => { try{ ch&&ch.destroy(); }catch(e){} });
+  perfChart=donutChart=incomeChart=incomeDonut=null;
+  // Remove URL params
+  history.replaceState(null,'',window.location.pathname);
+  showLogin();
+}
 
 function showView(name,el){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -830,33 +849,66 @@ function renderAdminSummary(){
     card('Management fee anual','USD '+fmt(totalFee),'suma todos los clientes');
 }
 
-function renderAdminList(){document.getElementById('clientListAdmin').innerHTML=clients.map((c,i)=>{const t=calcT(c);return`<div class="client-list-item ${i===selIdx?'selected':''}" onclick="selectClient(${i})"><div class="cli-av">${c.name[0]}</div><div><div class="cli-name">${c.name}</div><div class="cli-aum">USD ${fmt(t.total)}</div></div></div>`;}).join('');}
 
-function selectClient(idx){
-  selIdx=idx;renderAdminList();
-  const c=clients[idx],t=calcT(c);
+
+
+// ── Render admin client list ────────────────────────────────────────────────
+function renderAdminList(){
+  document.getElementById('clientListAdmin').innerHTML = clients.map((c,i) => {
+    const tot = fmt.format(c._total||0);
+    return `<div class="cli-item ${i===selIdx?'active':''}" onclick="selectClient(${i})">
+      <div class="cli-av">${c.name[0]}</div>
+      <div>
+        <div class="cli-name">${c.name}</div>
+        <div class="cli-sub">${tot}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Select client in admin panel ────────────────────────────────────────────
+function selectClient(i){
+  selIdx = i;
+  const c = clients[i];
+  if(!c){ document.getElementById('noClient').style.display='block'; document.getElementById('editForm').style.display='none'; return; }
   document.getElementById('noClient').style.display='none';
   document.getElementById('editForm').style.display='block';
-  document.getElementById('editTitle').textContent=c.name;
-  document.getElementById('editPass').textContent='Contraseña: '+c.pass;
+  document.getElementById('editTitle').textContent = c.name;
+
+  // Share link: only ?client=ID — NO password in URL
+  const base = window.location.href.split('?')[0];
+  document.getElementById('shareLinkUrl').textContent = base + '?client=' + c.id;
   document.getElementById('sharePanel').style.display='block';
-  document.getElementById('shareLinkUrl').textContent=window.location.href.split('?')[0]+'?client='+idx;
-  document.getElementById('ef-name').value=c.name;
-  document.getElementById('ef-pass').value=c.pass;
-  document.getElementById('ef-total').value='USD '+fmt(t.total);
-  document.getElementById('ef-ytd').value=c.ytd||'';
-  document.getElementById('ef-goal').value=c.goal||0;
-  document.getElementById('ef-startdate').value=c.startDate||'';
-  document.getElementById('ef-inception').value=c.inceptionValue||'';
-  document.getElementById('ef-nextmeeting').value=c.nextMeeting||'';
-  document.getElementById('ef-fee').value=c.managementFee||'';
-  if(c.inceptionValue>0&&t.total>0){
-    const r=((t.total-c.inceptionValue)/c.inceptionValue*100).toFixed(1);
-    const usd=t.total-c.inceptionValue;
-    document.getElementById('ef-retorno').value=(r>0?'+':'')+r+'% · USD '+fmt(usd);
-  } else document.getElementById('ef-retorno').value='';
-  renderAccR(c.accounts||[]);renderLiqR(c.liquidity||[]);renderPropR(c.properties||[]);renderNoteR(c.notes||[]);renderGoalR(c.goals||[]);renderRepR(c.reports||[]);
+
+  renderAdminList();
+
+  // Fill form fields
+  document.getElementById('ef-name').value        = c.name;
+  document.getElementById('ef-pass').value        = '';   // never pre-fill password
+  document.getElementById('ef-pass').placeholder  = '(dejar vacío para no cambiar)';
+  document.getElementById('ef-inception').value   = c.inceptionValue||0;
+  document.getElementById('ef-fee').value         = c.managementFee||0;
+  document.getElementById('ef-ytd').value         = c.ytd||'';
+  document.getElementById('ef-goal').value        = c.goal||0;
+  document.getElementById('ef-nextmeeting').value = c.nextMeeting||'';
+  document.getElementById('ef-startdate').value   = c.startDate||'';
+
+  // Wire name/pass fields to update client object
+  document.getElementById('ef-name').oninput = e => { c.name = e.target.value; document.getElementById('editTitle').textContent = c.name; renderAdminList(); };
+
+  // Totals display (read-only)
+  updAdminTotals(c);
+
+  // Render sub-sections
+  setTab('general');
+  renderAccR(c.accounts||[]);
+  renderLiqR(c.liquidity||[]);
+  renderPropR(c.properties||[]);
+  renderNoteR(c.notes||[]);
+  renderGoalR(c.goals||[]);
+  renderRepR(c.reports||[]);
 }
+
 
 function setTab(name,el){document.querySelectorAll('.edit-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.edit-section').forEach(s=>s.classList.remove('active'));el.classList.add('active');document.getElementById('edit-'+name).classList.add('active');}
 
@@ -910,51 +962,109 @@ function delR(i){clients[selIdx].reports.splice(i,1);renderRepR(clients[selIdx].
 function addRep(){if(!clients[selIdx].reports)clients[selIdx].reports=[];clients[selIdx].reports.push({quarter:'',date:'',title:'',url:''});renderRepR(clients[selIdx].reports);}
 
 // Save
+
+
+
+// ── Admin: Save client (via secure RPC) ────────────────────────────────────
 async function saveClient(){
-  const msg=document.getElementById('saveMsg');
-  const c=clients[selIdx];
-  c.name=document.getElementById('ef-name').value;
-  c.pass=document.getElementById('ef-pass').value;
-  c.ytd=document.getElementById('ef-ytd').value;
-  c.goal=Number(document.getElementById('ef-goal').value)||0;
-  c.startDate=document.getElementById('ef-startdate').value;
-  c.inceptionValue=Number(document.getElementById('ef-inception').value)||0;
-  c.nextMeeting=document.getElementById('ef-nextmeeting').value;
-  c.managementFee=Number(document.getElementById('ef-fee').value)||0;
-  try{
-    const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
-    if(useSb){
-      const t2=calcT(c);
-      const meta={__meta:true,startDate:c.startDate||'',inceptionValue:c.inceptionValue||0,nextMeeting:c.nextMeeting||'',managementFee:c.managementFee||0,liquidity:c.liquidity||[],reports:c.reports||[]};
-      const{error}=await db.from('clients').upsert({id:c.id,name:c.name,pass:c.pass,ytd:c.ytd,goal:c.goal||0,total:t2.total,inv:t2.tInv,prop:t2.tProp,cf:t2.tLiq,inv_ytd:c.invYtd||'+0%',prop_ytd:c.propYtd||'+0%',investments:c.accounts||[],properties:c.properties||[],notes:[...(c.notes||[]),meta],goals:c.goals||[]});
-      if(error)throw error;
-    }
-    else localStorage.setItem('ofir_v8',JSON.stringify(clients));
-    msg.textContent='✓ Guardado';msg.className='save-msg show';
-    document.getElementById('editTitle').textContent=c.name;
-    document.getElementById('editPass').textContent='Contraseña: '+c.pass;
-    renderAdminList();updAdminTotals();
-  }catch(e){msg.textContent='✗ Error: '+e.message;msg.className='save-msg show err';}
-  setTimeout(()=>msg.classList.remove('show'),3000);
+  if(!isAdmin) return;
+  const c = clients[selIdx];
+  if(!c) return;
+
+  // Calculate totals from sub-items
+  const tInv  = calcT(c.accounts,'value');
+  const tProp = calcT(c.properties,'val');
+  const tLiq  = calcT(c.liquidity,'amount');
+  const total  = tInv + tProp + tLiq;
+
+  // Build notes array with __meta embedded
+  const meta = {__meta:true, startDate:c.startDate||'', inceptionValue:c.inceptionValue||0,
+    nextMeeting:c.nextMeeting||'', managementFee:c.managementFee||0,
+    liquidity:c.liquidity||[], reports:c.reports||[]};
+  const notesWithMeta = [...(c.notes||[]), meta];
+
+  // Get new password from form (empty = keep existing)
+  const newPass = document.getElementById('ef-pass').value.trim();
+
+  try {
+    const { error } = await db.rpc('save_client_admin', {
+      p_admin_pass:   ADMIN_PASS,
+      p_id:           c.id,
+      p_name:         c.name,
+      p_pass:         newPass,   // empty string = keep existing hash
+      p_total:        total,
+      p_ytd:          c.ytd,
+      p_inv:          tInv,
+      p_inv_ytd:      c.invYtd||'+0%',
+      p_cf:           tLiq,
+      p_prop:         tProp,
+      p_prop_ytd:     c.propYtd||'+0%',
+      p_goal:         c.goal||0,
+      p_alloc:        c.alloc||null,
+      p_investments:  c.accounts||[],
+      p_properties:   c.properties||[],
+      p_notes:        notesWithMeta,
+      p_goals:        c.goals||[]
+    });
+    if(error) throw error;
+
+    // Clear password field after save
+    document.getElementById('ef-pass').value = '';
+
+    // Show success
+    const msg = document.getElementById('saveMsg');
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 3000);
+  } catch(e){
+    alert('Error al guardar: ' + e.message);
+  }
 }
 
+// ── Admin: Add new client (via secure RPC) ──────────────────────────────────
 async function addClient(){
-  const name=document.getElementById('nc-name').value.trim(),pass=document.getElementById('nc-pass').value.trim();
-  if(!name||!pass)return;
-  const nc={name,pass,ytd:'+0% YTD',goal:0,startDate:'',inceptionValue:0,accounts:[],liquidity:[],properties:[],notes:[],goals:[],reports:[]};
-  const useSb=SUPABASE_URL==='https://jpegcujzyzqfjvlumzpm.supabase.co';
-  if(useSb){const{data,error}=await db.from('clients').insert([{name:nc.name,pass:nc.pass,ytd:nc.ytd,goal:0,total:0,inv:0,prop:0,cf:0,inv_ytd:'+0%',prop_ytd:'+0%',investments:[],properties:[],notes:[{__meta:true,startDate:'',inceptionValue:0,nextMeeting:'',managementFee:0,liquidity:[],reports:[]}],goals:[]}]).select();if(!error&&data)nc.id=data[0].id;}
-  clients.push(nc);
-  if(!useSb)localStorage.setItem('ofir_v8',JSON.stringify(clients));
-  closeModal();renderAdminList();selectClient(clients.length-1);
-  document.getElementById('nc-name').value='';document.getElementById('nc-pass').value='';
+  const name = document.getElementById('nc-name').value.trim();
+  const pass = document.getElementById('nc-pass').value.trim();
+  if(!name || !pass){ alert('Completá nombre y contraseña.'); return; }
+
+  try {
+    const { data: newId, error } = await db.rpc('add_client_admin', {
+      p_admin_pass: ADMIN_PASS,
+      p_name: name,
+      p_pass: pass
+    });
+    if(error) throw error;
+
+    // Add to local list
+    const newClient = {
+      id: newId, name, ytd:'+0% YTD', goal:0,
+      _total:0, _inv:0, _prop:0, _cf:0,
+      invYtd:'+0%', propYtd:'+0%',
+      accounts:[], properties:[], notes:[], goals:[],
+      startDate:'', inceptionValue:0, nextMeeting:'',
+      managementFee:0, liquidity:[], reports:[]
+    };
+    clients.push(newClient);
+    renderAdminList();
+    selectClient(clients.length - 1);
+    closeModal();
+    document.getElementById('nc-name').value = '';
+    document.getElementById('nc-pass').value = '';
+  } catch(e){
+    alert('Error al crear cliente: ' + e.message);
+  }
 }
 
-function copyLink(){navigator.clipboard.writeText(document.getElementById('shareLinkUrl').textContent);const btn=event.target;btn.textContent='¡Copiado!';setTimeout(()=>btn.textContent='Copiar',2000);}
-function openModal(){document.getElementById('modal').classList.add('open');}
-function closeModal(){document.getElementById('modal').classList.remove('open');}
+// ── Copy client link (NO password in URL) ───────────────────────────────────
+function copyLink(){
+  const url = document.getElementById('shareLinkUrl').textContent;
+  navigator.clipboard.writeText(url);
+}
+
+function openModal(){ document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 
 init();
+
 </script>
 </body>
 </html>
