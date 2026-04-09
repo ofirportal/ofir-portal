@@ -701,7 +701,6 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
             <th onclick="tr_sortBy('y3')" data-col="y3">3 Años <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('since_start')" data-col="since_start">Since Start <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('vol')" data-col="vol">Vol <span class="tr-arr"></span></th>
-            <th onclick="tr_sortBy('_tir')" data-col="_tir">TIR Anual <span class="tr-arr"></span></th>
           </tr></thead>
           <tbody id="tr-tbody"></tbody>
         </table>
@@ -1403,8 +1402,8 @@ function tr_applySort(){
   const query=document.getElementById('tr-search').value.toLowerCase();
   trFiltered=trData.filter(r=>r.name.toLowerCase().includes(query)||r.account.toLowerCase().includes(query));
   trFiltered.sort((a,b)=>{
-    const av=trSortCol==='_tir'?tr_calcTIR(a):trSortCol==='change_in_value'?tr_calcGL(a):a[trSortCol];
-    const bv=trSortCol==='_tir'?tr_calcTIR(b):trSortCol==='change_in_value'?tr_calcGL(b):b[trSortCol];
+    const av=trSortCol==='change_in_value'?tr_calcGL(a):a[trSortCol];
+    const bv=trSortCol==='change_in_value'?tr_calcGL(b):b[trSortCol];
     if(av==null&&bv==null)return 0;
     if(av==null)return 1;
     if(bv==null)return -1;
@@ -1429,7 +1428,7 @@ function tr_renderTable(){
   if(!trData.length){tbody.innerHTML='';document.getElementById('tr-rowCount').textContent='';return;}
   document.getElementById('tr-rowCount').textContent=`${trFiltered.length} de ${trData.length} cuentas`;
   tbody.innerHTML=trFiltered.map(r=>{
-    const tir=tr_calcTIR(r),gl=tr_calcGL(r);
+    const gl=tr_calcGL(r);
     return`<tr>
       <td>${tr_esc(r.name)}</td>
       <td>${tr_esc(r.account)}</td>
@@ -1445,21 +1444,8 @@ function tr_renderTable(){
       <td class="${tr_pctClass(r.y3)}">${tr_fmtPct(r.y3)}</td>
       <td class="${tr_pctClass(r.since_start)}">${tr_fmtPct(r.since_start)}</td>
       <td class="td2">${r.vol!=null?r.vol.toFixed(2)+'%':'—'}</td>
-      <td class="${tr_pctClass(tir)}">${tir!=null?(tir>=0?'+':'')+tir.toFixed(2)+'%':'<span class="td2">—</span>'}</td>
     </tr>`;
   }).join('');
-}
-function tr_calcTIR(r){
-  if(r.since_start==null)return null;
-  let years;
-  if(r.start_date){
-    const ms=new Date()-new Date(r.start_date);
-    years=ms/(1000*60*60*24*365.25);
-  }else{
-    years=r.y3!=null?3.5:r.y2024!=null&&r.y2025!=null?2.3:r.y2025!=null?1.3:0.4;
-  }
-  if(years<0.05)return null;
-  return(Math.pow(1+r.since_start/100,1/years)-1)*100;
 }
 function tr_calcGL(r){
   if(r.ending_value==null||!r.net_contribution)return null;
