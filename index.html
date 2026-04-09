@@ -313,6 +313,52 @@ textarea.ii{resize:none;height:34px;line-height:1.4;}
 .sv-ok{font-size:.54rem;color:var(--green);letter-spacing:.1em;opacity:0;transition:opacity .3s;}
 .sv-ok.show{opacity:1;}
 
+/* ══ PERFORMANCE TRACKER ══ */
+#view-tracker{--tr-bg:#162236;--tr-border:#243b5e;--tr-gold:#c9a96e;--tr-gold-dim:#9e7d4e;--tr-green:#4caf7d;--tr-red:#e05c5c;--tr-text:#e8edf5;--tr-dim:#8fa3be;--tr-hover:#1e3454;--tr-btn:#243b5e;}
+#view-tracker .tr-summary{display:flex;gap:14px;padding:20px 28px 10px;flex-wrap:wrap;}
+#view-tracker .tr-card{background:var(--tr-bg);border:1px solid var(--tr-border);border-radius:8px;padding:12px 20px;min-width:150px;}
+#view-tracker .tr-card-label{font-size:10px;color:var(--tr-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+#view-tracker .tr-card-value{font-size:20px;font-weight:700;color:var(--tr-gold);}
+#view-tracker .tr-card-value.sm{font-size:15px;}
+#view-tracker .tr-toolbar{display:flex;align-items:center;gap:12px;padding:8px 28px 12px;flex-wrap:wrap;}
+#view-tracker .tr-sw{position:relative;flex:1;min-width:200px;max-width:320px;}
+#view-tracker .tr-sw input{width:100%;background:var(--tr-bg);border:1px solid var(--tr-border);border-radius:6px;color:var(--tr-text);padding:7px 10px 7px 32px;font-size:13px;outline:none;transition:border-color .2s;font-family:var(--sans);}
+#view-tracker .tr-sw input:focus{border-color:var(--tr-gold-dim);}
+#view-tracker .tr-si{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--tr-dim);pointer-events:none;font-size:14px;}
+#view-tracker .tr-btn{background:var(--tr-btn);border:1px solid var(--tr-border);border-radius:6px;color:var(--tr-text);padding:7px 14px;font-size:12px;cursor:pointer;transition:background .15s,border-color .15s;white-space:nowrap;font-family:var(--sans);}
+#view-tracker .tr-btn:hover{background:#1e3250;border-color:var(--tr-gold-dim);}
+#view-tracker .tr-btn.primary{background:var(--tr-gold-dim);border-color:var(--tr-gold);color:#1a2940;font-weight:600;}
+#view-tracker .tr-btn.primary:hover{background:var(--tr-gold);}
+#view-tracker .tr-count{font-size:11px;color:var(--tr-dim);margin-left:auto;}
+#view-tracker .tr-tw{padding:0 28px 40px;overflow:auto;max-height:calc(100vh - 260px);}
+#view-tracker table.tr-tbl{width:100%;border-collapse:collapse;min-width:1100px;}
+#view-tracker table.tr-tbl thead th{background:var(--tr-bg);color:var(--tr-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:10px;text-align:right;border-bottom:1px solid var(--tr-border);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:10;}
+#view-tracker table.tr-tbl thead th:first-child,#view-tracker table.tr-tbl thead th:nth-child(2){text-align:left;}
+#view-tracker table.tr-tbl thead th:hover{color:var(--tr-gold);}
+#view-tracker table.tr-tbl thead th.tr-sorted{color:var(--tr-gold);}
+#view-tracker table.tr-tbl thead th .tr-arr{margin-left:3px;font-size:9px;}
+#view-tracker table.tr-tbl tbody tr{border-bottom:1px solid rgba(36,59,94,.6);transition:background .1s;}
+#view-tracker table.tr-tbl tbody tr:hover{background:var(--tr-hover);}
+#view-tracker table.tr-tbl tbody td{padding:9px 10px;text-align:right;vertical-align:middle;white-space:nowrap;color:rgba(243,244,246,.7);}
+#view-tracker table.tr-tbl tbody td:first-child{text-align:left;font-weight:600;color:var(--tr-text);}
+#view-tracker table.tr-tbl tbody td:nth-child(2){text-align:left;color:var(--tr-dim);font-family:monospace;font-size:12px;}
+#view-tracker .tp{color:var(--tr-green);}
+#view-tracker .tn2{color:var(--tr-red);}
+#view-tracker .td2{color:var(--tr-dim);}
+#view-tracker .tv{font-weight:600;color:var(--tr-gold);}
+#view-tracker .tr-es{text-align:center;padding:60px 20px;color:var(--tr-dim);}
+#view-tracker .tr-es .tr-big{font-size:40px;margin-bottom:14px;}
+#view-tracker .tr-es h3{color:var(--tr-text);margin-bottom:8px;}
+.tr-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;}
+.tr-modal-bg.open{display:flex;}
+.tr-modal-box{background:#162236;border:1px solid #243b5e;border-radius:10px;padding:24px;width:540px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;gap:14px;}
+.tr-modal-box h2{color:#c9a96e;font-size:16px;font-family:var(--sans);}
+.tr-modal-box p{color:#8fa3be;font-size:12px;line-height:1.5;}
+.tr-modal-box textarea{flex:1;min-height:220px;background:#1a2940;border:1px solid #243b5e;border-radius:6px;color:#e8edf5;font-family:monospace;font-size:12px;padding:10px;resize:vertical;outline:none;}
+.tr-modal-box textarea:focus{border-color:#9e7d4e;}
+.tr-modal-footer{display:flex;gap:10px;justify-content:flex-end;}
+.tr-err{color:#e05c5c;font-size:12px;min-height:16px;}
+
 /* MODAL */
 .mdl{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(6px);}
 .mdl.open{display:flex;}
@@ -394,6 +440,7 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
     <div class="ni admin-hide active" onclick="showView('dashboard',this)">Resumen Patrimonial</div>
     <div class="ni admin-hide" onclick="showView('reports',this)">Reportes</div>
     <div class="ni admin-only" style="display:none" onclick="showView('admin',this)">Administración</div>
+    <div class="ni admin-only" style="display:none" onclick="showView('tracker',this)">Performance Tracker</div>
   </nav>
   <main>
 
@@ -624,11 +671,67 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
       </div>
     </div><!-- /admin -->
 
+    <!-- ══ TRACKER ══ -->
+    <div id="view-tracker" class="view">
+      <div class="tr-summary" id="tr-summary"></div>
+      <div class="tr-toolbar">
+        <div class="tr-sw">
+          <span class="tr-si">⌕</span>
+          <input type="text" id="tr-search" placeholder="Buscar cuenta..." oninput="tr_filterTable()">
+        </div>
+        <button class="tr-btn primary" onclick="tr_openModal()">⬆ Importar JSON</button>
+        <button class="tr-btn" onclick="tr_clearData()" id="tr-clearBtn" style="display:none">✕ Limpiar datos</button>
+        <span class="tr-count" id="tr-rowCount"></span>
+        <span style="font-size:11px;color:rgba(243,244,246,.38)" id="tr-asOf"></span>
+      </div>
+      <div class="tr-tw">
+        <table class="tr-tbl">
+          <thead><tr>
+            <th onclick="tr_sortBy('name')" data-col="name">Cuenta <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('account')" data-col="account">Account # <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('value')" data-col="value">Valor USD <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('net_contribution')" data-col="net_contribution">Aportes <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('change_in_value')" data-col="change_in_value">G&amp;L $ <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('ytd')" data-col="ytd">YTD <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('m1')" data-col="m1">1M <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('m3')" data-col="m3">3M <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('m6')" data-col="m6">6M <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('y2025')" data-col="y2025">2025 <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('y2024')" data-col="y2024">2024 <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('y3')" data-col="y3">3 Años <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('since_start')" data-col="since_start">Since Start <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('vol')" data-col="vol">Vol <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('_tir')" data-col="_tir">TIR Anual <span class="tr-arr"></span></th>
+          </tr></thead>
+          <tbody id="tr-tbody"></tbody>
+        </table>
+        <div class="tr-es" id="tr-emptyState">
+          <div class="tr-big">📊</div>
+          <h3>Sin datos cargados</h3>
+          <p>Hacé click en <strong style="color:#c9a96e">Importar JSON</strong> para cargar los datos de performance.</p>
+        </div>
+      </div>
+    </div><!-- /tracker -->
+
   </main>
   <footer>
     <div class="ft">Información confidencial — Uso exclusivo del cliente</div>
     <div class="ft">OFIR Multi Family Office © 2026 — Buenos Aires</div>
   </footer>
+</div>
+
+<!-- ══ TRACKER MODAL ══ -->
+<div class="tr-modal-bg" id="tr-modalBg">
+  <div class="tr-modal-box">
+    <h2>Importar datos JSON</h2>
+    <p>Pegá el contenido del archivo <code style="color:#c9a96e">ofir_performance_*.json</code> (array de cuentas).</p>
+    <textarea id="tr-jsonInput" placeholder='[{"account":"JXD103634","name":"PAUSE CORP", ...}]'></textarea>
+    <div class="tr-err" id="tr-importError"></div>
+    <div class="tr-modal-footer">
+      <button class="tr-btn" onclick="tr_closeModal()">Cancelar</button>
+      <button class="tr-btn primary" onclick="tr_importJSON()">Importar</button>
+    </div>
+  </div>
 </div>
 
 <div class="mdl" id="modal">
@@ -767,6 +870,7 @@ function showView(name,el){
   if(name==='dashboard')renderDash(c);
   if(name==='reports')renderReports(c);
   if(name==='admin')renderAdmMet();
+  if(name==='tracker')tr_initView();
 }
 
 /* ── DASHBOARD ── */
@@ -1251,6 +1355,146 @@ function addRec(){
   clients[selIdx].recs.push({tipo:'info',titulo:'',detalle:''});
   rRecs(clients[selIdx].recs);
 }
+/* ══ PERFORMANCE TRACKER JS ══ */
+let trData=[],trFiltered=[],trSortCol='value',trSortDir=-1,_trInited=false;
+const TR_KEY='ofir_performance_data';
+
+function tr_initView(){
+  if(_trInited)return;
+  _trInited=true;
+  const saved=localStorage.getItem(TR_KEY);
+  if(saved){try{tr_loadData(JSON.parse(saved));}catch(e){}}
+}
+function tr_loadData(data){
+  if(!Array.isArray(data)||!data.length)return;
+  trData=data;
+  localStorage.setItem(TR_KEY,JSON.stringify(data));
+  tr_renderSummary();
+  tr_applySort();
+  document.getElementById('tr-clearBtn').style.display='';
+  document.getElementById('tr-emptyState').style.display='none';
+  const asOf=data[0]?.as_of||'';
+  document.getElementById('tr-asOf').textContent=asOf?'As of '+asOf:'';
+}
+function tr_renderSummary(){
+  const totalAUM=trData.reduce((s,r)=>s+(r.value||0),0);
+  const n=trData.length;
+  const withYtd=trData.filter(r=>r.ytd!=null);
+  const avgYtd=withYtd.length?withYtd.reduce((s,r)=>s+r.ytd,0)/withYtd.length:null;
+  const withM1=trData.filter(r=>r.m1!=null);
+  const avgM1=withM1.length?withM1.reduce((s,r)=>s+r.m1,0)/withM1.length:null;
+  const pos=trData.filter(r=>r.ytd!=null&&r.ytd>=0).length;
+  const neg=trData.filter(r=>r.ytd!=null&&r.ytd<0).length;
+  document.getElementById('tr-summary').innerHTML=`
+    <div class="tr-card"><div class="tr-card-label">Total AUM</div><div class="tr-card-value">${tr_fmtUSD(totalAUM)}</div></div>
+    <div class="tr-card"><div class="tr-card-label">Cuentas</div><div class="tr-card-value">${n}</div></div>
+    <div class="tr-card"><div class="tr-card-label">YTD Promedio</div><div class="tr-card-value sm ${avgYtd==null?'':avgYtd>=0?'tp':'tn2'}">${avgYtd==null?'—':tr_fmtPct(avgYtd)}</div></div>
+    <div class="tr-card"><div class="tr-card-label">1M Promedio</div><div class="tr-card-value sm ${avgM1==null?'':avgM1>=0?'tp':'tn2'}">${avgM1==null?'—':tr_fmtPct(avgM1)}</div></div>
+    <div class="tr-card"><div class="tr-card-label">Positivas YTD</div><div class="tr-card-value sm tp">${pos}</div></div>
+    <div class="tr-card"><div class="tr-card-label">Negativas YTD</div><div class="tr-card-value sm tn2">${neg}</div></div>
+  `;
+}
+function tr_sortBy(col){
+  if(trSortCol===col){trSortDir*=-1;}
+  else{trSortCol=col;trSortDir=col==='name'||col==='account'?1:-1;}
+  tr_applySort();
+}
+function tr_applySort(){
+  const query=document.getElementById('tr-search').value.toLowerCase();
+  trFiltered=trData.filter(r=>r.name.toLowerCase().includes(query)||r.account.toLowerCase().includes(query));
+  trFiltered.sort((a,b)=>{
+    const av=trSortCol==='_tir'?tr_calcTIR(a):trSortCol==='change_in_value'?tr_calcGL(a):a[trSortCol];
+    const bv=trSortCol==='_tir'?tr_calcTIR(b):trSortCol==='change_in_value'?tr_calcGL(b):b[trSortCol];
+    if(av==null&&bv==null)return 0;
+    if(av==null)return 1;
+    if(bv==null)return -1;
+    if(typeof av==='string')return av.localeCompare(bv)*trSortDir;
+    return(av-bv)*trSortDir;
+  });
+  tr_renderTable();
+  tr_updateSortArrows();
+}
+function tr_updateSortArrows(){
+  document.querySelectorAll('table.tr-tbl thead th').forEach(th=>{
+    const col=th.dataset.col;
+    const arrow=th.querySelector('.tr-arr');
+    if(!arrow)return;
+    th.classList.toggle('tr-sorted',col===trSortCol);
+    arrow.textContent=col===trSortCol?(trSortDir===-1?' ↓':' ↑'):'';
+  });
+}
+function tr_filterTable(){tr_applySort();}
+function tr_renderTable(){
+  const tbody=document.getElementById('tr-tbody');
+  if(!trData.length){tbody.innerHTML='';document.getElementById('tr-rowCount').textContent='';return;}
+  document.getElementById('tr-rowCount').textContent=`${trFiltered.length} de ${trData.length} cuentas`;
+  tbody.innerHTML=trFiltered.map(r=>{
+    const tir=tr_calcTIR(r),gl=tr_calcGL(r);
+    return`<tr>
+      <td>${tr_esc(r.name)}</td>
+      <td>${tr_esc(r.account)}</td>
+      <td class="tv">${tr_fmtUSD(r.value)}</td>
+      <td class="${r.net_contribution!=null?'tv':'td2'}">${tr_fmtUSD(r.net_contribution)}</td>
+      <td class="${tr_glClass(gl)}">${tr_fmtSignedUSD(gl)}</td>
+      <td class="${tr_pctClass(r.ytd)}">${tr_fmtPct(r.ytd)}</td>
+      <td class="${tr_pctClass(r.m1)}">${tr_fmtPct(r.m1)}</td>
+      <td class="${tr_pctClass(r.m3)}">${tr_fmtPct(r.m3)}</td>
+      <td class="${tr_pctClass(r.m6)}">${tr_fmtPct(r.m6)}</td>
+      <td class="${tr_pctClass(r.y2025)}">${tr_fmtPct(r.y2025)}</td>
+      <td class="${tr_pctClass(r.y2024)}">${tr_fmtPct(r.y2024)}</td>
+      <td class="${tr_pctClass(r.y3)}">${tr_fmtPct(r.y3)}</td>
+      <td class="${tr_pctClass(r.since_start)}">${tr_fmtPct(r.since_start)}</td>
+      <td class="td2">${r.vol!=null?r.vol.toFixed(2)+'%':'—'}</td>
+      <td class="${tr_pctClass(tir)}">${tir!=null?(tir>=0?'+':'')+tir.toFixed(2)+'%':'<span class="td2">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+function tr_calcTIR(r){
+  if(r.since_start==null)return null;
+  const years=r.y3!=null?3.25:r.y2024!=null?2.25:r.y2025!=null?1.25:0.5;
+  return(Math.pow(1+r.since_start/100,1/years)-1)*100;
+}
+function tr_calcGL(r){
+  if(r.ending_value==null||!r.net_contribution)return null;
+  return r.ending_value-r.net_contribution;
+}
+function tr_fmtUSD(v){if(v==null)return'—';return'$'+Math.round(v).toLocaleString('en-US');}
+function tr_fmtSignedUSD(v){if(v==null)return'<span class="td2">—</span>';return(v>=0?'+$':'-$')+Math.round(Math.abs(v)).toLocaleString('en-US');}
+function tr_glClass(v){if(v==null)return'td2';return v>=0?'tp':'tn2';}
+function tr_fmtPct(v){if(v==null)return'<span class="td2">—</span>';return(v>=0?'+':'')+v.toFixed(2)+'%';}
+function tr_pctClass(v){if(v==null)return'td2';return v>=0?'tp':'tn2';}
+function tr_esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function tr_openModal(){
+  document.getElementById('tr-jsonInput').value='';
+  document.getElementById('tr-importError').textContent='';
+  document.getElementById('tr-modalBg').classList.add('open');
+  setTimeout(()=>document.getElementById('tr-jsonInput').focus(),50);
+}
+function tr_closeModal(){document.getElementById('tr-modalBg').classList.remove('open');}
+function tr_importJSON(){
+  const raw=document.getElementById('tr-jsonInput').value.trim();
+  const errEl=document.getElementById('tr-importError');
+  if(!raw){errEl.textContent='Pegá el JSON primero.';return;}
+  let data;
+  try{data=JSON.parse(raw);}catch(e){errEl.textContent='JSON inválido: '+e.message;return;}
+  if(!Array.isArray(data)){errEl.textContent='El JSON debe ser un array de cuentas.';return;}
+  if(!data.length){errEl.textContent='El array está vacío.';return;}
+  tr_loadData(data);tr_closeModal();
+}
+function tr_clearData(){
+  if(!confirm('¿Borrar todos los datos de performance?'))return;
+  trData=[];trFiltered=[];
+  localStorage.removeItem(TR_KEY);
+  document.getElementById('tr-tbody').innerHTML='';
+  document.getElementById('tr-summary').innerHTML='';
+  document.getElementById('tr-asOf').textContent='';
+  document.getElementById('tr-rowCount').textContent='';
+  document.getElementById('tr-clearBtn').style.display='none';
+  document.getElementById('tr-emptyState').style.display='';
+}
+document.getElementById('tr-modalBg').addEventListener('click',function(e){if(e.target===this)tr_closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')tr_closeModal();});
+
 function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
