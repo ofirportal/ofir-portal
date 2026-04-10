@@ -330,6 +330,9 @@ textarea.ii{resize:none;height:34px;line-height:1.4;}
 #view-tracker .tr-btn.primary{background:var(--tr-gold-dim);border-color:var(--tr-gold);color:#1a2940;font-weight:600;}
 #view-tracker .tr-btn.primary:hover{background:var(--tr-gold);}
 #view-tracker .tr-count{font-size:11px;color:var(--tr-dim);margin-left:auto;}
+@keyframes tr-spin{to{transform:rotate(360deg)}}
+#view-tracker .tr-spinner{font-size:15px;color:var(--tr-dim);display:inline-block;animation:tr-spin .7s linear infinite;line-height:1;}
+#view-tracker .tr-sync-status{font-size:11px;}
 #view-tracker .tr-tw{padding:0 28px 40px;overflow:auto;max-height:calc(100vh - 260px);}
 #view-tracker table.tr-tbl{width:100%;border-collapse:collapse;min-width:1100px;}
 #view-tracker table.tr-tbl thead th{background:var(--tr-bg);color:var(--tr-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:10px;text-align:right;border-bottom:1px solid var(--tr-border);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:10;}
@@ -683,6 +686,8 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
         <button class="tr-btn" onclick="tr_clearData()" id="tr-clearBtn" style="display:none">✕ Limpiar datos</button>
         <span class="tr-count" id="tr-rowCount"></span>
         <span style="font-size:11px;color:rgba(243,244,246,.38)" id="tr-asOf"></span>
+        <span class="tr-spinner" id="tr-spinner" style="display:none">↻</span>
+        <span class="tr-sync-status" id="tr-sync"></span>
       </div>
       <div class="tr-tw">
         <table class="tr-tbl">
@@ -1358,11 +1363,48 @@ function addRec(){
 let trData=[],trFiltered=[],trSortCol='value',trSortDir=-1,_trInited=false;
 const TR_KEY='ofir_performance_data';
 
-function tr_initView(){
+async function tr_initView(){
   if(_trInited)return;
   _trInited=true;
+  tr_showSpinner(true);
+  try{
+    const{data,error}=await db.from('performance_tracker').select('*').order('value',{ascending:false});
+    if(error)throw error;
+    if(data&&data.length){
+      tr_loadData(data);
+      tr_setSync('Sincronizado con Supabase ✓',true);
+      return;
+    }
+  }catch(e){
+    console.warn('Tracker Supabase load:',e.message);
+    tr_setSync('',false);
+  }finally{
+    tr_showSpinner(false);
+  }
   const saved=localStorage.getItem(TR_KEY);
   if(saved){try{tr_loadData(JSON.parse(saved));}catch(e){}}
+}
+function tr_showSpinner(show){
+  const el=document.getElementById('tr-spinner');
+  if(el)el.style.display=show?'inline':'none';
+  if(show)tr_setSync('Cargando...',false);
+}
+function tr_setSync(msg,ok){
+  const el=document.getElementById('tr-sync');
+  if(!el)return;
+  el.textContent=msg;
+  el.style.color=ok?'#4caf7d':'#8fa3be';
+}
+async function tr_upsertSupabase(data){
+  tr_setSync('Sincronizando...',false);
+  try{
+    const{error}=await db.from('performance_tracker').upsert(data,{onConflict:'account'});
+    if(error)throw error;
+    tr_setSync('Sincronizado con Supabase ✓',true);
+  }catch(e){
+    console.error('Tracker Supabase upsert:',e.message);
+    tr_setSync('⚠ Error al sincronizar',false);
+  }
 }
 function tr_loadData(data){
   if(!Array.isArray(data)||!data.length)return;
@@ -1472,7 +1514,7 @@ function tr_importJSON(){
   try{data=JSON.parse(raw);}catch(e){errEl.textContent='JSON inválido: '+e.message;return;}
   if(!Array.isArray(data)){errEl.textContent='El JSON debe ser un array de cuentas.';return;}
   if(!data.length){errEl.textContent='El array está vacío.';return;}
-  tr_loadData(data);tr_closeModal();
+  tr_loadData(data);tr_upsertSupabase(data);tr_closeModal();
 }
 function tr_clearData(){
   if(!confirm('¿Borrar todos los datos de performance?'))return;
@@ -1484,6 +1526,7 @@ function tr_clearData(){
   document.getElementById('tr-rowCount').textContent='';
   document.getElementById('tr-clearBtn').style.display='none';
   document.getElementById('tr-emptyState').style.display='';
+  tr_setSync('',false);
 }
 document.getElementById('tr-modalBg').addEventListener('click',function(e){if(e.target===this)tr_closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')tr_closeModal();});
