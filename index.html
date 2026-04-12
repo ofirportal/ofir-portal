@@ -706,6 +706,7 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
             <th onclick="tr_sortBy('y3')" data-col="y3">3 Años <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('since_start')" data-col="since_start">Since Start <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('vol')" data-col="vol">Vol <span class="tr-arr"></span></th>
+            <th data-col="portal">Portal</th>
           </tr></thead>
           <tbody id="tr-tbody"></tbody>
         </table>
@@ -1465,6 +1466,7 @@ function tr_updateSortArrows(){
   });
 }
 function tr_filterTable(){tr_applySort();}
+function tr_slug(r){return r.name.split(' ')[0].toLowerCase()+r.account.slice(-3);}
 function tr_renderTable(){
   const tbody=document.getElementById('tr-tbody');
   if(!trData.length){tbody.innerHTML='';document.getElementById('tr-rowCount').textContent='';return;}
@@ -1486,6 +1488,7 @@ function tr_renderTable(){
       <td class="${tr_pctClass(r.y3)}">${tr_fmtPct(r.y3)}</td>
       <td class="${tr_pctClass(r.since_start)}">${tr_fmtPct(r.since_start)}</td>
       <td class="td2">${r.vol!=null?r.vol.toFixed(2)+'%':'—'}</td>
+      <td>${(()=>{const s=tr_slug(r);return`<a href="https://performance.ofirmfo.com/${s}" target="_blank" style="color:var(--gold);text-decoration:none;font-size:13px;">🔗</a>`;})()}</td>
     </tr>`;
   }).join('');
 }
