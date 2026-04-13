@@ -1229,10 +1229,6 @@ function render(data, history, positions) {
   if (data.vol != null) { volEl.textContent = data.vol.toFixed(2) + '%'; volEl.className = 'metric-val'; }
   else { volEl.textContent = '—'; volEl.className = 'metric-val neu'; }
 
-  const glUsdEl = document.getElementById('m-gl-usd');
-  if (glUsd != null) { glUsdEl.textContent = fmtSignedUSD(glUsd); glUsdEl.className = 'metric-val ' + pctClass(glUsd); }
-  else { glUsdEl.textContent = '—'; glUsdEl.className = 'metric-val'; }
-
   const glPct = (glUsd != null && netCon) ? glUsd / netCon * 100 : null;
   const glPctEl = document.getElementById('m-gl-pct');
   if (glPct != null) { glPctEl.textContent = fmtPct(glPct); glPctEl.className = 'metric-val ' + pctClass(glPct); }
