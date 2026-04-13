@@ -602,7 +602,11 @@ function buildEvo(history, startYear, curYear) {
 
   const labels = history.map(h => fmtDate(h.period_end));
   const portfolio = history.map(h => h.ending_value);
-  const aportes   = history.map(h => h.net_contribution);
+  let cumulative = 0;
+const aportes   = history.map(h => {
+  cumulative += (h.net_contribution || 0);
+  return cumulative;
+});
 
   if (evoChartInst) { evoChartInst.destroy(); evoChartInst = null; }
   evoChartInst = new Chart(document.getElementById('evoChart').getContext('2d'), {
