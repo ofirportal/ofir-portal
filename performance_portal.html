@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFIR · Performance Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy:     #1a2940;
+  --navy2:    #1e3254;
+  --navy3:    #243b5e;
+  --gold:     #c9a96e;
+  --gold-dim: #9e7d4e;
+  --green:    #4caf7d;
+  --red:      #e05c5c;
+  --white:    #f0ede8;
+  --dim:      #7a94b0;
+  --border:   rgba(255,255,255,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* HEADER */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 48px;
+  border-bottom:1px solid rgba(201,169,110,0.25);
+  position:sticky;top:0;background:var(--navy);z-index:100;
+}
+.header-right{text-align:right;}
+.client-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:500;letter-spacing:0.04em;color:var(--white);}
+.header-sub{font-size:11px;color:var(--dim);margin-top:3px;letter-spacing:0.07em;}
+.header-sub span{color:var(--gold);}
+
+/* SECTIONS */
+.section{padding:36px 48px;border-bottom:1px solid var(--border);}
+.section-label{
+  font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:22px;
+  display:flex;align-items:center;gap:14px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(201,169,110,0.18);}
+
+/* HERO */
+.hero{padding:44px 48px 36px;border-bottom:1px solid var(--border);}
+.hero-label{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+.hero-item{padding:12px 0;}
+.hero-item+.hero-item{padding-left:44px;border-left:1px solid var(--border);margin-left:44px;}
+.hero-num{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;letter-spacing:-0.02em;line-height:1.05;}
+.hero-num.pos{color:var(--green);}
+.hero-num.neg{color:var(--red);}
+.hero-lbl{font-size:11.5px;color:var(--dim);margin-top:7px;letter-spacing:0.03em;}
+.hero-sub{font-size:10.5px;color:var(--dim);margin-top:10px;letter-spacing:0.04em;}
+
+/* PERF CARDS */
+.perf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:28px;}
+.perf-card{background:var(--navy2);border:1px solid var(--border);border-radius:7px;padding:18px 14px;text-align:center;transition:border-color .2s;}
+.perf-card:hover{border-color:rgba(201,169,110,0.3);}
+.perf-pct{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;letter-spacing:-0.01em;}
+.perf-pct.pos{color:var(--green);}
+.perf-pct.neg{color:var(--red);}
+.perf-pct.neu{color:var(--dim);}
+.perf-period{font-size:10px;color:var(--dim);margin-top:5px;letter-spacing:0.07em;text-transform:uppercase;}
+
+/* BAR CHART */
+.bar-wrap{display:flex;align-items:flex-end;gap:14px;height:160px;padding:0 4px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
+.bar-val{font-size:11px;font-weight:500;white-space:nowrap;}
+.bar-val.pos{color:var(--green);}
+.bar-val.neg{color:var(--red);}
+.bar-body{width:100%;border-radius:3px 3px 0 0;min-height:3px;}
+.bar-body.pos{background:var(--gold);}
+.bar-body.neg{background:var(--red);}
+.bar-yr{font-size:10px;color:var(--dim);letter-spacing:0.05em;text-transform:uppercase;}
+
+/* METRIC CARDS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.metric-card{background:var(--navy2);border:1px solid var(--border);border-radius:7px;padding:20px 18px;}
+.metric-val{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--white);}
+.metric-val.pos{color:var(--green);}
+.metric-val.neg{color:var(--red);}
+.metric-lbl{font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:0.03em;}
+.metric-sub{font-size:10px;color:rgba(122,148,176,0.6);margin-top:2px;}
+
+/* COMPOSITION + EVOLUTION */
+.comp-evo-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}
+.donut-section{display:flex;align-items:center;gap:24px;}
+.donut-wrap{position:relative;width:160px;height:160px;flex-shrink:0;}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.donut-total{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;}
+.donut-sub{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.07em;}
+.legend{display:flex;flex-direction:column;gap:8px;}
+.legend-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:140px;}
+.legend-left{display:flex;align-items:center;gap:8px;}
+.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.legend-name{font-size:12.5px;color:var(--white);}
+.legend-pct{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold);font-weight:400;}
+.evo-chart-wrap{height:180px;position:relative;}
+.placeholder-box{display:flex;align-items:center;justify-content:center;height:160px;background:var(--navy2);border:1px solid var(--border);border-radius:7px;color:var(--dim);font-size:12px;letter-spacing:0.05em;}
+
+/* POSITIONS TABLE */
+.pos-table{width:100%;border-collapse:collapse;font-size:13px;}
+.pos-table th{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:right;border-bottom:1px solid var(--border);}
+.pos-table th:first-child{text-align:left;}
+.pos-table td{padding:11px 14px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.04);}
+.pos-table td:first-child{text-align:left;}
+.pos-table tr:hover td{background:rgba(255,255,255,0.02);}
+.cat-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:500;letter-spacing:0.06em;}
+.cat-rf{background:rgba(201,169,110,0.18);color:var(--gold);}
+.cat-rv{background:rgba(76,175,125,0.18);color:var(--green);}
+.cat-alt{background:rgba(143,163,190,0.18);color:#8fa3be;}
+.cat-liq{background:rgba(255,255,255,0.08);color:var(--white);}
+.tv-pos{color:var(--green);}
+.tv-neg{color:var(--red);}
+
+/* LOADING / ERROR */
+#loading,#error-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;}
+.spinner{width:44px;height:44px;border:3px solid rgba(201,169,110,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:13px;color:var(--dim);letter-spacing:0.08em;}
+.error-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--white);margin-top:16px;}
+.error-sub{font-size:12px;color:var(--dim);letter-spacing:0.05em;}
+
+/* FOOTER */
+footer{padding:28px 48px;text-align:center;}
+footer p{font-size:10px;color:rgba(122,148,176,0.45);letter-spacing:0.05em;line-height:2;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.hero,.section{animation:fadeUp .45s ease both;}
+.section:nth-child(2){animation-delay:.04s;}
+.section:nth-child(3){animation-delay:.08s;}
+.section:nth-child(4){animation-delay:.12s;}
+.section:nth-child(5){animation-delay:.16s;}
+.section:nth-child(6){animation-delay:.20s;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  header{padding:16px 20px;}
+  .hero,.section{padding:28px 20px;}
+  .hero-grid{grid-template-columns:1fr;}
+  .hero-item+.hero-item{border-left:none;padding-left:0;margin-left:0;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;}
+  .hero-num{font-size:32px;}
+  .perf-grid{grid-template-columns:repeat(3,1fr);}
+  .metric-grid{grid-template-columns:repeat(2,1fr);}
+  .comp-evo-grid{grid-template-columns:1fr;}
+  footer{padding:20px;}
+}
+@media(max-width:480px){
+  .perf-grid{grid-template-columns:repeat(2,1fr);}
+  .bar-wrap{gap:8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING STATE -->
+<div id="loading">
+  <svg width="120" height="40" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="48" cy="48" r="44" fill="none" stroke="#c9a96e" stroke-width="3.5"/>
+    <rect x="26" y="62" width="44" height="5" rx="1" fill="white"/>
+    <rect x="26" y="28" width="44" height="6" rx="1.5" fill="white"/>
+    <rect x="30" y="22" width="36" height="8" rx="2" fill="white"/>
+    <rect x="30" y="34" width="5" height="28" fill="white"/>
+    <rect x="38" y="34" width="5" height="28" fill="white"/>
+    <rect x="46" y="34" width="5" height="28" fill="white"/>
+    <rect x="54" y="34" width="5" height="28" fill="white"/>
+    <rect x="62" y="34" width="5" height="28" fill="white"/>
+    <text x="102" y="58" font-family="Georgia,serif" font-size="44" font-weight="400" fill="white" letter-spacing="2">OFIR</text>
+    <text x="102" y="78" font-family="Arial,sans-serif" font-size="11" font-weight="300" fill="rgba(255,255,255,0.55)" letter-spacing="5">MULTI FAMILY OFFICE</text>
+  </svg>
+  <div class="spinner"></div>
+  <div class="loading-text">Cargando cartera...</div>
+</div>
+
+<!-- ERROR STATE -->
+<div id="error-page" style="display:none;">
+  <svg width="120" height="40" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="48" cy="48" r="44" fill="none" stroke="#c9a96e" stroke-width="3.5"/>
+    <rect x="26" y="62" width="44" height="5" rx="1" fill="white"/>
+    <rect x="26" y="28" width="44" height="6" rx="1.5" fill="white"/>
+    <rect x="30" y="22" width="36" height="8" rx="2" fill="white"/>
+    <rect x="30" y="34" width="5" height="28" fill="white"/>
+    <rect x="38" y="34" width="5" height="28" fill="white"/>
+    <rect x="46" y="34" width="5" height="28" fill="white"/>
+    <rect x="54" y="34" width="5" height="28" fill="white"/>
+    <rect x="62" y="34" width="5" height="28" fill="white"/>
+    <text x="102" y="58" font-family="Georgia,serif" font-size="44" font-weight="400" fill="white" letter-spacing="2">OFIR</text>
+    <text x="102" y="78" font-family="Arial,sans-serif" font-size="11" font-weight="300" fill="rgba(255,255,255,0.55)" letter-spacing="5">MULTI FAMILY OFFICE</text>
+  </svg>
+  <div class="error-title">Portal no disponible</div>
+  <div class="error-sub">El enlace solicitado no existe o no tiene datos disponibles.</div>
+</div>
+
+<!-- MAIN CONTENT (hidden until loaded) -->
+<div id="main-content" style="display:none;">
+
+<!-- HEADER -->
+<header>
+  <svg width="120" height="40" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="48" cy="48" r="44" fill="none" stroke="white" stroke-width="3.5"/>
+    <rect x="26" y="62" width="44" height="5" rx="1" fill="white"/>
+    <rect x="26" y="28" width="44" height="6" rx="1.5" fill="white"/>
+    <rect x="30" y="22" width="36" height="8" rx="2" fill="white"/>
+    <rect x="30" y="34" width="5" height="28" fill="white"/>
+    <rect x="38" y="34" width="5" height="28" fill="white"/>
+    <rect x="46" y="34" width="5" height="28" fill="white"/>
+    <rect x="54" y="34" width="5" height="28" fill="white"/>
+    <rect x="62" y="34" width="5" height="28" fill="white"/>
+    <text x="102" y="58" font-family="Georgia,serif" font-size="44" font-weight="400" fill="white" letter-spacing="2">OFIR</text>
+    <text x="102" y="78" font-family="Arial,sans-serif" font-size="11" font-weight="300" fill="rgba(255,255,255,0.55)" letter-spacing="5">MULTI FAMILY OFFICE</text>
+  </svg>
+  <div class="header-right">
+    <div class="client-name" id="hdr-name">—</div>
+    <div class="header-sub">Cuenta <span id="hdr-account">—</span> · Al <span id="hdr-asof">—</span></div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Resumen General</div>
+  <div class="hero-grid">
+    <div class="hero-item">
+      <div class="hero-num" id="h-valor">—</div>
+      <div class="hero-lbl">Valor Actual de la Cartera</div>
+    </div>
+    <div class="hero-item">
+      <div class="hero-num" id="h-aportes">—</div>
+      <div class="hero-lbl">Aportes Netos Acumulados</div>
+    </div>
+    <div class="hero-item">
+      <div class="hero-num" id="h-ganancia">—</div>
+      <div class="hero-lbl" id="h-ganancia-lbl">Ganancia Total</div>
+    </div>
+  </div>
+  <div class="hero-sub" id="h-period-sub">Institucional</div>
+</div>
+
+<!-- PERFORMANCE -->
+<div class="section">
+  <div class="section-label">Performance · Retornos Anuales Encadenados</div>
+  <div class="perf-grid">
+    <div class="perf-card">
+      <div class="perf-pct" id="p-ytd">—</div>
+      <div class="perf-period">YTD 2026</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-pct" id="p-2025">—</div>
+      <div class="perf-period">2025</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-pct" id="p-2024">—</div>
+      <div class="perf-period">2024</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-pct" id="p-3y">—</div>
+      <div class="perf-period">3 Años</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-pct" id="p-tir">—</div>
+      <div class="perf-period">TIR Anualizada</div>
+    </div>
+  </div>
+  <div class="bar-wrap" id="barChart"></div>
+</div>
+
+<!-- MÉTRICAS -->
+<div class="section">
+  <div class="section-label">Métricas · Historial Completo</div>
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-val" id="m-vol">—</div>
+      <div class="metric-lbl">Volatilidad Anualizada</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" id="m-gl-usd">—</div>
+      <div class="metric-lbl">Ganancia Total (G&amp;L $)</div>
+      <div class="metric-sub">Valor actual − Aportes netos</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" id="m-gl-pct">—</div>
+      <div class="metric-lbl">Ganancia Total (G&amp;L %)</div>
+      <div class="metric-sub">Sobre aportes netos</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" id="m-tir">—</div>
+      <div class="metric-lbl">TIR Anualizada</div>
+      <div class="metric-sub" id="m-tir-sub">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPOSICIÓN & EVOLUCIÓN -->
+<div class="section">
+  <div class="section-label">Composición &amp; Evolución de la Cartera</div>
+  <div class="comp-evo-grid">
+
+    <!-- DONUT -->
+    <div class="donut-section" id="donut-section">
+      <div class="donut-wrap">
+        <canvas id="donutChart"></canvas>
+        <div class="donut-center">
+          <div class="donut-total" id="donut-total">—</div>
+          <div class="donut-sub">USD</div>
+        </div>
+      </div>
+      <div class="legend" id="donut-legend"></div>
+    </div>
+
+    <!-- EVOLUTION CHART -->
+    <div class="evo-section">
+      <div style="font-size:10px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;" id="evo-title">Evolución de la Cartera</div>
+      <div class="evo-chart-wrap">
+        <canvas id="evoChart"></canvas>
+      </div>
+      <div style="display:flex;gap:20px;margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);">
+          <div style="width:20px;height:2px;background:var(--gold);border-radius:1px;"></div> Valor de Cartera
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);">
+          <div style="width:20px;height:2px;background:rgba(255,255,255,0.25);border-radius:1px;border-top:2px dashed rgba(255,255,255,0.25);"></div> Aportes Netos
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- POSICIONES -->
+<div class="section" id="positions-section" style="display:none;">
+  <div class="section-label">Posiciones</div>
+  <table class="pos-table">
+    <thead>
+      <tr>
+        <th>Instrumento</th>
+        <th>Categoría</th>
+        <th>% Cart.</th>
+        <th>Valor USD</th>
+        <th>G/L USD</th>
+        <th>G/L %</th>
+      </tr>
+    </thead>
+    <tbody id="positions-tbody"></tbody>
+  </table>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    Documento estrictamente confidencial · Para uso exclusivo del destinatario<br>
+    OFIR Multi Family Office · www.ofirmfo.com<br>
+    La información presentada es de carácter ilustrativo y no constituye asesoramiento de inversión.
+  </p>
+</footer>
+
+</div><!-- /#main-content -->
+
+<script>
+// ── Config ───────────────────────────────────────────────────────────────────
+const SB_URL = 'https://jpegcujzyzqfjvlumzpm.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWdjdWp6eXpxZmp2bHVtenBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzgzNzEsImV4cCI6MjA5MDIxNDM3MX0.A6cx3covHatuMa6PgkLVquDyrZAjzRCk3Knt0nKq2tQ';
+
+// ── Accounts list (for slug → accountId lookup) ───────────────────────────────
+const ACCOUNTS_RAW = [
+  ["PAUSE CORP","JXD103634"],["TOLEDONEST","JXD070148"],["BOYACIY ANA","JXD090906"],
+  ["NEUSS","JXD059042"],["DAR KAR CO","JXD085021"],["BOYS BOYAC","JXD100515"],
+  ["ROLUCALI","JXD076590"],["DI IORIO","JXD075527"],["MASRA GREA","JXD087027"],
+  ["ROCHINASCL","JXD097794"],["BARUN VALL","JXD092324"],["FIGUERASMA","JXD100184"],
+  ["GRAND EMUN","JXD096911"],["PRONOTTI","JXD059752"],["ZEBULUN FA","JXD093561"],
+  ["SAFDIEJACO","JXD099279"],["LA VENTANA","JXD097059"],["MANDIP GRE","JXD087043"],
+  ["MATOSSIAN","JXD068639"],["TRUCCO","JXD059463"],["ALJESEM CO","JXD103956"],
+  ["UNIVERSE I","JXD095236"],["REWA I ASS","JXD093959"],["HOME GLOBA","JXD086763"],
+  ["PETLIUKDAV","JXD091672"],["HIROAXON C","JXD098313"],["SHWIFFDIEG","JXD091458"],
+  ["RUTHADRIAN","JXD108286"],["DIKGOZCLAU","JXD102156"],["DAMEMAC CO","JXD103592"],
+  ["GARNITUR L","JXD108682"],["SFB GEARS","JXD098750"],["CARLOSGUST","JXD100150"],
+  ["ZELIONEDАН","JXD098347"],["SABAN","JXD084917"],["TRUCCO","JXD068944"],
+  ["BUENOS","JXD087613"],["GO FOWARD","JXD105530"],["NOAH S ARK","JXD109953"],
+  ["KAHANOVSKY","JXD108328"],["ASTIZ-PFIS","JXD068589"],["PFISTER","JXD059067"],
+  ["HERSEN NOB","JXD096515"],["KONICHI CO","JXD107601"],["MARCHESOTT","JXD093397"],
+  ["MARGOLINLU","JXD099212"],["MARINONICO","JXD100499"],["BAEZJUAN F","JXD104152"],
+  ["BASILROBE","JXD106801"],["JUAVA FAMI","JXD110902"],["ESCAMILLAL","JXD107106"],
+  ["GUTHMANNTO","JXD092456"],["NEUSSJULIE","JXD105225"],["DUBINSKY","JXD068001"],
+  ["MILITOSANT","JXD095301"],["NIEDLICHGR","JXD095830"],["GALANTEMAR","JXD097232"],
+  ["DSTEX I AS","JXD099121"],["ROYS PEAK","JXD109011"],["LOZADA","JXD059455"],
+  ["GODOY","JXD081731"],["GROUP ELVI","JXD103709"],["PAZJOAQUIN","JXD104467"],
+  ["KRIVULINE","JXD110175"],["RIZZI","JXD059158"],["LAVISCHWIL","JXD108914"],
+  ["PRONOTTIMI","JXD111546"]
+];
+
+// Build slug → {name, account} map
+function makeSlug(name, account) {
+  return name.split(' ')[0].toLowerCase() + account.slice(-3);
+}
+const SLUG_MAP = {};
+ACCOUNTS_RAW.forEach(([name, account]) => {
+  SLUG_MAP[makeSlug(name, account)] = { name, account };
+});
+
+// ── Slug detection ────────────────────────────────────────────────────────────
+function detectSlug() {
+  // 1. Query param ?slug=
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('slug')) return params.get('slug');
+  // 2. Hash (local file:// testing)
+  if (window.location.hash) return window.location.hash.replace('#', '');
+  // 3. Last path segment (production)
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  if (parts.length) return parts[parts.length - 1];
+  return null;
+}
+
+// ── Formatters ────────────────────────────────────────────────────────────────
+const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function fmtUSD(v) {
+  if (v == null) return '—';
+  return 'USD ' + Math.round(v).toLocaleString('en-US');
+}
+function fmtSignedUSD(v) {
+  if (v == null) return '—';
+  const abs = Math.round(Math.abs(v)).toLocaleString('en-US');
+  return (v >= 0 ? '+USD ' : '-USD ') + abs;
+}
+function fmtPct(v) {
+  if (v == null) return '—';
+  return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+}
+function fmtM(v) {
+  if (v == null) return '—';
+  if (Math.abs(v) >= 1000000) return '$' + (v / 1000000).toFixed(2) + 'M';
+  if (Math.abs(v) >= 1000) return '$' + Math.round(v / 1000) + 'K';
+  return '$' + Math.round(v);
+}
+function fmtMid(v) {
+  if (v == null) return '—';
+  if (Math.abs(v) >= 1000000) return (v / 1000000).toFixed(2) + 'M';
+  if (Math.abs(v) >= 1000) return (v / 1000).toFixed(0) + 'K';
+  return Math.round(v).toString();
+}
+function fmtDate(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr + 'T12:00:00');
+  return MESES_ES[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2);
+}
+function fmtDateLong(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr + 'T12:00:00');
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return d.getDate() + ' de ' + months[d.getMonth()] + ' de ' + d.getFullYear();
+}
+function pctClass(v) {
+  if (v == null) return 'neu';
+  return v >= 0 ? 'pos' : 'neg';
+}
+
+// ── Supabase fetch ────────────────────────────────────────────────────────────
+function sbFetch(path) {
+  return fetch(SB_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json'
+    }
+  }).then(r => r.json());
+}
+
+// ── Bar chart builder ─────────────────────────────────────────────────────────
+function buildBarChart(history) {
+  const wrap = document.getElementById('barChart');
+  wrap.innerHTML = '';
+  if (!history || !history.length) return;
+
+  // Group by calendar year, compound quarterly pct
+  const byYear = {};
+  history.forEach(h => {
+    if (h.partial) return; // skip partial rows for annual bars
+    const yr = h.period_end.slice(0, 4);
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(h.pct);
+  });
+
+  // Also add current YTD partials
+  const ytdRows = history.filter(h => h.period_end.slice(0, 4) === '2026');
+  let ytdPct = null;
+  if (ytdRows.length) {
+    let r = 1;
+    ytdRows.forEach(h => { if (h.pct != null) r *= 1 + h.pct / 100; });
+    ytdPct = (r - 1) * 100;
+  }
+
+  const bars = [];
+  Object.keys(byYear).sort().forEach(yr => {
+    const vals = byYear[yr].filter(v => v != null);
+    if (!vals.length) return;
+    let r = 1;
+    vals.forEach(v => r *= 1 + v / 100);
+    const pct = (r - 1) * 100;
+    bars.push({ yr, pct });
+  });
+  if (ytdPct != null) {
+    const curYr = new Date().getFullYear();
+    bars.push({ yr: "YTD'" + String(curYr).slice(2), pct: ytdPct, ytd: true });
+  }
+
+  if (!bars.length) return;
+  const maxAbs = Math.max(...bars.map(b => Math.abs(b.pct)), 0.01);
+  const MAX_H = 110;
+
+  bars.forEach(b => {
+    const h = Math.max(4, Math.round((Math.abs(b.pct) / maxAbs) * MAX_H));
+    const pos = b.pct >= 0;
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    col.innerHTML = `
+      <div class="bar-val ${pos?'pos':'neg'}">${pos?'+':''}${b.pct.toFixed(2)}%</div>
+      <div class="bar-body ${pos?'pos':'neg'}" style="height:${h}px;opacity:${b.ytd?'0.65':'1'}"></div>
+      <div class="bar-yr">${b.yr}</div>
+    `;
+    wrap.appendChild(col);
+  });
+}
+
+// ── Donut chart builder ───────────────────────────────────────────────────────
+let donutChartInst = null;
+function buildDonut(positions, totalValue) {
+  const section = document.getElementById('donut-section');
+  const legendEl = document.getElementById('donut-legend');
+  const totalEl  = document.getElementById('donut-total');
+
+  totalEl.textContent = fmtMid(totalValue);
+
+  if (!positions || !positions.length) {
+    section.innerHTML = `<div class="placeholder-box" style="width:100%;">Composición próximamente</div>`;
+    return;
+  }
+
+  // Aggregate by category
+  const CAT_LABELS = { 'Renta Fija': 'RF', 'Renta Variable': 'RV', 'Alternativos': 'ALT', 'Liquidez': 'LIQ' };
+  const CAT_COLORS = {
+    'Renta Fija': '#c9a96e',
+    'Renta Variable': '#4caf7d',
+    'Alternativos': '#8fa3be',
+    'Liquidez': 'rgba(255,255,255,0.15)'
+  };
+  const CAT_ORDER = ['Renta Fija','Renta Variable','Alternativos','Liquidez'];
+
+  const catTotals = {};
+  CAT_ORDER.forEach(c => catTotals[c] = 0);
+  positions.forEach(p => {
+    const cat = p.category || 'Alternativos';
+    if (catTotals[cat] !== undefined) catTotals[cat] += (p.pct_cart || 0);
+    else catTotals['Alternativos'] += (p.pct_cart || 0);
+  });
+
+  const data = CAT_ORDER.map(c => catTotals[c]);
+  const colors = CAT_ORDER.map(c => CAT_COLORS[c]);
+
+  if (donutChartInst) { donutChartInst.destroy(); donutChartInst = null; }
+  donutChartInst = new Chart(document.getElementById('donutChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 5
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { animateRotate: true, duration: 900 }
+    }
+  });
+
+  legendEl.innerHTML = CAT_ORDER.map((cat, i) => {
+    if (data[i] < 0.01) return '';
+    return `<div class="legend-row">
+      <div class="legend-left">
+        <div class="legend-dot" style="background:${colors[i]}"></div>
+        <div class="legend-name">${cat}</div>
+      </div>
+      <div class="legend-pct">${data[i].toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Evolution chart builder ───────────────────────────────────────────────────
+let evoChartInst = null;
+function buildEvo(history, startYear, curYear) {
+  const titleEl = document.getElementById('evo-title');
+  titleEl.textContent = `Evolución · ${startYear} – ${curYear}`;
+
+  if (!history || !history.length) {
+    document.querySelector('.evo-chart-wrap').innerHTML =
+      `<div class="placeholder-box">Sin datos de evolución</div>`;
+    return;
+  }
+
+  const labels = history.map(h => fmtDate(h.period_end));
+  const portfolio = history.map(h => h.ending_value);
+  const aportes   = history.map(h => h.net_contribution);
+
+  if (evoChartInst) { evoChartInst.destroy(); evoChartInst = null; }
+  evoChartInst = new Chart(document.getElementById('evoChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Valor de Cartera',
+          data: portfolio,
+          borderColor: '#c9a96e',
+          backgroundColor: 'rgba(201,169,110,0.08)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#c9a96e',
+          pointBorderWidth: 0,
+          tension: 0.3,
+          fill: true,
+        },
+        {
+          label: 'Aportes Netos',
+          data: aportes,
+          borderColor: 'rgba(255,255,255,0.22)',
+          borderWidth: 1.5,
+          borderDash: [5, 4],
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e3254',
+          borderColor: 'rgba(201,169,110,0.3)',
+          borderWidth: 1,
+          titleColor: '#c9a96e',
+          bodyColor: '#f0ede8',
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${fmtM(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: { color: '#7a94b0', font: { size: 10 }, maxTicksLimit: 8 }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: { color: '#7a94b0', font: { size: 10 }, callback: fmtM }
+        }
+      }
+    }
+  });
+}
+
+// ── Positions table builder ───────────────────────────────────────────────────
+function buildPositions(positions) {
+  if (!positions || !positions.length) return;
+  document.getElementById('positions-section').style.display = '';
+  const CAT_CLASS = {
+    'Renta Fija': 'cat-rf',
+    'Renta Variable': 'cat-rv',
+    'Alternativos': 'cat-alt',
+    'Liquidez': 'cat-liq'
+  };
+  const tbody = document.getElementById('positions-tbody');
+  tbody.innerHTML = positions.map(p => {
+    const catClass = CAT_CLASS[p.category] || 'cat-alt';
+    const glUsdClass = (p.gl_usd || 0) >= 0 ? 'tv-pos' : 'tv-neg';
+    const glPctClass = (p.gl_pct || 0) >= 0 ? 'tv-pos' : 'tv-neg';
+    return `<tr>
+      <td>${p.name || '—'}</td>
+      <td><span class="cat-badge ${catClass}">${p.category || '—'}</span></td>
+      <td>${p.pct_cart != null ? p.pct_cart.toFixed(1)+'%' : '—'}</td>
+      <td>${p.value_usd != null ? fmtUSD(p.value_usd) : '—'}</td>
+      <td class="${glUsdClass}">${p.gl_usd != null ? fmtSignedUSD(p.gl_usd) : '—'}</td>
+      <td class="${glPctClass}">${p.gl_pct != null ? fmtPct(p.gl_pct) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Render all ────────────────────────────────────────────────────────────────
+function render(data, history, positions) {
+  // HEADER
+  document.getElementById('hdr-name').textContent = data.name || '—';
+  document.getElementById('hdr-account').textContent = data.account || '—';
+  document.getElementById('hdr-asof').textContent = fmtDateLong(data.as_of);
+  document.title = 'OFIR · ' + (data.name || 'Performance');
+
+  // HERO
+  const endVal = data.ending_value || data.value;
+  const netCon = data.net_contribution;
+  const glUsd  = (endVal != null && netCon != null) ? endVal - netCon : null;
+
+  document.getElementById('h-valor').textContent = fmtUSD(endVal);
+  document.getElementById('h-aportes').textContent = fmtUSD(netCon);
+
+  const gEl = document.getElementById('h-ganancia');
+  gEl.textContent = fmtSignedUSD(data.change_in_value != null ? data.change_in_value : glUsd);
+  const glVal = data.change_in_value != null ? data.change_in_value : glUsd;
+  gEl.className = 'hero-num ' + (glVal == null ? '' : glVal >= 0 ? 'pos' : 'neg');
+
+  const startStr = data.start_date ? fmtDate(data.start_date) : null;
+  const asofStr  = data.as_of ? fmtDate(data.as_of) : null;
+  document.getElementById('h-period-sub').textContent =
+    startStr && asofStr ? `Institucional · ${startStr} – ${asofStr}` : 'Institucional';
+
+  // PERFORMANCE CARDS
+  function setPerfCard(id, val) {
+    const el = document.getElementById(id);
+    if (val == null) { el.textContent = '—'; el.className = 'perf-pct neu'; }
+    else { el.textContent = fmtPct(val); el.className = 'perf-pct ' + pctClass(val); }
+  }
+  setPerfCard('p-ytd',  data.ytd);
+  setPerfCard('p-2025', data.y2025);
+  setPerfCard('p-2024', data.y2024);
+  setPerfCard('p-3y',   data.y3);
+  setPerfCard('p-tir',  data.since_start);
+
+  // BAR CHART
+  buildBarChart(history);
+
+  // MÉTRICAS
+  const volEl = document.getElementById('m-vol');
+  if (data.vol != null) { volEl.textContent = data.vol.toFixed(2) + '%'; volEl.className = 'metric-val'; }
+  else { volEl.textContent = '—'; volEl.className = 'metric-val neu'; }
+
+  const glUsdEl = document.getElementById('m-gl-usd');
+  if (glUsd != null) {
+    glUsdEl.textContent = fmtSignedUSD(glUsd);
+    glUsdEl.className = 'metric-val ' + (glUsd >= 0 ? 'pos' : 'neg');
+  } else { glUsdEl.textContent = '—'; glUsdEl.className = 'metric-val'; }
+
+  const glPctEl = document.getElementById('m-gl-pct');
+  const glPct = (glUsd != null && netCon) ? glUsd / netCon * 100 : null;
+  if (glPct != null) {
+    glPctEl.textContent = fmtPct(glPct);
+    glPctEl.className = 'metric-val ' + (glPct >= 0 ? 'pos' : 'neg');
+  } else { glPctEl.textContent = '—'; glPctEl.className = 'metric-val'; }
+
+  const tirEl = document.getElementById('m-tir');
+  if (data.since_start != null) {
+    tirEl.textContent = fmtPct(data.since_start);
+    tirEl.className = 'metric-val ' + pctClass(data.since_start);
+  } else { tirEl.textContent = '—'; tirEl.className = 'metric-val'; }
+
+  const startYr = data.start_date ? data.start_date.slice(0,4) : '—';
+  const asofYr  = data.as_of ? data.as_of.slice(0,4) : new Date().getFullYear();
+  document.getElementById('m-tir-sub').textContent =
+    startStr && asofStr ? `${startStr} – ${asofStr}` : '';
+
+  // DONUT + EVO
+  buildDonut(positions, endVal);
+  buildEvo(history, startYr, asofYr);
+
+  // POSITIONS TABLE
+  buildPositions(positions);
+
+  // Show main content
+  document.getElementById('loading').style.display    = 'none';
+  document.getElementById('main-content').style.display = '';
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+async function boot() {
+  const slug = detectSlug();
+  if (!slug || !SLUG_MAP[slug]) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-page').style.display = 'flex';
+    return;
+  }
+
+  const { account } = SLUG_MAP[slug];
+
+  try {
+    const [tracker, history, positions] = await Promise.all([
+      sbFetch(`performance_tracker?account=eq.${encodeURIComponent(account)}&limit=1`),
+      sbFetch(`performance_history?account=eq.${encodeURIComponent(account)}&order=period_end.asc`),
+      sbFetch(`performance_positions?account=eq.${encodeURIComponent(account)}&order=pct_cart.desc`)
+    ]);
+
+    const data = Array.isArray(tracker) && tracker.length ? tracker[0] : null;
+    if (!data) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-page').style.display = 'flex';
+      return;
+    }
+
+    render(data, history || [], positions || []);
+  } catch (err) {
+    console.error(err);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-page').style.display = 'flex';
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
