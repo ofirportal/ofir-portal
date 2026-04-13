@@ -1,4 +1,5 @@
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/performance_portal.html"
   status = 200
+  force = false
