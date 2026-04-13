@@ -778,9 +778,9 @@ footer p {
         <div class="metric-lbl">Volatilidad Anualizada</div>
       </div>
       <div class="metric-card">
-        <div class="metric-val" id="m-gl-usd">—</div>
-        <div class="metric-lbl">Ganancia Total (G&amp;L $)</div>
-        <div class="metric-sub">Valor actual − Aportes netos</div>
+        <div class="metric-val" id="m-sharpe">—</div>
+        <div class="metric-lbl">Sharpe Ratio</div>
+        <div class="metric-sub">Rf = 4.5% · desde inicio</div>
       </div>
       <div class="metric-card">
         <div class="metric-val" id="m-gl-pct">—</div>
@@ -788,9 +788,9 @@ footer p {
         <div class="metric-sub">Sobre aportes netos</div>
       </div>
       <div class="metric-card">
-        <div class="metric-val" id="m-sharpe">—</div>
-        <div class="metric-lbl">Sharpe Ratio</div>
-        <div class="metric-sub">Rf = 4.5% · desde inicio</div>
+        <div class="metric-val" id="m-drawdown">—</div>
+        <div class="metric-lbl">Máx. Drawdown</div>
+        <div class="metric-sub">Desde inicio</div>
       </div>
     </div>
   </div>
@@ -1248,6 +1248,23 @@ function render(data, history, positions) {
   } else {
     sharpeEl.textContent = '—';
     sharpeEl.className = 'metric-val';
+  }
+
+  // Max Drawdown — calculated from history ending_values
+  const ddEl = document.getElementById('m-drawdown');
+  if (history && history.length > 1) {
+    let peak = -Infinity;
+    let maxDD = 0;
+    history.forEach(h => {
+      if (h.ending_value > peak) peak = h.ending_value;
+      const dd = (h.ending_value - peak) / peak * 100;
+      if (dd < maxDD) maxDD = dd;
+    });
+    ddEl.textContent = maxDD.toFixed(2) + '%';
+    ddEl.className = 'metric-val neg';
+  } else {
+    ddEl.textContent = '—';
+    ddEl.className = 'metric-val';
   }
 
   const startYr = data.start_date ? data.start_date.slice(0,4) : '—';
