@@ -1165,14 +1165,10 @@ function buildEvo(history, startYear, curYear) {
 function cleanFundName(name) {
   if (!name) return '—';
   let n = name
-    .replace(/\s+CLASS\s+[A-Z0-9\/\-]+(\s+\([^)]*\))*/gi, '')
-    .replace(/\s+INSTITUTIONAL\b.*/gi, '')
-    .replace(/\s+SHARES?\b.*/gi, '')
-    .replace(/\s+SHS\b.*/gi, '')
-    .replace(/\s+ISIN\s+[A-Z0-9#]+.*/gi, '')
-    .replace(/\s+\([^)]*\)/g, '')
-    .replace(/\s+0\.000%.*$/gi, '')
-    .replace(/\s+RG[-\w]*\s+/gi, ' ')
+    .replace(/\s+FUND\b.*/i, ' FUND')
+    .replace(/\s+ETF\b.*/i, ' ETF')
+    .replace(/\s+TR\s+/gi, ' ')
+    .replace(/\s+SHS?\b.*/gi, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
   return n;
