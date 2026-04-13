@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "/*"
+  to = "/performance_portal.html"
+  status = 200
