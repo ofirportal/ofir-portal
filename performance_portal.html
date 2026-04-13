@@ -1162,6 +1162,22 @@ function buildEvo(history, startYear, curYear) {
   });
 }
 
+function cleanFundName(name) {
+  if (!name) return '—';
+  let n = name
+    .replace(/\s+CLASS\s+[A-Z0-9\/\-]+(\s+\([^)]*\))*/gi, '')
+    .replace(/\s+INSTITUTIONAL\b.*/gi, '')
+    .replace(/\s+SHARES?\b.*/gi, '')
+    .replace(/\s+SHS\b.*/gi, '')
+    .replace(/\s+ISIN\s+[A-Z0-9#]+.*/gi, '')
+    .replace(/\s+\([^)]*\)/g, '')
+    .replace(/\s+0\.000%.*$/gi, '')
+    .replace(/\s+RG[-\w]*\s+/gi, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return n;
+}
+
 // ── Positions ─────────────────────────────────────────────────────────────────
 function buildPositions(positions) {
   if (!positions || !positions.length) return;
@@ -1177,7 +1193,7 @@ function buildPositions(positions) {
     const glUsdClass = p.gl_usd != null ? (p.gl_usd >= 0 ? 'tv-pos' : 'tv-neg') : 'tv-num';
     const glPctClass = p.gl_pct != null ? (p.gl_pct >= 0 ? 'tv-pos' : 'tv-neg') : 'tv-num';
     return `<tr>
-      <td><span class="pos-name">${p.name || '—'}</span></td>
+      <td><span class="pos-name">${cleanFundName(p.name)}</span></td>
       <td><span class="cat-badge ${catClass}">${p.category || '—'}</span></td>
       <td class="tv-num">${p.pct_cart != null ? p.pct_cart.toFixed(1)+'%' : '—'}</td>
       <td class="tv-num">${p.value_usd != null ? fmtUSD(p.value_usd) : '—'}</td>
