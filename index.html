@@ -1466,7 +1466,18 @@ function tr_updateSortArrows(){
   });
 }
 function tr_filterTable(){tr_applySort();}
-function tr_slug(r){return r.name.split(' ')[0].toLowerCase()+r.account.slice(-3);}
+// Nombres reales para cuentas donde el scraper guardó el ID como nombre
+const TR_NAME_MAP={
+  'JXD105225':'NEUSSJULIE','JXD105530':'GO FOWARD', 'JXD106801':'BASILROBE',
+  'JXD107106':'ESCAMILLAL','JXD107601':'KONICHI CO','JXD107734':'LUCKY MANS',
+  'JXD108286':'RUTHADRIAN','JXD108328':'KAHANOVSKY','JXD108682':'GARNITUR L',
+  'JXD108914':'LAVISCHWIL','JXD109011':'ROYS PEAK', 'JXD109953':'NOAH S ARK',
+  'JXD110167':'FLASCHSERG','JXD110175':'KRIVULINE', 'JXD110902':'JUAVA FAMI',
+  'JXD111066':'BACHI TEAM','JXD111496':'HILZERMANG','JXD111512':'SAFLY HOLD',
+  'JXD111546':'PRONOTTIMI','JXD111751':'ZEBULUN2',
+};
+function tr_name(r){return TR_NAME_MAP[r.account]||r.name;}
+function tr_slug(r){return tr_name(r).split(' ')[0].toLowerCase()+r.account.slice(-3);}
 function tr_renderTable(){
   const tbody=document.getElementById('tr-tbody');
   if(!trData.length){tbody.innerHTML='';document.getElementById('tr-rowCount').textContent='';return;}
@@ -1474,7 +1485,7 @@ function tr_renderTable(){
   tbody.innerHTML=trFiltered.map(r=>{
     const gl=tr_calcGL(r);
     return`<tr>
-      <td>${tr_esc(r.name)}</td>
+      <td>${tr_esc(tr_name(r))}</td>
       <td>${tr_esc(r.account)}</td>
       <td class="tv">${tr_fmtUSD(r.ending_value??r.value)}</td>
       <td class="${r.net_contribution!=null?'tv':'td2'}">${tr_fmtUSD(r.net_contribution)}</td>
