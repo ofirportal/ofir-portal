@@ -1160,6 +1160,14 @@ function buildEvo(history, startYear, curYear) {
           ticks: { color: '#3d5a7a', font: { size: 9.5, family: 'DM Mono' }, maxTicksLimit: 8 }
         },
         y: {
+          min: (function(){
+            const allVals = [...portfolio, ...aportes].filter(v => v != null && v > 0);
+            if (!allVals.length) return 0;
+            const minVal = Math.min(...allVals);
+            const maxVal = Math.max(...allVals);
+            const margin = (maxVal - minVal) * 0.15 || minVal * 0.05;
+            return Math.max(0, Math.floor((minVal - margin) / 1000) * 1000);
+          })(),
           grid: { color: 'rgba(255,255,255,0.03)' },
           ticks: { color: '#3d5a7a', font: { size: 9.5, family: 'DM Mono' }, callback: fmtM }
         }
