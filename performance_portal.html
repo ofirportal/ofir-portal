@@ -993,14 +993,16 @@ function buildBarChart(history, data) {
       ytdPct = (r - 1) * 100;
     }
 
+    const currentYear = new Date().getFullYear().toString();
     Object.keys(byYear).sort().forEach(yr => {
+      if (ytdPct != null && yr === currentYear) return; // YTD'xx ya cubre el año en curso
       const vals = byYear[yr].filter(v => v != null);
       if (!vals.length) return;
       let r = 1;
       vals.forEach(v => r *= 1 + v / 100);
       bars.push({ yr, pct: (r - 1) * 100 });
     });
-    if (ytdPct != null) bars.push({ yr: "YTD'26", pct: ytdPct, ytd: true });
+    if (ytdPct != null) bars.push({ yr: `YTD'${currentYear.slice(2)}`, pct: ytdPct, ytd: true });
 
   } else if (data) {
     // Fallback: usar datos anuales de performance_tracker
