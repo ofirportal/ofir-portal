@@ -970,37 +970,43 @@ function sbFetch(path) {
 }
 
 // ── Bar chart ─────────────────────────────────────────────────────────────────
-function buildBarChart(history) {
+function buildBarChart(history, data) {
   const wrap = document.getElementById('barChart');
   wrap.innerHTML = '';
-  if (!history || !history.length) return;
-
-  const byYear = {};
-  history.forEach(h => {
-    if (h.partial) return;
-    const yr = h.period_end.slice(0, 4);
-    if (!byYear[yr]) byYear[yr] = [];
-    byYear[yr].push(h.pct);
-  });
-
-  const ytdRows = history.filter(h => h.period_end.slice(0, 4) === '2026');
-  let ytdPct = null;
-  if (ytdRows.length) {
-    let r = 1;
-    ytdRows.forEach(h => { if (h.pct != null) r *= 1 + h.pct / 100; });
-    ytdPct = (r - 1) * 100;
-  }
 
   const bars = [];
-  Object.keys(byYear).sort().forEach(yr => {
-    const vals = byYear[yr].filter(v => v != null);
-    if (!vals.length) return;
-    let r = 1;
-    vals.forEach(v => r *= 1 + v / 100);
-    bars.push({ yr, pct: (r - 1) * 100 });
-  });
-  if (ytdPct != null) {
-    bars.push({ yr: "YTD'26", pct: ytdPct, ytd: true });
+
+  if (history && history.length) {
+    const byYear = {};
+    history.forEach(h => {
+      if (h.partial) return;
+      const yr = h.period_end.slice(0, 4);
+      if (!byYear[yr]) byYear[yr] = [];
+      byYear[yr].push(h.pct);
+    });
+
+    const ytdRows = history.filter(h => h.period_end.slice(0, 4) === '2026');
+    let ytdPct = null;
+    if (ytdRows.length) {
+      let r = 1;
+      ytdRows.forEach(h => { if (h.pct != null) r *= 1 + h.pct / 100; });
+      ytdPct = (r - 1) * 100;
+    }
+
+    Object.keys(byYear).sort().forEach(yr => {
+      const vals = byYear[yr].filter(v => v != null);
+      if (!vals.length) return;
+      let r = 1;
+      vals.forEach(v => r *= 1 + v / 100);
+      bars.push({ yr, pct: (r - 1) * 100 });
+    });
+    if (ytdPct != null) bars.push({ yr: "YTD'26", pct: ytdPct, ytd: true });
+
+  } else if (data) {
+    // Fallback: usar datos anuales de performance_tracker
+    if (data.y2024 != null) bars.push({ yr: '2024', pct: data.y2024 });
+    if (data.y2025 != null) bars.push({ yr: '2025', pct: data.y2025 });
+    if (data.ytd   != null) bars.push({ yr: "YTD'26", pct: data.ytd, ytd: true });
   }
 
   if (!bars.length) return;
@@ -1234,7 +1240,7 @@ function render(data, history, positions) {
   setPerfCard('p-3y',   data.y3);
   setPerfCard('p-tir',  data.since_start);
 
-  buildBarChart(history);
+  buildBarChart(history, data);
 
   // Métricas
   const volEl = document.getElementById('m-vol');
