@@ -161,7 +161,7 @@ header {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
   gap: 0;
 }
 
@@ -172,6 +172,13 @@ header {
 .hero-item + .hero-item {
   padding-left: 48px;
   border-left: 1px solid var(--border);
+  margin-left: 48px;
+}
+
+.hero-item--patrimonio {
+  background: #162336;
+  border-left: 1px solid rgba(255,255,255,0.04) !important;
+  padding-left: 48px;
   margin-left: 48px;
 }
 
@@ -736,6 +743,21 @@ footer p {
     <div class="hero-item">
       <div class="hero-num" id="h-ganancia">—</div>
       <div class="hero-lbl" id="h-ganancia-lbl">Ganancia Total</div>
+    </div>
+    <div class="hero-item hero-item--patrimonio">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <svg width="11" height="13" viewBox="0 0 11 13" fill="none">
+          <rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="#c9a96e" stroke-width="1.2"/>
+          <path d="M3 5.5V3.5a2.5 2.5 0 0 1 5 0v2" stroke="#c9a96e" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px;color:#c9a96e;text-transform:uppercase;letter-spacing:0.08em;">PATRIMONIO TOTAL</span>
+      </div>
+      <div style="font-family:var(--serif);font-size:42px;font-weight:400;color:rgba(255,255,255,0.15);filter:blur(5px);user-select:none;pointer-events:none;">USD 8,400,000</div>
+      <div style="margin-top:10px;">
+        <div style="font-size:11px;color:#8a9bb5;font-style:italic;">Tu patrimonio va más allá de esta cartera</div>
+        <div style="font-size:10px;color:#566a82;margin-top:3px;">Real estate · Seguros · Otras inversiones</div>
+      </div>
+      <a href="https://wa.me/5491151778000?text=Hola%20Alan%2C%20me%20interesa%20ver%20el%20an%C3%A1lisis%20patrimonial%20completo." target="_blank" style="display:block;font-size:11px;color:#c9a96e;text-decoration:none;letter-spacing:0.04em;margin-top:10px;">Hablar con Alan →</a>
     </div>
   </div>
   <div class="hero-period" id="h-period-sub">Institucional</div>
