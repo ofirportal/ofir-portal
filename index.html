@@ -694,7 +694,7 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
           <thead><tr>
             <th onclick="tr_sortBy('name')" data-col="name">Cuenta <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('account')" data-col="account">Account # <span class="tr-arr"></span></th>
-            <th onclick="tr_sortBy('value')" data-col="value">Valor USD <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('ending_value')" data-col="ending_value">Valor USD <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('net_contribution')" data-col="net_contribution">Aportes <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('change_in_value')" data-col="change_in_value">G&amp;L $ <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('ytd')" data-col="ytd">YTD <span class="tr-arr"></span></th>
@@ -1361,7 +1361,7 @@ function addRec(){
   rRecs(clients[selIdx].recs);
 }
 /* ══ PERFORMANCE TRACKER JS ══ */
-let trData=[],trFiltered=[],trSortCol='value',trSortDir=-1,_trInited=false;
+let trData=[],trFiltered=[],trSortCol='ending_value',trSortDir=-1,_trInited=false;
 const TR_KEY='ofir_performance_data';
 
 async function tr_initView(){
@@ -1419,7 +1419,7 @@ function tr_loadData(data){
   document.getElementById('tr-asOf').textContent=asOf?'As of '+asOf:'';
 }
 function tr_renderSummary(){
-  const totalAUM=trData.reduce((s,r)=>s+(r.value||0),0);
+  const totalAUM=trData.reduce((s,r)=>s+((r.ending_value??r.value)||0),0);
   const n=trData.length;
   const withYtd=trData.filter(r=>r.ytd!=null);
   const avgYtd=withYtd.length?withYtd.reduce((s,r)=>s+r.ytd,0)/withYtd.length:null;
@@ -1476,7 +1476,7 @@ function tr_renderTable(){
     return`<tr>
       <td>${tr_esc(r.name)}</td>
       <td>${tr_esc(r.account)}</td>
-      <td class="tv">${tr_fmtUSD(r.value)}</td>
+      <td class="tv">${tr_fmtUSD(r.ending_value??r.value)}</td>
       <td class="${r.net_contribution!=null?'tv':'td2'}">${tr_fmtUSD(r.net_contribution)}</td>
       <td class="${tr_glClass(gl)}">${tr_fmtSignedUSD(gl)}</td>
       <td class="${tr_pctClass(r.ytd)}">${tr_fmtPct(r.ytd)}</td>
