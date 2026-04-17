@@ -1243,7 +1243,8 @@ function buildPositions(positions) {
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(data, history, positions) {
-  document.getElementById('hdr-account').textContent = data.account || '—';
+  const acct = data.account || '—';
+  document.getElementById('hdr-account').textContent = acct.length > 7 ? acct.slice(0,4) + 'xx' + acct.slice(-3) : acct;
   document.getElementById('hdr-asof').textContent    = fmtDateLong(data.as_of);
   document.title = 'OFIR · ' + (data.name || 'Performance');
 
