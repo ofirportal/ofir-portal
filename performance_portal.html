@@ -725,6 +725,7 @@ footer p {
     </div>
   </div>
   <div class="header-right">
+    <div class="client-name" id="hdr-name">—</div>
     <div class="header-meta">Cuenta <span class="acct" id="hdr-account">—</span> · Al <span id="hdr-asof">—</span></div>
   </div>
 </header>
@@ -1243,6 +1244,7 @@ function buildPositions(positions) {
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(data, history, positions) {
+  document.getElementById('hdr-name').textContent    = data.name || '—';
   document.getElementById('hdr-account').textContent = data.account || '—';
   document.getElementById('hdr-asof').textContent    = fmtDateLong(data.as_of);
   document.title = 'OFIR · ' + (data.name || 'Performance');
