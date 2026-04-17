@@ -706,6 +706,10 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
             <th onclick="tr_sortBy('y3')" data-col="y3">3 Años <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('since_start')" data-col="since_start">Since Start <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('vol')" data-col="vol">Vol <span class="tr-arr"></span></th>
+            <th data-col="comp_rf" style="color:#c9a96e">RF%</th>
+            <th data-col="comp_rv" style="color:#3d9e6e">RV%</th>
+            <th data-col="comp_alt" style="color:#5d7a9a">ALT%</th>
+            <th data-col="comp_liq" style="color:#8fa3be">LIQ%</th>
             <th data-col="portal">Portal</th>
           </tr></thead>
           <tbody id="tr-tbody"></tbody>
@@ -1361,7 +1365,7 @@ function addRec(){
   rRecs(clients[selIdx].recs);
 }
 /* ══ PERFORMANCE TRACKER JS ══ */
-let trData=[],trFiltered=[],trSortCol='ending_value',trSortDir=-1,_trInited=false;
+let trData=[],trFiltered=[],trSortCol='ending_value',trSortDir=-1,_trInited=false,trComposition={};
 const TR_KEY='ofir_performance_data';
 
 async function tr_initView(){
@@ -1369,10 +1373,26 @@ async function tr_initView(){
   _trInited=true;
   tr_showSpinner(true);
   try{
-    const{data,error}=await db.from('performance_tracker').select('*').order('value',{ascending:false});
-    if(error)throw error;
-    if(data&&data.length){
-      tr_loadData(data);
+    const[trackerRes,posRes]=await Promise.all([
+      db.from('performance_tracker').select('*').order('value',{ascending:false}),
+      db.from('performance_positions').select('account,category,pct_cart')
+    ]);
+    if(trackerRes.error)throw trackerRes.error;
+    if(posRes.data&&posRes.data.length){
+      const comp={};
+      posRes.data.forEach(p=>{
+        if(!comp[p.account])comp[p.account]={RF:0,RV:0,ALT:0,LIQ:0};
+        const cat=p.category||'';
+        const v=p.pct_cart||0;
+        if(cat==='Renta Fija')comp[p.account].RF+=v;
+        else if(cat==='Renta Variable')comp[p.account].RV+=v;
+        else if(cat==='Alternativos')comp[p.account].ALT+=v;
+        else if(cat==='Liquidez')comp[p.account].LIQ+=v;
+      });
+      trComposition=comp;
+    }
+    if(trackerRes.data&&trackerRes.data.length){
+      tr_loadData(trackerRes.data);
       tr_setSync('Sincronizado con Supabase ✓',true);
       return;
     }
@@ -1499,6 +1519,7 @@ function tr_renderTable(){
       <td class="${tr_pctClass(r.y3)}">${tr_fmtPct(r.y3)}</td>
       <td class="${tr_pctClass(r.since_start)}">${tr_fmtPct(r.since_start)}</td>
       <td class="td2">${r.vol!=null?r.vol.toFixed(2)+'%':'—'}</td>
+      ${(()=>{const c=trComposition[r.account];return c?`<td style="color:#c9a96e">${c.RF.toFixed(1)}%</td><td style="color:#3d9e6e">${c.RV.toFixed(1)}%</td><td style="color:#5d7a9a">${c.ALT.toFixed(1)}%</td><td style="color:#8fa3be">${c.LIQ.toFixed(1)}%</td>`:'<td class="td2">—</td><td class="td2">—</td><td class="td2">—</td><td class="td2">—</td>';})()}
       <td>${(()=>{const s=tr_slug(r);return`<a href="https://performance.ofirmfo.com/${s}" target="_blank" style="color:var(--gold);text-decoration:none;font-size:13px;">🔗</a>`;})()}</td>
     </tr>`;
   }).join('');
