@@ -1279,18 +1279,20 @@ function render(data, history, positions) {
   if (glPct != null) { glPctEl.textContent = fmtPct(glPct); glPctEl.className = 'metric-val ' + pctClass(glPct); }
   else { glPctEl.textContent = '—'; glPctEl.className = 'metric-val'; }
 
-  // Ganancia 2026 en dólares = endVal - ending_value al cierre de 2025
+  // Ganancia 2026 en dólares = valorInicio2026 × ytd% (retorno ponderado por tiempo, no afectado por rescates)
   const gan2026El = document.getElementById('m-sharpe');
   let gan2026 = null;
-  if (history && history.length && endVal != null) {
-    const rows2025 = history.filter(h => h.period_end && h.period_end.slice(0, 4) === '2025');
-    if (rows2025.length) {
-      const last2025 = rows2025.sort((a, b) => a.period_end.localeCompare(b.period_end)).slice(-1)[0];
-      if (last2025.ending_value != null) gan2026 = endVal - last2025.ending_value;
+  if (data.ytd != null) {
+    let start2026 = null;
+    if (history && history.length) {
+      const rows2025 = history.filter(h => h.period_end && h.period_end.slice(0, 4) === '2025');
+      if (rows2025.length) {
+        const last2025 = rows2025.sort((a, b) => a.period_end.localeCompare(b.period_end)).slice(-1)[0];
+        if (last2025.ending_value != null) start2026 = last2025.ending_value;
+      }
     }
-  }
-  if (gan2026 == null && data.ytd != null && endVal != null) {
-    gan2026 = endVal - endVal / (1 + data.ytd / 100);
+    if (start2026 == null && endVal != null) start2026 = endVal / (1 + data.ytd / 100);
+    if (start2026 != null) gan2026 = start2026 * (data.ytd / 100);
   }
   if (gan2026 != null) {
     gan2026El.textContent = fmtSignedUSD(gan2026);
