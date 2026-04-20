@@ -802,8 +802,7 @@ footer p {
       </div>
       <div class="metric-card">
         <div class="metric-val" id="m-sharpe">—</div>
-        <div class="metric-lbl">Sharpe Ratio</div>
-        <div class="metric-sub">Rf = 4.5% · desde inicio</div>
+        <div class="metric-lbl">Ganancia 2026 en dólares</div>
       </div>
       <div class="metric-card">
         <div class="metric-val" id="m-gl-pct">—</div>
@@ -1011,24 +1010,16 @@ function buildBarChart(history, data) {
       byYear[yr].push(h.pct);
     });
 
-    const ytdRows = history.filter(h => h.period_end.slice(0, 4) === '2026');
-    let ytdPct = null;
-    if (ytdRows.length) {
-      let r = 1;
-      ytdRows.forEach(h => { if (h.pct != null) r *= 1 + h.pct / 100; });
-      ytdPct = (r - 1) * 100;
-    }
-
     const currentYear = new Date().getFullYear().toString();
     Object.keys(byYear).sort().forEach(yr => {
-      if (ytdPct != null && yr === currentYear) return; // YTD'xx ya cubre el año en curso
+      if (yr === currentYear) return; // YTD'xx cubierto por data.ytd
       const vals = byYear[yr].filter(v => v != null);
       if (!vals.length) return;
       let r = 1;
       vals.forEach(v => r *= 1 + v / 100);
       bars.push({ yr, pct: (r - 1) * 100 });
     });
-    if (ytdPct != null) bars.push({ yr: `YTD'${currentYear.slice(2)}`, pct: ytdPct, ytd: true });
+    if (data && data.ytd != null) bars.push({ yr: `YTD'${currentYear.slice(2)}`, pct: data.ytd, ytd: true });
 
   } else if (data) {
     // Fallback: usar datos anuales de performance_tracker
@@ -1288,16 +1279,25 @@ function render(data, history, positions) {
   if (glPct != null) { glPctEl.textContent = fmtPct(glPct); glPctEl.className = 'metric-val ' + pctClass(glPct); }
   else { glPctEl.textContent = '—'; glPctEl.className = 'metric-val'; }
 
-  // Sharpe Ratio = (TIR - Rf) / Volatilidad
-  const sharpeEl = document.getElementById('m-sharpe');
-  if (data.since_start != null && data.vol != null && data.vol > 0) {
-    const rf = 4.5;
-    const sharpe = (data.since_start - rf) / data.vol;
-    sharpeEl.textContent = sharpe.toFixed(2);
-    sharpeEl.className = 'metric-val ' + pctClass(sharpe);
+  // Ganancia 2026 en dólares = endVal - ending_value al cierre de 2025
+  const gan2026El = document.getElementById('m-sharpe');
+  let gan2026 = null;
+  if (history && history.length && endVal != null) {
+    const rows2025 = history.filter(h => h.period_end && h.period_end.slice(0, 4) === '2025');
+    if (rows2025.length) {
+      const last2025 = rows2025.sort((a, b) => a.period_end.localeCompare(b.period_end)).slice(-1)[0];
+      if (last2025.ending_value != null) gan2026 = endVal - last2025.ending_value;
+    }
+  }
+  if (gan2026 == null && data.ytd != null && endVal != null) {
+    gan2026 = endVal - endVal / (1 + data.ytd / 100);
+  }
+  if (gan2026 != null) {
+    gan2026El.textContent = fmtSignedUSD(gan2026);
+    gan2026El.className = 'metric-val ' + pctClass(gan2026);
   } else {
-    sharpeEl.textContent = '—';
-    sharpeEl.className = 'metric-val';
+    gan2026El.textContent = '—';
+    gan2026El.className = 'metric-val';
   }
 
   // Max Drawdown — calculated from history ending_values
