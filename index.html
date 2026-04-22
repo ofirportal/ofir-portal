@@ -1463,7 +1463,7 @@ function tr_sortBy(col){
 }
 function tr_applySort(){
   const query=document.getElementById('tr-search').value.toLowerCase();
-  trFiltered=trData.filter(r=>r.name.toLowerCase().includes(query)||r.account.toLowerCase().includes(query));
+  trFiltered=trData.filter(r=>tr_name(r).toLowerCase().includes(query)||(r.account||'').toLowerCase().includes(query));
   trFiltered.sort((a,b)=>{
     const av=trSortCol==='change_in_value'?tr_calcGL(a):a[trSortCol];
     const bv=trSortCol==='change_in_value'?tr_calcGL(b):b[trSortCol];
