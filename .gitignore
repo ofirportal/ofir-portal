@@ -1,0 +1,4 @@
+# Scraper local — nunca subir al repo (contiene service_role key)
+netx360_scraper_v3.py
+*.py
+*.json
