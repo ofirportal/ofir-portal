@@ -892,11 +892,42 @@ footer p {
 const SB_URL = 'https://jpegcujzyzqfjvlumzpm.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWdjdWp6eXpxZmp2bHVtenBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzgzNzEsImV4cCI6MjA5MDIxNDM3MX0.A6cx3covHatuMa6PgkLVquDyrZAjzRCk3Knt0nKq2tQ';
 
-// ── Accounts (cargado dinámicamente desde Supabase en boot) ───────────────────
+// ── Accounts ──────────────────────────────────────────────────────────────────
+const ACCOUNTS_RAW = [
+  ["PAUSE CORP","JXD103634"],["TOLEDONEST","JXD070148"],["BOYACIYANA","JXD090906"],
+  ["NEUSS","JXD059042"],["DAR KAR CO","JXD085021"],["BOYS BOYAC","JXD100515"],
+  ["ROLUCALI","JXD076590"],["DI IORIO","JXD075527"],["MASRA GREA","JXD087027"],
+  ["ROCHINASCL","JXD097794"],["BARUN VALL","JXD092324"],["FIGUERASMA","JXD100184"],
+  ["GRAND EMUN","JXD096911"],["PRONOTTI","JXD059752"],["ZEBULUN FA","JXD093561"],
+  ["SAFDIEJACO","JXD099279"],["LA VENTANA","JXD097059"],["MANDIP GRE","JXD087043"],
+  ["MATOSSIAN","JXD068639"],["TRUCCO","JXD059463"],["ALJESEM CO","JXD103956"],
+  ["UNIVERSE I","JXD095236"],["REWA I ASS","JXD093959"],["HOME GLOBA","JXD086763"],
+  ["PETLIUKDAV","JXD091672"],["HIROAXON C","JXD098313"],["SHWIFFDIEG","JXD091458"],
+  ["RUTHADRIAN","JXD108286"],["DIKGOZCLAU","JXD102156"],["DAMEMAC CO","JXD103592"],
+  ["GARNITUR L","JXD108682"],["SFB GEARS","JXD098750"],["CARLOSGUST","JXD100150"],
+  ["ZELIONEDAN","JXD098347"],["SABAN","JXD084917"],["TRUCCO","JXD068944"],
+  ["BUENOS","JXD087613"],["GO FOWARD","JXD105530"],["NOAH S ARK","JXD109953"],
+  ["KAHANOVSKY","JXD108328"],["ASTIZ-PFIS","JXD068589"],["PFISTER","JXD059067"],
+  ["HERSEN NOB","JXD096515"],["KONICHI CO","JXD107601"],["MARCHESOTT","JXD093397"],
+  ["MARGOLINLU","JXD099212"],["MARINONICO","JXD100499"],["BAEZJUAN F","JXD104152"],
+  ["BASILROBE","JXD106801"],["JUAVA FAMI","JXD110902"],["ESCAMILLAL","JXD107106"],
+  ["GUTHMANNTO","JXD092456"],["NEUSSJULIE","JXD105225"],["DUBINSKY","JXD068001"],
+  ["MILITOSANT","JXD095301"],["NIEDLICHGR","JXD095830"],["GALANTEMAR","JXD097232"],
+  ["DSTEX I AS","JXD099121"],["ROYS PEAK","JXD109011"],["LOZADA","JXD059455"],
+  ["GODOY","JXD081731"],["GROUP ELVI","JXD103709"],["PAZJOAQUIN","JXD104467"],
+  ["KRIVULINE","JXD110175"],["RIZZI","JXD059158"],["LAVISCHWIL","JXD108914"],
+  ["PRONOTTIMI","JXD111546"],["ZEBULUN2","JXD111751"],
+  ["LUCKY MANS","JXD107734"],["FLASCHSERG","JXD110167"],["BACHI TEAM","JXD111066"],
+  ["HILZERMANG","JXD111496"],["SAFLY HOLD","JXD111512"]
+];
+
 function makeSlug(name, account) {
   return name.split(' ')[0].toLowerCase() + account.slice(-3);
 }
 const SLUG_MAP = {};
+ACCOUNTS_RAW.forEach(([name, account]) => {
+  SLUG_MAP[makeSlug(name, account)] = { name, account };
+});
 
 // ── Slug detection ────────────────────────────────────────────────────────────
 function detectSlug() {
@@ -1301,16 +1332,6 @@ function render(data, history, positions) {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 async function boot() {
-  // Cargar lista de cuentas desde Supabase para que los slugs estén siempre sincronizados
-  try {
-    const allAccounts = await sbFetch('performance_tracker?select=account,name');
-    allAccounts.forEach(({ name, account }) => {
-      SLUG_MAP[makeSlug(name, account)] = { name, account };
-    });
-  } catch (e) {
-    console.error('Error cargando cuentas:', e);
-  }
-
   const slug = detectSlug();
   if (!slug || !SLUG_MAP[slug]) {
     document.getElementById('loading').style.display = 'none';
