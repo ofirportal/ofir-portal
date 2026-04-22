@@ -1496,7 +1496,7 @@ const TR_NAME_MAP={
   'JXD111066':'BACHI TEAM','JXD111496':'HILZERMANG','JXD111512':'SAFLY HOLD',
   'JXD111546':'PRONOTTIMI','JXD111751':'ZEBULUN2',
 };
-function tr_name(r){return TR_NAME_MAP[r.account]||r.name;}
+function tr_name(r){return TR_NAME_MAP[r.account]||r.name||r.account;}
 function tr_slug(r){return tr_name(r).split(' ')[0].toLowerCase()+r.account.slice(-3);}
 function tr_renderTable(){
   const tbody=document.getElementById('tr-tbody');
