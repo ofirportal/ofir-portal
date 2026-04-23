@@ -1064,8 +1064,8 @@ function renderDash(c){
     type:'doughnut',
     data:{labels:allFlow.length?allFlow.map(function(i){return i.name;}):['Sin ingresos'],datasets:[{data:allFlow.length?allFlow.map(function(i){return i.v;}):[1],backgroundColor:['#5aab8a','#b1913a','#7ea8c9','#a08080','#9aab6e'],borderWidth:0,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(243,244,246,.4)',font:{size:9,family:'Montserrat'},boxWidth:8,padding:6}},
-        tooltip:{backgroundColor:'rgba(26,41,64,.97)',callbacks:{label:function(ctx){return 'USD '+fmt(ctx.raw)+' / año';}}}}}
+      plugins:{legend:{display:true,position:'bottom',labels:{color:getChartColors().legendColor,font:{size:9,family:'Montserrat'},boxWidth:8,padding:6}},
+        tooltip:{backgroundColor:getChartColors().tooltipBg,bodyColor:getChartColors().tooltipBody,callbacks:{label:function(ctx){return 'USD '+fmt(ctx.raw)+' / año';}}}}}
   });
   var notes=c.notes||[];
   document.getElementById('mtgBanner').innerHTML=c.nextMeeting?'<div class="mtg-banner"><div><div class="mtg-label">Proxima reunion</div><div class="mtg-val">'+new Date(c.nextMeeting+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</div></div></div>':'';
@@ -1674,9 +1674,16 @@ function updateChartColors(){
     ch.options.plugins.tooltip.bodyColor=cc.tooltipBody;
     ch.update();
   });
-  if(incChart&&incChart.options.plugins.legend&&incChart.options.plugins.legend.labels)
+  if(incChart&&incChart.options.plugins.legend&&incChart.options.plugins.legend.labels){
     incChart.options.plugins.legend.labels.color=cc.legendColor;
-  if(incChart)incChart.update();
+    incChart.update();
+  }
+  if(incDonut&&incDonut.options.plugins.legend&&incDonut.options.plugins.legend.labels){
+    incDonut.options.plugins.legend.labels.color=cc.legendColor;
+    incDonut.options.plugins.tooltip.backgroundColor=cc.tooltipBg;
+    incDonut.options.plugins.tooltip.bodyColor=cc.tooltipBody;
+    incDonut.update();
+  }
   // Donut legend text
   var dl=document.getElementById('donutLegend');
   if(dl){
