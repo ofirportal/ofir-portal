@@ -990,8 +990,8 @@ function renderDash(c){
           callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}
       },
       scales:{
-        x:{grid:{color:'rgba(243,244,246,.03)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:8,family:'Montserrat'},maxRotation:0}},
-        y:{grid:{color:'rgba(243,244,246,.03)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:8,family:'Montserrat'},
+        x:{grid:{color:getChartColors().grid},ticks:{color:getChartColors().ticks,font:{size:8,family:'Montserrat'},maxRotation:0}},
+        y:{grid:{color:getChartColors().grid},ticks:{color:getChartColors().ticks,font:{size:8,family:'Montserrat'},
           callback:function(v){return '$'+(v>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'k');}}}
       }
     }
@@ -1019,7 +1019,8 @@ function renderDash(c){
   var dl=document.getElementById('donutLegend');
   if(dl){
     var donutItems=al2.map(function(l,i){return {l:l,c:acols[i],p:ap[i]};}).filter(function(x){return x.p>0;});
-    dl.innerHTML=donutItems.map(function(x){return '<div style="display:flex;align-items:center;gap:7px;font-size:.6rem;color:rgba(243,244,246,.5)"><div style="width:7px;height:7px;border-radius:50%;background:'+x.c+';flex-shrink:0"></div><span style="flex:1">'+x.l+'</span><span style="color:#f4f1ec;font-weight:500">'+x.p+'%</span></div>';}).join('');
+    var cc=getChartColors();
+    dl.innerHTML=donutItems.map(function(x){return '<div style="display:flex;align-items:center;gap:7px;font-size:.6rem;color:'+cc.donutTxt+'"><div style="width:7px;height:7px;border-radius:50%;background:'+x.c+';flex-shrink:0"></div><span data-donut-label style="flex:1;color:'+cc.donutTxt+'">'+x.l+'</span><span data-donut-val style="color:'+cc.donutVal+';font-weight:500">'+x.p+'%</span></div>';}).join('');
   }
   var acc=c.accounts||[];
   document.getElementById('invTable').innerHTML=acc.map(function(a){
@@ -1053,9 +1054,9 @@ function renderDash(c){
     type:'bar',
     data:{labels:mos,datasets:ds.length?ds:[{label:'Sin ingresos',data:mos.map(function(){return 0;}),backgroundColor:'rgba(243,244,246,.05)'}]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:ds.length>1,labels:{color:'rgba(243,244,246,.6)',font:{size:8,family:'Montserrat'},boxWidth:10}},
-        tooltip:{backgroundColor:'rgba(26,41,64,.97)',callbacks:{label:function(ctx){return ctx.dataset.label+': USD '+fmt(ctx.raw);}}}},
-      scales:{x:{grid:{display:false},ticks:{color:'rgba(243,244,246,.55)',font:{size:8}}},y:{grid:{color:'rgba(243,244,246,.03)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:8},callback:function(v){return 'USD '+fmt(v);}}}}}
+      plugins:{legend:{display:ds.length>1,labels:{color:getChartColors().legendColor,font:{size:8,family:'Montserrat'},boxWidth:10}},
+        tooltip:{backgroundColor:getChartColors().tooltipBg,bodyColor:getChartColors().tooltipBody,callbacks:{label:function(ctx){return ctx.dataset.label+': USD '+fmt(ctx.raw);}}}},
+      scales:{x:{grid:{display:false},ticks:{color:getChartColors().ticks,font:{size:8}}},y:{grid:{color:getChartColors().grid},ticks:{color:getChartColors().ticks,font:{size:8},callback:function(v){return 'USD '+fmt(v);}}}}}
   });
   if(incDonut)incDonut.destroy();
   var allFlow=props.filter(function(p){return Number(p.rent)>0;}).map(function(p){return {name:p.name,v:Number(p.rent)*12};}).concat(prods.filter(function(p){return Number(p.income)>0;}).map(function(p){return {name:p.name,v:Number(p.income)*12};}));
@@ -1640,12 +1641,57 @@ const THEME_META={
   light:{label:'Light',icon:'<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'},
   system:{label:'Auto',icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
 };
+
+function isLightMode(){
+  const m=localStorage.getItem('ofir-theme')||'dark';
+  return m==='light'||(m==='system'&&window.matchMedia('(prefers-color-scheme:light)').matches);
+}
+
+function getChartColors(){
+  const l=isLightMode();
+  return {
+    ticks:      l?'rgba(24,29,43,.5)' :'rgba(243,244,246,.55)',
+    grid:       l?'rgba(0,0,0,.05)'   :'rgba(243,244,246,.03)',
+    tooltipBg:  l?'rgba(248,249,251,.98)':'rgba(26,41,64,.97)',
+    tooltipBody:l?'#181d2b'           :'#f4f1ec',
+    legendColor:l?'rgba(24,29,43,.5)' :'rgba(243,244,246,.6)',
+    donutTxt:   l?'rgba(24,29,43,.5)' :'rgba(243,244,246,.5)',
+    donutVal:   l?'#181d2b'           :'#f4f1ec',
+  };
+}
+
+function updateChartColors(){
+  const cc=getChartColors();
+  [perfChart,incChart].forEach(function(ch){
+    if(!ch)return;
+    ['x','y'].forEach(function(ax){
+      if(ch.options.scales[ax]){
+        ch.options.scales[ax].ticks.color=cc.ticks;
+        if(ch.options.scales[ax].grid)ch.options.scales[ax].grid.color=cc.grid;
+      }
+    });
+    ch.options.plugins.tooltip.backgroundColor=cc.tooltipBg;
+    ch.options.plugins.tooltip.bodyColor=cc.tooltipBody;
+    ch.update();
+  });
+  if(incChart&&incChart.options.plugins.legend&&incChart.options.plugins.legend.labels)
+    incChart.options.plugins.legend.labels.color=cc.legendColor;
+  if(incChart)incChart.update();
+  // Donut legend text
+  var dl=document.getElementById('donutLegend');
+  if(dl){
+    dl.querySelectorAll('[data-donut-label]').forEach(function(el){el.style.color=cc.donutTxt;});
+    dl.querySelectorAll('[data-donut-val]').forEach(function(el){el.style.color=cc.donutVal;});
+  }
+}
+
 function applyTheme(mode){
   document.documentElement.setAttribute('data-theme',mode);
   localStorage.setItem('ofir-theme',mode);
   const m=THEME_META[mode];
   document.getElementById('theme-icon').innerHTML=m.icon;
   document.getElementById('theme-label').textContent=m.label;
+  updateChartColors();
 }
 function cycleTheme(){
   const cur=localStorage.getItem('ofir-theme')||'dark';
