@@ -1265,10 +1265,11 @@ function render(data, history, positions) {
     ? (new Date(data.as_of) - new Date(data.start_date)) / (365.25 * 24 * 3600 * 1000)
     : null;
 
-  // 3Y annualized: divide by min(3, actual years) to avoid penalizing new accounts
-  if (data.y3 != null && sinceYrs != null && sinceYrs >= 0.25) {
+  // 3Y annualized: use y3 (compounded from period rows); fall back to since_start if y3 missing (old scraper data)
+  const y3val = data.y3 != null ? data.y3 : data.since_start;
+  if (y3val != null && sinceYrs != null && sinceYrs >= 0.25) {
     const periods = Math.min(3, sinceYrs);
-    const ann3 = (Math.pow(1 + data.y3 / 100, 1 / periods) - 1) * 100;
+    const ann3 = (Math.pow(1 + y3val / 100, 1 / periods) - 1) * 100;
     setPerfCard('p-3y', ann3);
     const p3yLabel = document.getElementById('p-3y-label');
     if (sinceYrs < 3) {
