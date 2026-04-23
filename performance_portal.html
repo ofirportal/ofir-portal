@@ -26,12 +26,51 @@
   --dim2:      #3d5a7a;
   --border:    rgba(255,255,255,0.06);
   --border2:   rgba(201,169,110,0.15);
+  --header-bg: rgba(15,28,46,0.95);
   --serif:     'Playfair Display', Georgia, serif;
   --sans:      'DM Sans', sans-serif;
   --mono:      'DM Mono', monospace;
 }
 
+html[data-theme="light"] {
+  --navy:      #f5f1e8;
+  --navy2:     #edeae0;
+  --navy3:     #e4dfd4;
+  --navy4:     #d8d2c6;
+  --white:     #1a1512;
+  --white2:    #3a3228;
+  --dim:       #7a7068;
+  --dim2:      #a09088;
+  --border:    rgba(0,0,0,0.08);
+  --border2:   rgba(155,120,70,0.22);
+  --green-dim: rgba(61,158,110,0.12);
+  --red-dim:   rgba(196,92,92,0.12);
+  --header-bg: rgba(245,241,232,0.95);
+}
+
+@media (prefers-color-scheme: light) {
+  html[data-theme="system"] {
+    --navy:      #f5f1e8;
+    --navy2:     #edeae0;
+    --navy3:     #e4dfd4;
+    --navy4:     #d8d2c6;
+    --white:     #1a1512;
+    --white2:    #3a3228;
+    --dim:       #7a7068;
+    --dim2:      #a09088;
+    --border:    rgba(0,0,0,0.08);
+    --border2:   rgba(155,120,70,0.22);
+    --green-dim: rgba(61,158,110,0.12);
+    --red-dim:   rgba(196,92,92,0.12);
+    --header-bg: rgba(245,241,232,0.95);
+  }
+}
+
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body, header, .perf-card, .metric-card, .pos-table th, .pos-table td {
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
 
 body {
   background: var(--navy);
@@ -61,7 +100,7 @@ header {
   border-bottom: 1px solid var(--border2);
   position: sticky;
   top: 0;
-  background: rgba(15,28,46,0.95);
+  background: var(--header-bg);
   backdrop-filter: blur(20px);
   z-index: 100;
 }
@@ -99,8 +138,29 @@ header {
 }
 
 .header-right {
-  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
+
+#theme-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  cursor: pointer;
+  color: var(--dim);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-family: var(--sans);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+#theme-btn:hover { border-color: var(--gold); color: var(--gold); }
+#theme-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 
 .client-name {
   font-family: var(--serif);
@@ -725,7 +785,13 @@ footer p {
     </div>
   </div>
   <div class="header-right">
-    <div class="header-meta">Cuenta <span class="acct" id="hdr-account">—</span> · Al <span id="hdr-asof">—</span></div>
+    <button id="theme-btn" onclick="cycleTheme()" title="Cambiar tema">
+      <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      <span id="theme-label">Dark</span>
+    </button>
+    <div>
+      <div class="header-meta">Cuenta <span class="acct" id="hdr-account">—</span> · Al <span id="hdr-asof">—</span></div>
+    </div>
   </div>
 </header>
 
@@ -1120,6 +1186,7 @@ function buildDonut(positions, totalValue) {
 // ── Evolution chart ───────────────────────────────────────────────────────────
 let evoChartInst = null;
 function buildEvo(history, startYear, curYear) {
+  window._lastEvoArgs = [history, startYear, curYear];
   document.getElementById('evo-title').textContent = `Evolución · ${startYear} – ${curYear}`;
 
   if (!history || !history.length) {
@@ -1157,7 +1224,7 @@ function buildEvo(history, startYear, curYear) {
         {
           label: 'Aportes Netos',
           data: aportes,
-          borderColor: 'rgba(255,255,255,0.18)',
+          borderColor: getChartColors().aportes,
           borderWidth: 1.5,
           borderDash: [5, 5],
           pointRadius: 0,
@@ -1173,11 +1240,11 @@ function buildEvo(history, startYear, curYear) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: 'rgba(22,35,56,0.96)',
+          backgroundColor: getChartColors().tooltipBg,
           borderColor: 'rgba(201,169,110,0.25)',
           borderWidth: 1,
-          titleColor: '#c9a96e',
-          bodyColor: '#f5f2ed',
+          titleColor: getChartColors().tooltipTitle,
+          bodyColor: getChartColors().tooltipBody,
           padding: 12,
           callbacks: {
             label: ctx => `  ${ctx.dataset.label}: ${fmtM(ctx.parsed.y)}`
@@ -1186,8 +1253,8 @@ function buildEvo(history, startYear, curYear) {
       },
       scales: {
         x: {
-          grid: { color: 'rgba(255,255,255,0.03)' },
-          ticks: { color: '#3d5a7a', font: { size: 9.5, family: 'DM Mono' }, maxTicksLimit: 8 }
+          grid: { color: getChartColors().grid },
+          ticks: { color: getChartColors().ticks, font: { size: 9.5, family: 'DM Mono' }, maxTicksLimit: 8 }
         },
         y: {
           min: (function(){
@@ -1198,8 +1265,8 @@ function buildEvo(history, startYear, curYear) {
             const margin = (maxVal - minVal) * 0.15 || minVal * 0.05;
             return Math.max(0, Math.floor((minVal - margin) / 1000) * 1000);
           })(),
-          grid: { color: 'rgba(255,255,255,0.03)' },
-          ticks: { color: '#3d5a7a', font: { size: 9.5, family: 'DM Mono' }, callback: fmtM }
+          grid: { color: getChartColors().grid },
+          ticks: { color: getChartColors().ticks, font: { size: 9.5, family: 'DM Mono' }, callback: fmtM }
         }
       }
     }
@@ -1394,6 +1461,52 @@ async function boot() {
     document.getElementById('error-page').style.display = 'flex';
   }
 }
+
+// ── Theme switcher ────────────────────────────────────────────────────────────
+const THEME_CYCLE = ['dark', 'light', 'system'];
+const THEME_META = {
+  dark:   { label: 'Dark',   icon: '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>' },
+  light:  { label: 'Light',  icon: '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>' },
+  system: { label: 'Auto',   icon: '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>' },
+};
+
+function isEffectivelyLight(mode) {
+  if (mode === 'light') return true;
+  if (mode === 'system') return window.matchMedia('(prefers-color-scheme: light)').matches;
+  return false;
+}
+
+function getChartColors() {
+  const light = isEffectivelyLight(localStorage.getItem('ofir-theme') || 'dark');
+  return {
+    tooltipBg:    light ? 'rgba(245,241,232,0.98)' : 'rgba(22,35,56,0.96)',
+    tooltipTitle: '#c9a96e',
+    tooltipBody:  light ? '#1a1512' : '#f5f2ed',
+    grid:         light ? 'rgba(0,0,0,0.05)'        : 'rgba(255,255,255,0.03)',
+    ticks:        light ? '#a09088'                 : '#3d5a7a',
+    aportes:      light ? 'rgba(0,0,0,0.15)'        : 'rgba(255,255,255,0.18)',
+  };
+}
+
+function applyTheme(mode) {
+  document.documentElement.setAttribute('data-theme', mode);
+  localStorage.setItem('ofir-theme', mode);
+  const m = THEME_META[mode];
+  document.getElementById('theme-icon').innerHTML = m.icon;
+  document.getElementById('theme-label').textContent = m.label;
+  if (evoChartInst && window._lastEvoArgs) {
+    buildEvo(...window._lastEvoArgs);
+  }
+}
+
+function cycleTheme() {
+  const cur = localStorage.getItem('ofir-theme') || 'dark';
+  applyTheme(THEME_CYCLE[(THEME_CYCLE.indexOf(cur) + 1) % THEME_CYCLE.length]);
+}
+
+(function initTheme() {
+  applyTheme(localStorage.getItem('ofir-theme') || 'dark');
+})();
 
 boot();
 </script>
