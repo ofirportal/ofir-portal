@@ -544,6 +544,7 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
           <div class="chart-card">
             <div class="card-hd">Distribución anual</div>
             <div class="chart-h"><canvas id="incDonut"></canvas></div>
+            <div id="incDonutLegend" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;justify-content:center;"></div>
           </div>
         </div>
       </div>
@@ -1060,13 +1061,22 @@ function renderDash(c){
   });
   if(incDonut)incDonut.destroy();
   var allFlow=props.filter(function(p){return Number(p.rent)>0;}).map(function(p){return {name:p.name,v:Number(p.rent)*12};}).concat(prods.filter(function(p){return Number(p.income)>0;}).map(function(p){return {name:p.name,v:Number(p.income)*12};}));
+  var incDonutColors=['#5aab8a','#b1913a','#7ea8c9','#a08080','#9aab6e'];
   incDonut=new Chart(document.getElementById('incDonut').getContext('2d'),{
     type:'doughnut',
-    data:{labels:allFlow.length?allFlow.map(function(i){return i.name;}):['Sin ingresos'],datasets:[{data:allFlow.length?allFlow.map(function(i){return i.v;}):[1],backgroundColor:['#5aab8a','#b1913a','#7ea8c9','#a08080','#9aab6e'],borderWidth:0,hoverOffset:6}]},
+    data:{labels:allFlow.length?allFlow.map(function(i){return i.name;}):['Sin ingresos'],datasets:[{data:allFlow.length?allFlow.map(function(i){return i.v;}):[1],backgroundColor:incDonutColors,borderWidth:0,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{display:true,position:'bottom',labels:{color:getChartColors().legendColor,font:{size:9,family:'Montserrat'},boxWidth:8,padding:6}},
+      plugins:{legend:{display:false},
         tooltip:{backgroundColor:getChartColors().tooltipBg,bodyColor:getChartColors().tooltipBody,callbacks:{label:function(ctx){return 'USD '+fmt(ctx.raw)+' / año';}}}}}
   });
+  var idl=document.getElementById('incDonutLegend');
+  if(idl&&allFlow.length){
+    idl.innerHTML=allFlow.map(function(item,i){
+      return '<div style="display:flex;align-items:center;gap:5px;font-size:.58rem;color:var(--w3)">'+
+        '<div style="width:7px;height:7px;border-radius:50%;background:'+incDonutColors[i%incDonutColors.length]+';flex-shrink:0"></div>'+
+        '<span>'+item.name+'</span></div>';
+    }).join('');
+  }
   var notes=c.notes||[];
   document.getElementById('mtgBanner').innerHTML=c.nextMeeting?'<div class="mtg-banner"><div><div class="mtg-label">Proxima reunion</div><div class="mtg-val">'+new Date(c.nextMeeting+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</div></div></div>':'';
   document.getElementById('notesList').innerHTML=notes.length?notes.map(function(n){return '<div class="note-item"><div class="note-date">'+n.date+'</div><div class="note-txt">'+n.text+'</div></div>';}).join(''):'<div style="padding:16px 0;font-style:italic;color:rgba(243,244,246,.3);font-size:.7rem">Sin notas</div>';
@@ -1678,8 +1688,7 @@ function updateChartColors(){
     incChart.options.plugins.legend.labels.color=cc.legendColor;
     incChart.update();
   }
-  if(incDonut&&incDonut.options.plugins.legend&&incDonut.options.plugins.legend.labels){
-    incDonut.options.plugins.legend.labels.color=cc.legendColor;
+  if(incDonut){
     incDonut.options.plugins.tooltip.backgroundColor=cc.tooltipBg;
     incDonut.options.plugins.tooltip.bodyColor=cc.tooltipBody;
     incDonut.update();
