@@ -33,36 +33,46 @@
 }
 
 html[data-theme="light"] {
-  --navy:      #f5f1e8;
-  --navy2:     #edeae0;
-  --navy3:     #e4dfd4;
-  --navy4:     #d8d2c6;
-  --white:     #1a1512;
-  --white2:    #3a3228;
-  --dim:       #7a7068;
-  --dim2:      #a09088;
-  --border:    rgba(0,0,0,0.08);
-  --border2:   rgba(155,120,70,0.22);
-  --green-dim: rgba(61,158,110,0.12);
-  --red-dim:   rgba(196,92,92,0.12);
-  --header-bg: rgba(245,241,232,0.95);
+  --navy:      #f8f9fb;
+  --navy2:     #eef0f5;
+  --navy3:     #e4e7ef;
+  --navy4:     #dde1e8;
+  --white:     #181d2b;
+  --white2:    #2d3548;
+  --dim:       #5c6270;
+  --dim2:      #8a90a0;
+  --gold:      #a87c28;
+  --gold-light:#c4a550;
+  --gold-dim:  #7a5a18;
+  --green:     #2d8a5a;
+  --red:       #b84848;
+  --border:    rgba(0,0,0,0.07);
+  --border2:   rgba(168,124,40,0.25);
+  --green-dim: rgba(45,138,90,0.12);
+  --red-dim:   rgba(184,72,72,0.12);
+  --header-bg: rgba(248,249,251,0.96);
 }
 
 @media (prefers-color-scheme: light) {
   html[data-theme="system"] {
-    --navy:      #f5f1e8;
-    --navy2:     #edeae0;
-    --navy3:     #e4dfd4;
-    --navy4:     #d8d2c6;
-    --white:     #1a1512;
-    --white2:    #3a3228;
-    --dim:       #7a7068;
-    --dim2:      #a09088;
-    --border:    rgba(0,0,0,0.08);
-    --border2:   rgba(155,120,70,0.22);
-    --green-dim: rgba(61,158,110,0.12);
-    --red-dim:   rgba(196,92,92,0.12);
-    --header-bg: rgba(245,241,232,0.95);
+    --navy:      #f8f9fb;
+    --navy2:     #eef0f5;
+    --navy3:     #e4e7ef;
+    --navy4:     #dde1e8;
+    --white:     #181d2b;
+    --white2:    #2d3548;
+    --dim:       #5c6270;
+    --dim2:      #8a90a0;
+    --gold:      #a87c28;
+    --gold-light:#c4a550;
+    --gold-dim:  #7a5a18;
+    --green:     #2d8a5a;
+    --red:       #b84848;
+    --border:    rgba(0,0,0,0.07);
+    --border2:   rgba(168,124,40,0.25);
+    --green-dim: rgba(45,138,90,0.12);
+    --red-dim:   rgba(184,72,72,0.12);
+    --header-bg: rgba(248,249,251,0.96);
   }
 }
 
@@ -90,6 +100,10 @@ body::before {
   z-index: 1000;
   opacity: 0.4;
 }
+
+/* ── LIGHT MODE: patrimonio card mantiene navy de marca ── */
+html[data-theme="light"] .hero-item--patrimonio,
+html[data-theme="system"] .hero-item--patrimonio { background: #253551; }
 
 /* ── HEADER ── */
 header {
@@ -138,29 +152,36 @@ header {
 }
 
 .header-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  text-align: right;
 }
 
 #theme-btn {
-  background: none;
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 500;
+  background: var(--navy2);
   border: 1px solid var(--border2);
-  border-radius: 20px;
-  padding: 5px 12px;
+  border-radius: 28px;
+  padding: 10px 18px;
   cursor: pointer;
-  color: var(--dim);
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.07em;
   font-family: var(--sans);
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: border-color 0.2s, color 0.2s;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  transition: background 0.25s, border-color 0.2s, box-shadow 0.2s, color 0.25s;
   white-space: nowrap;
 }
-#theme-btn:hover { border-color: var(--gold); color: var(--gold); }
-#theme-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+#theme-btn:hover {
+  border-color: var(--gold);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.26);
+}
+#theme-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 
 .client-name {
   font-family: var(--serif);
@@ -236,8 +257,8 @@ header {
 }
 
 .hero-item--patrimonio {
-  background: #111d2e;
-  border: 1px solid #c9a96e !important;
+  background: #1c2d47;
+  border: 1px solid var(--gold) !important;
   border-radius: 4px;
   padding: 16px;
   margin-left: 32px;
@@ -785,15 +806,16 @@ footer p {
     </div>
   </div>
   <div class="header-right">
-    <button id="theme-btn" onclick="cycleTheme()" title="Cambiar tema">
-      <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
-      <span id="theme-label">Dark</span>
-    </button>
     <div>
       <div class="header-meta">Cuenta <span class="acct" id="hdr-account">—</span> · Al <span id="hdr-asof">—</span></div>
     </div>
   </div>
 </header>
+
+<button id="theme-btn" onclick="cycleTheme()" title="Cambiar tema">
+  <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+  <span id="theme-label">Dark</span>
+</button>
 
 <!-- HERO -->
 <div class="hero">
