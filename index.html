@@ -1468,8 +1468,7 @@ function tr_sinceStartYears(r){
 function tr_sinceStartAnn(r){
   if(r.since_start==null)return null;
   const yrs=tr_sinceStartYears(r);
-  if(yrs==null)return null;
-  if(yrs<1)return r.since_start;
+  if(yrs==null||yrs<0.083)return null;
   return(Math.pow(1+r.since_start/100,1/yrs)-1)*100;
 }
 function tr_annualize3(r){
@@ -1480,14 +1479,8 @@ function tr_annualize3(r){
   if(periods<0.25)return null;
   return(Math.pow(1+r.y3/100,1/periods)-1)*100;
 }
-function tr_sinceStartAnnAlways(r){
-  if(r.since_start==null)return null;
-  const yrs=tr_sinceStartYears(r);
-  if(yrs==null||yrs<0.083)return null;
-  return(Math.pow(1+r.since_start/100,1/yrs)-1)*100;
-}
 function tr_sharpe(r){
-  const ann=tr_sinceStartAnnAlways(r);
+  const ann=tr_sinceStartAnn(r);
   if(ann==null||!r.vol)return null;
   return(ann-4)/r.vol;
 }
@@ -1558,7 +1551,7 @@ function tr_renderTable(){
       <td class="${tr_pctClass(r.y2025)}">${tr_fmtPct(r.y2025)}</td>
       <td class="${tr_pctClass(r.y2024)}">${tr_fmtPct(r.y2024)}</td>
       ${(()=>{const v=tr_annualize3(r);return`<td class="${tr_pctClass(v)}">${tr_fmtPct(v)}</td>`;})()}
-      ${(()=>{const ann=tr_sinceStartAnn(r);const lt1=tr_sinceStartYears(r)!=null&&tr_sinceStartYears(r)<1;return`<td class="${tr_pctClass(ann)}" title="${lt1?'Retorno acumulado — cuenta < 1 año':'TIR anualizada desde inicio'}">${tr_fmtPct(ann)}${lt1?'<sup style="font-size:9px;opacity:0.7">*</sup>':''}</td>`;})()}
+      ${(()=>{const ann=tr_sinceStartAnn(r);const yrs=tr_sinceStartYears(r);const lt1=yrs!=null&&yrs<1;const tip=lt1?`TIR anualizada proyectada sobre ${Math.round(yrs*12)} meses`:'TIR anualizada desde inicio';return`<td class="${tr_pctClass(ann)}" title="${tip}">${tr_fmtPct(ann)}${lt1?'<sup style="font-size:9px;opacity:0.6">~</sup>':''}</td>`;})()}
       ${(()=>{const sh=tr_sharpe(r);return`<td class="${sh!=null?(sh>=0?'tp':'tn2'):'td2'}">${sh!=null?sh.toFixed(2):'—'}</td>`;})()}
       ${(()=>{const c=trComposition[r.account];return c?`<td style="color:#c9a96e">${c.RF.toFixed(1)}%</td><td style="color:#3d9e6e">${c.RV.toFixed(1)}%</td><td style="color:#5d7a9a">${c.ALT.toFixed(1)}%</td><td style="color:#8fa3be">${c.LIQ.toFixed(1)}%</td>`:'<td class="td2">—</td><td class="td2">—</td><td class="td2">—</td><td class="td2">—</td>';})()}
       <td>${(()=>{const s=tr_slug(r);return`<a href="https://performance.ofirmfo.com/${s}" target="_blank" style="color:var(--gold);text-decoration:none;font-size:13px;">🔗</a>`;})()}</td>

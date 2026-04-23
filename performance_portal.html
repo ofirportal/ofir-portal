@@ -1279,15 +1279,14 @@ function render(data, history, positions) {
     setPerfCard('p-3y', null);
   }
 
-  // TIR: annualize if ≥1yr; show cumulative with different label if <1yr
-  if (data.since_start != null && sinceYrs != null) {
-    if (sinceYrs >= 1) {
-      const tirAnn = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
-      setPerfCard('p-tir', tirAnn);
-      document.getElementById('p-tir-label').textContent = 'TIR Anualizada';
-    } else {
-      setPerfCard('p-tir', data.since_start);
-      document.getElementById('p-tir-label').textContent = 'TIR Acumulada';
+  // TIR: always annualize; for <1yr add tooltip indicating it's projected
+  if (data.since_start != null && sinceYrs != null && sinceYrs >= 0.083) {
+    const tirAnn = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
+    setPerfCard('p-tir', tirAnn);
+    document.getElementById('p-tir-label').textContent = 'TIR Anualizada';
+    if (sinceYrs < 1) {
+      const months = Math.round(sinceYrs * 12);
+      document.getElementById('p-tir').title = `Proyectada sobre ${months} meses de historia`;
     }
   } else {
     setPerfCard('p-tir', data.since_start);
