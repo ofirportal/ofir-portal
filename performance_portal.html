@@ -785,10 +785,6 @@ footer p {
       <div class="perf-pct" id="p-3y">—</div>
       <div class="perf-period" id="p-3y-label">3 Años Ann.</div>
     </div>
-    <div class="perf-card">
-      <div class="perf-pct" id="p-tir">—</div>
-      <div class="perf-period" id="p-tir-label">TIR Anualizada</div>
-    </div>
   </div>
 
   <div class="bar-section-title">Retorno por año</div>
@@ -1274,23 +1270,18 @@ function render(data, history, positions) {
     const periods = Math.min(3, sinceYrs);
     const ann3 = (Math.pow(1 + data.y3 / 100, 1 / periods) - 1) * 100;
     setPerfCard('p-3y', ann3);
-    document.getElementById('p-3y-label').textContent = sinceYrs < 3 ? `${sinceYrs.toFixed(1)}A Ann.` : '3 Años Ann.';
+    const p3yLabel = document.getElementById('p-3y-label');
+    if (sinceYrs < 3) {
+      p3yLabel.textContent = `TIR ${sinceYrs.toFixed(1)} Años Ann.`;
+      document.getElementById('p-3y').title = `TIR Anualizada sobre ${sinceYrs.toFixed(1)} años de historia desde el inicio`;
+    } else {
+      p3yLabel.textContent = 'TIR 3 Años Ann.';
+      document.getElementById('p-3y').title = 'TIR Anualizada sobre los últimos 3 años';
+    }
   } else {
     setPerfCard('p-3y', null);
   }
 
-  // TIR: always annualize; for <1yr add tooltip indicating it's projected
-  if (data.since_start != null && sinceYrs != null && sinceYrs >= 0.083) {
-    const tirAnn = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
-    setPerfCard('p-tir', tirAnn);
-    document.getElementById('p-tir-label').textContent = 'TIR Anualizada';
-    if (sinceYrs < 1) {
-      const months = Math.round(sinceYrs * 12);
-      document.getElementById('p-tir').title = `Proyectada sobre ${months} meses de historia`;
-    }
-  } else {
-    setPerfCard('p-tir', data.since_start);
-  }
 
   buildBarChart(history, data);
 
