@@ -1531,7 +1531,8 @@ const TR_NAME_MAP={
   'JXD111546':'PRONOTTIMI','JXD111751':'ZEBULUN2',
 };
 function tr_name(r){return TR_NAME_MAP[r.account]||r.name||r.account;}
-function tr_slug(r){return tr_name(r).split(' ')[0].toLowerCase()+r.account.slice(-3);}
+const TR_SLUG_OVERRIDES={'JXD107601':'kon601'};
+function tr_slug(r){return TR_SLUG_OVERRIDES[r.account]||tr_name(r).split(' ')[0].toLowerCase()+r.account.slice(-3);}
 function tr_renderTable(){
   const tbody=document.getElementById('tr-tbody');
   if(!trData.length){tbody.innerHTML='';document.getElementById('tr-rowCount').textContent='';return;}
