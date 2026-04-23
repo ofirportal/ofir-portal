@@ -1003,13 +1003,22 @@ function buildBarChart(history, data) {
       if (h.partial) return;
       const yr = h.period_end.slice(0, 4);
       if (!byYear[yr]) byYear[yr] = [];
-      byYear[yr].push(h.pct);
+      byYear[yr].push(h);
     });
 
     const currentYear = new Date().getFullYear().toString();
     Object.keys(byYear).sort().forEach(yr => {
       if (yr === currentYear) return; // YTD'xx cubierto por data.ytd
-      const vals = byYear[yr].filter(v => v != null);
+      let rows = byYear[yr];
+      // Si hay más de un row en el año, descartar los que cubren el año completo (resumen anual de NetX360)
+      // para evitar doble conteo junto a los rows trimestrales
+      if (rows.length > 1) {
+        rows = rows.filter(h => {
+          const days = (new Date(h.period_end) - new Date(h.period_start)) / 86400000;
+          return days < 300;
+        });
+      }
+      const vals = rows.map(h => h.pct).filter(v => v != null);
       if (!vals.length) return;
       let r = 1;
       vals.forEach(v => r *= 1 + v / 100);
