@@ -783,11 +783,11 @@ footer p {
     </div>
     <div class="perf-card">
       <div class="perf-pct" id="p-3y">—</div>
-      <div class="perf-period">3 Años</div>
+      <div class="perf-period" id="p-3y-label">3 Años Ann.</div>
     </div>
     <div class="perf-card">
       <div class="perf-pct" id="p-tir">—</div>
-      <div class="perf-period">TIR Anualizada</div>
+      <div class="perf-period" id="p-tir-label">TIR Anualizada</div>
     </div>
   </div>
 
@@ -1264,8 +1264,34 @@ function render(data, history, positions) {
   setPerfCard('p-ytd',  data.ytd);
   setPerfCard('p-2025', data.y2025);
   setPerfCard('p-2024', data.y2024);
-  setPerfCard('p-3y',   data.y3);
-  setPerfCard('p-tir',  data.since_start);
+  // Years since start — used for annualization
+  const sinceYrs = (data.start_date && data.as_of)
+    ? (new Date(data.as_of) - new Date(data.start_date)) / (365.25 * 24 * 3600 * 1000)
+    : null;
+
+  // 3Y annualized: divide by min(3, actual years) to avoid penalizing new accounts
+  if (data.y3 != null && sinceYrs != null && sinceYrs >= 0.25) {
+    const periods = Math.min(3, sinceYrs);
+    const ann3 = (Math.pow(1 + data.y3 / 100, 1 / periods) - 1) * 100;
+    setPerfCard('p-3y', ann3);
+    document.getElementById('p-3y-label').textContent = sinceYrs < 3 ? `${sinceYrs.toFixed(1)}A Ann.` : '3 Años Ann.';
+  } else {
+    setPerfCard('p-3y', null);
+  }
+
+  // TIR: annualize if ≥1yr; show cumulative with different label if <1yr
+  if (data.since_start != null && sinceYrs != null) {
+    if (sinceYrs >= 1) {
+      const tirAnn = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
+      setPerfCard('p-tir', tirAnn);
+      document.getElementById('p-tir-label').textContent = 'TIR Anualizada';
+    } else {
+      setPerfCard('p-tir', data.since_start);
+      document.getElementById('p-tir-label').textContent = 'Retorno Acumulado';
+    }
+  } else {
+    setPerfCard('p-tir', data.since_start);
+  }
 
   buildBarChart(history, data);
 
