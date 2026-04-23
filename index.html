@@ -705,7 +705,7 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
             <th onclick="tr_sortBy('y2024')" data-col="y2024">2024 <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('y3')" data-col="y3" title="Retorno 3 años anualizado">3A Ann. <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('since_start')" data-col="since_start" title="TIR anualizada desde inicio (≥1 año). Para cuentas &lt;1 año se muestra el retorno acumulado sin anualizar.">TIR Inicio <span class="tr-arr"></span></th>
-            <th onclick="tr_sortBy('sharpe')" data-col="sharpe" title="Sharpe Ratio desde inicio = (TIR anualizada − 4%) / Vol">Sharpe <span class="tr-arr"></span></th>
+            <th onclick="tr_sortBy('sharpe')" data-col="sharpe" title="Sharpe Ratio desde inicio = TIR anualizada / Vol">Sharpe <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('comp_rf')" data-col="comp_rf" style="color:#c9a96e;cursor:pointer">RF% <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('comp_rv')" data-col="comp_rv" style="color:#3d9e6e;cursor:pointer">RV% <span class="tr-arr"></span></th>
             <th onclick="tr_sortBy('comp_alt')" data-col="comp_alt" style="color:#5d7a9a;cursor:pointer">ALT% <span class="tr-arr"></span></th>
@@ -1482,7 +1482,7 @@ function tr_annualize3(r){
 function tr_sharpe(r){
   const ann=tr_sinceStartAnn(r);
   if(ann==null||!r.vol)return null;
-  return(ann-4)/r.vol;
+  return ann/r.vol;
 }
 function tr_getColVal(r,col){
   if(col==='change_in_value')return tr_calcGL(r);
