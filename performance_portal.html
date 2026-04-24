@@ -873,6 +873,10 @@ footer p {
       <div class="perf-pct" id="p-3y">—</div>
       <div class="perf-period" id="p-3y-label">3 Años Ann.</div>
     </div>
+    <div class="perf-card">
+      <div class="perf-pct" id="p-inicio">—</div>
+      <div class="perf-period" id="p-inicio-label">TIR Inicio</div>
+    </div>
   </div>
 
   <div class="bar-section-title">Retorno por año</div>
@@ -1369,22 +1373,48 @@ function render(data, history, positions) {
     ? (new Date(data.as_of) - new Date(data.start_date)) / (365.25 * 24 * 3600 * 1000)
     : null;
 
-  // 3Y annualized: use y3 (compounded from period rows); fall back to since_start if y3 missing (old scraper data)
-  const y3val = data.y3 != null ? data.y3 : data.since_start;
-  if (y3val != null && sinceYrs != null && sinceYrs >= 0.25) {
-    const periods = Math.min(3, sinceYrs);
-    const ann3 = (Math.pow(1 + y3val / 100, 1 / periods) - 1) * 100;
-    setPerfCard('p-3y', ann3);
-    const p3yLabel = document.getElementById('p-3y-label');
-    if (sinceYrs < 3) {
-      p3yLabel.textContent = `TIR ${sinceYrs.toFixed(1)} Años Ann.`;
-      document.getElementById('p-3y').title = `TIR Anualizada sobre ${sinceYrs.toFixed(1)} años de historia desde el inicio`;
-    } else {
+  // ── p-3y: TIR 3 Años (cuentas >3a) ó TIR desde Inicio (cuentas <3a) ──────
+  // Para >3 años: anualiza y3 (compuesto de 2023+2024+2025) sobre 3 años.
+  // Para 1-3 años: since_start ya está anualizado por Albridge — no re-anualizar.
+  // Para <1 año: since_start es retorno total — anualizar.
+  const p3yLabel = document.getElementById('p-3y-label');
+  if (sinceYrs != null && sinceYrs >= 0.25) {
+    let ann3 = null;
+    if (data.y3 != null && sinceYrs >= 3) {
+      ann3 = (Math.pow(1 + data.y3 / 100, 1 / 3) - 1) * 100;
       p3yLabel.textContent = 'TIR 3 Años Ann.';
-      document.getElementById('p-3y').title = 'TIR Anualizada sobre los últimos 3 años';
+      document.getElementById('p-3y').title = 'TIR Anualizada sobre los últimos 3 años (2023-2025)';
+    } else if (data.since_start != null) {
+      if (sinceYrs >= 1) {
+        ann3 = data.since_start;   // Albridge ya reporta anualizado para >1 año
+      } else {
+        ann3 = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
+      }
+      p3yLabel.textContent = `TIR ${sinceYrs.toFixed(1)} Años Ann.`;
+      document.getElementById('p-3y').title = `TIR Anualizada sobre ${sinceYrs.toFixed(1)} años desde el inicio`;
     }
+    setPerfCard('p-3y', ann3);
   } else {
     setPerfCard('p-3y', null);
+  }
+
+  // ── p-inicio: TIR Anualizada desde Inicio (siempre since_start) ──────────
+  // Para cuentas <3a: muestra igual que p-3y (mismo valor).
+  // Para cuentas >3a: muestra la TIR histórica total desde la apertura.
+  const p0Label = document.getElementById('p-inicio-label');
+  if (data.since_start != null && sinceYrs != null && sinceYrs >= 0.25) {
+    let annInicio;
+    if (sinceYrs >= 1) {
+      annInicio = data.since_start;  // ya anualizado por Albridge
+    } else {
+      annInicio = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
+    }
+    setPerfCard('p-inicio', annInicio);
+    const startYrStr = data.start_date ? data.start_date.slice(0, 4) : '';
+    p0Label.textContent = startYrStr ? `TIR desde ${startYrStr}` : 'TIR Inicio';
+    document.getElementById('p-inicio').title = `TIR Anualizada desde el inicio (${startYrStr}) · Fuente: Albridge`;
+  } else {
+    setPerfCard('p-inicio', null);
   }
 
 
