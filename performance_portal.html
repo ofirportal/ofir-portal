@@ -26,61 +26,12 @@
   --dim2:      #3d5a7a;
   --border:    rgba(255,255,255,0.06);
   --border2:   rgba(201,169,110,0.15);
-  --header-bg: rgba(15,28,46,0.95);
   --serif:     'Playfair Display', Georgia, serif;
   --sans:      'DM Sans', sans-serif;
   --mono:      'DM Mono', monospace;
 }
 
-html[data-theme="light"] {
-  --navy:      #f8f9fb;
-  --navy2:     #eef0f5;
-  --navy3:     #e4e7ef;
-  --navy4:     #dde1e8;
-  --white:     #181d2b;
-  --white2:    #2d3548;
-  --dim:       #5c6270;
-  --dim2:      #8a90a0;
-  --gold:      #a87c28;
-  --gold-light:#c4a550;
-  --gold-dim:  #7a5a18;
-  --green:     #2d8a5a;
-  --red:       #b84848;
-  --border:    rgba(0,0,0,0.07);
-  --border2:   rgba(168,124,40,0.25);
-  --green-dim: rgba(45,138,90,0.12);
-  --red-dim:   rgba(184,72,72,0.12);
-  --header-bg: rgba(248,249,251,0.96);
-}
-
-@media (prefers-color-scheme: light) {
-  html[data-theme="system"] {
-    --navy:      #f8f9fb;
-    --navy2:     #eef0f5;
-    --navy3:     #e4e7ef;
-    --navy4:     #dde1e8;
-    --white:     #181d2b;
-    --white2:    #2d3548;
-    --dim:       #5c6270;
-    --dim2:      #8a90a0;
-    --gold:      #a87c28;
-    --gold-light:#c4a550;
-    --gold-dim:  #7a5a18;
-    --green:     #2d8a5a;
-    --red:       #b84848;
-    --border:    rgba(0,0,0,0.07);
-    --border2:   rgba(168,124,40,0.25);
-    --green-dim: rgba(45,138,90,0.12);
-    --red-dim:   rgba(184,72,72,0.12);
-    --header-bg: rgba(248,249,251,0.96);
-  }
-}
-
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-body, header, .perf-card, .metric-card, .pos-table th, .pos-table td {
-  transition: background 0.25s, color 0.25s, border-color 0.25s;
-}
 
 body {
   background: var(--navy);
@@ -101,10 +52,6 @@ body::before {
   opacity: 0.4;
 }
 
-/* ── LIGHT MODE: patrimonio card mantiene navy de marca ── */
-html[data-theme="light"] .hero-item--patrimonio,
-html[data-theme="system"] .hero-item--patrimonio { background: #253551; }
-
 /* ── HEADER ── */
 header {
   display: flex;
@@ -114,7 +61,7 @@ header {
   border-bottom: 1px solid var(--border2);
   position: sticky;
   top: 0;
-  background: var(--header-bg);
+  background: rgba(15,28,46,0.95);
   backdrop-filter: blur(20px);
   z-index: 100;
 }
@@ -154,34 +101,6 @@ header {
 .header-right {
   text-align: right;
 }
-
-#theme-btn {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  z-index: 500;
-  background: var(--navy2);
-  border: 1px solid var(--border2);
-  border-radius: 28px;
-  padding: 10px 18px;
-  cursor: pointer;
-  color: var(--gold);
-  font-size: 12px;
-  letter-spacing: 0.07em;
-  font-family: var(--sans);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
-  transition: background 0.25s, border-color 0.2s, box-shadow 0.2s, color 0.25s;
-  white-space: nowrap;
-}
-#theme-btn:hover {
-  border-color: var(--gold);
-  box-shadow: 0 6px 28px rgba(0,0,0,0.26);
-}
-#theme-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 
 .client-name {
   font-family: var(--serif);
@@ -257,8 +176,8 @@ header {
 }
 
 .hero-item--patrimonio {
-  background: #1c2d47;
-  border: 1px solid var(--gold) !important;
+  background: #111d2e;
+  border: 1px solid #c9a96e !important;
   border-radius: 4px;
   padding: 16px;
   margin-left: 32px;
@@ -806,16 +725,9 @@ footer p {
     </div>
   </div>
   <div class="header-right">
-    <div>
-      <div class="header-meta">Cuenta <span class="acct" id="hdr-account">—</span> · Al <span id="hdr-asof">—</span></div>
-    </div>
+    <div class="header-meta">Cuenta <span class="acct" id="hdr-account">—</span> · Al <span id="hdr-asof">—</span></div>
   </div>
 </header>
-
-<button id="theme-btn" onclick="cycleTheme()" title="Cambiar tema">
-  <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
-  <span id="theme-label">Dark</span>
-</button>
 
 <!-- HERO -->
 <div class="hero">
@@ -871,11 +783,11 @@ footer p {
     </div>
     <div class="perf-card">
       <div class="perf-pct" id="p-3y">—</div>
-      <div class="perf-period" id="p-3y-label">3 Años Ann.</div>
+      <div class="perf-period">3 Años</div>
     </div>
     <div class="perf-card">
-      <div class="perf-pct" id="p-inicio">—</div>
-      <div class="perf-period" id="p-inicio-label">TIR Inicio</div>
+      <div class="perf-pct" id="p-tir">—</div>
+      <div class="perf-period">TIR Anualizada</div>
     </div>
   </div>
 
@@ -1017,12 +929,6 @@ ACCOUNTS_RAW.forEach(([name, account]) => {
   SLUG_MAP[makeSlug(name, account)] = { name, account };
 });
 
-// Slugs personalizados (reemplazan el slug automático para ocultar nombre del cliente)
-const SLUG_OVERRIDES = { 'kon601': 'konichi601' };
-Object.entries(SLUG_OVERRIDES).forEach(([custom, auto]) => {
-  if (SLUG_MAP[auto]) { SLUG_MAP[custom] = SLUG_MAP[auto]; delete SLUG_MAP[auto]; }
-});
-
 // ── Slug detection ────────────────────────────────────────────────────────────
 function detectSlug() {
   const params = new URLSearchParams(window.location.search);
@@ -1101,22 +1007,13 @@ function buildBarChart(history, data) {
       if (h.partial) return;
       const yr = h.period_end.slice(0, 4);
       if (!byYear[yr]) byYear[yr] = [];
-      byYear[yr].push(h);
+      byYear[yr].push(h.pct);
     });
 
     const currentYear = new Date().getFullYear().toString();
     Object.keys(byYear).sort().forEach(yr => {
       if (yr === currentYear) return; // YTD'xx cubierto por data.ytd
-      let rows = byYear[yr];
-      // Si hay más de un row en el año, descartar los que cubren el año completo (resumen anual de NetX360)
-      // para evitar doble conteo junto a los rows trimestrales
-      if (rows.length > 1) {
-        rows = rows.filter(h => {
-          const days = (new Date(h.period_end) - new Date(h.period_start)) / 86400000;
-          return days < 300;
-        });
-      }
-      const vals = rows.map(h => h.pct).filter(v => v != null);
+      const vals = byYear[yr].filter(v => v != null);
       if (!vals.length) return;
       let r = 1;
       vals.forEach(v => r *= 1 + v / 100);
@@ -1212,7 +1109,6 @@ function buildDonut(positions, totalValue) {
 // ── Evolution chart ───────────────────────────────────────────────────────────
 let evoChartInst = null;
 function buildEvo(history, startYear, curYear) {
-  window._lastEvoArgs = [history, startYear, curYear];
   document.getElementById('evo-title').textContent = `Evolución · ${startYear} – ${curYear}`;
 
   if (!history || !history.length) {
@@ -1250,7 +1146,7 @@ function buildEvo(history, startYear, curYear) {
         {
           label: 'Aportes Netos',
           data: aportes,
-          borderColor: getChartColors().aportes,
+          borderColor: 'rgba(255,255,255,0.18)',
           borderWidth: 1.5,
           borderDash: [5, 5],
           pointRadius: 0,
@@ -1266,11 +1162,11 @@ function buildEvo(history, startYear, curYear) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: getChartColors().tooltipBg,
+          backgroundColor: 'rgba(22,35,56,0.96)',
           borderColor: 'rgba(201,169,110,0.25)',
           borderWidth: 1,
-          titleColor: getChartColors().tooltipTitle,
-          bodyColor: getChartColors().tooltipBody,
+          titleColor: '#c9a96e',
+          bodyColor: '#f5f2ed',
           padding: 12,
           callbacks: {
             label: ctx => `  ${ctx.dataset.label}: ${fmtM(ctx.parsed.y)}`
@@ -1279,8 +1175,8 @@ function buildEvo(history, startYear, curYear) {
       },
       scales: {
         x: {
-          grid: { color: getChartColors().grid },
-          ticks: { color: getChartColors().ticks, font: { size: 9.5, family: 'DM Mono' }, maxTicksLimit: 8 }
+          grid: { color: 'rgba(255,255,255,0.03)' },
+          ticks: { color: '#3d5a7a', font: { size: 9.5, family: 'DM Mono' }, maxTicksLimit: 8 }
         },
         y: {
           min: (function(){
@@ -1291,8 +1187,8 @@ function buildEvo(history, startYear, curYear) {
             const margin = (maxVal - minVal) * 0.15 || minVal * 0.05;
             return Math.max(0, Math.floor((minVal - margin) / 1000) * 1000);
           })(),
-          grid: { color: getChartColors().grid },
-          ticks: { color: getChartColors().ticks, font: { size: 9.5, family: 'DM Mono' }, callback: fmtM }
+          grid: { color: 'rgba(255,255,255,0.03)' },
+          ticks: { color: '#3d5a7a', font: { size: 9.5, family: 'DM Mono' }, callback: fmtM }
         }
       }
     }
@@ -1368,55 +1264,8 @@ function render(data, history, positions) {
   setPerfCard('p-ytd',  data.ytd);
   setPerfCard('p-2025', data.y2025);
   setPerfCard('p-2024', data.y2024);
-  // Years since start — used for annualization
-  const sinceYrs = (data.start_date && data.as_of)
-    ? (new Date(data.as_of) - new Date(data.start_date)) / (365.25 * 24 * 3600 * 1000)
-    : null;
-
-  // ── p-3y: TIR 3 Años (cuentas >3a) ó TIR desde Inicio (cuentas <3a) ──────
-  // Para >3 años: anualiza y3 (compuesto de 2023+2024+2025) sobre 3 años.
-  // Para 1-3 años: since_start ya está anualizado por Albridge — no re-anualizar.
-  // Para <1 año: since_start es retorno total — anualizar.
-  const p3yLabel = document.getElementById('p-3y-label');
-  if (sinceYrs != null && sinceYrs >= 0.25) {
-    let ann3 = null;
-    if (data.y3 != null && sinceYrs >= 3) {
-      ann3 = (Math.pow(1 + data.y3 / 100, 1 / 3) - 1) * 100;
-      p3yLabel.textContent = 'TIR 3 Años Ann.';
-      document.getElementById('p-3y').title = 'TIR Anualizada sobre los últimos 3 años (2023-2025)';
-    } else if (data.since_start != null) {
-      if (sinceYrs >= 1) {
-        ann3 = data.since_start;   // Albridge ya reporta anualizado para >1 año
-      } else {
-        ann3 = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
-      }
-      p3yLabel.textContent = `TIR ${sinceYrs.toFixed(1)} Años Ann.`;
-      document.getElementById('p-3y').title = `TIR Anualizada sobre ${sinceYrs.toFixed(1)} años desde el inicio`;
-    }
-    setPerfCard('p-3y', ann3);
-  } else {
-    setPerfCard('p-3y', null);
-  }
-
-  // ── p-inicio: TIR Anualizada desde Inicio (siempre since_start) ──────────
-  // Para cuentas <3a: muestra igual que p-3y (mismo valor).
-  // Para cuentas >3a: muestra la TIR histórica total desde la apertura.
-  const p0Label = document.getElementById('p-inicio-label');
-  if (data.since_start != null && sinceYrs != null && sinceYrs >= 0.25) {
-    let annInicio;
-    if (sinceYrs >= 1) {
-      annInicio = data.since_start;  // ya anualizado por Albridge
-    } else {
-      annInicio = (Math.pow(1 + data.since_start / 100, 1 / sinceYrs) - 1) * 100;
-    }
-    setPerfCard('p-inicio', annInicio);
-    const startYrStr = data.start_date ? data.start_date.slice(0, 4) : '';
-    p0Label.textContent = startYrStr ? `TIR desde ${startYrStr}` : 'TIR Inicio';
-    document.getElementById('p-inicio').title = `TIR Anualizada desde el inicio (${startYrStr}) · Fuente: Albridge`;
-  } else {
-    setPerfCard('p-inicio', null);
-  }
-
+  setPerfCard('p-3y',   data.y3);
+  setPerfCard('p-tir',  data.since_start);
 
   buildBarChart(history, data);
 
@@ -1513,52 +1362,6 @@ async function boot() {
     document.getElementById('error-page').style.display = 'flex';
   }
 }
-
-// ── Theme switcher ────────────────────────────────────────────────────────────
-const THEME_CYCLE = ['dark', 'light', 'system'];
-const THEME_META = {
-  dark:   { label: 'Dark',   icon: '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>' },
-  light:  { label: 'Light',  icon: '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>' },
-  system: { label: 'Auto',   icon: '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>' },
-};
-
-function isEffectivelyLight(mode) {
-  if (mode === 'light') return true;
-  if (mode === 'system') return window.matchMedia('(prefers-color-scheme: light)').matches;
-  return false;
-}
-
-function getChartColors() {
-  const light = isEffectivelyLight(localStorage.getItem('ofir-theme') || 'dark');
-  return {
-    tooltipBg:    light ? 'rgba(245,241,232,0.98)' : 'rgba(22,35,56,0.96)',
-    tooltipTitle: '#c9a96e',
-    tooltipBody:  light ? '#1a1512' : '#f5f2ed',
-    grid:         light ? 'rgba(0,0,0,0.05)'        : 'rgba(255,255,255,0.03)',
-    ticks:        light ? '#a09088'                 : '#3d5a7a',
-    aportes:      light ? 'rgba(0,0,0,0.15)'        : 'rgba(255,255,255,0.18)',
-  };
-}
-
-function applyTheme(mode) {
-  document.documentElement.setAttribute('data-theme', mode);
-  localStorage.setItem('ofir-theme', mode);
-  const m = THEME_META[mode];
-  document.getElementById('theme-icon').innerHTML = m.icon;
-  document.getElementById('theme-label').textContent = m.label;
-  if (evoChartInst && window._lastEvoArgs) {
-    buildEvo(...window._lastEvoArgs);
-  }
-}
-
-function cycleTheme() {
-  const cur = localStorage.getItem('ofir-theme') || 'dark';
-  applyTheme(THEME_CYCLE[(THEME_CYCLE.indexOf(cur) + 1) % THEME_CYCLE.length]);
-}
-
-(function initTheme() {
-  applyTheme(localStorage.getItem('ofir-theme') || 'dark');
-})();
 
 boot();
 </script>

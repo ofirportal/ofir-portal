@@ -19,35 +19,12 @@
   --b:rgba(255,255,255,.09);--bg:rgba(201,169,110,.25);
   --r:2px;
   --transition:all 0.2s ease;
-  --header-bg:rgba(26,41,64,.97);
-}
-html[data-theme="light"]{
-  --n:#f8f9fb;--n2:#eef0f5;--n3:#e4e7ef;--n4:#dde1e8;
-  --gold:#a87c28;--goldl:#b8922e;--goldd:rgba(168,124,40,.12);--goldg:rgba(168,124,40,.06);
-  --w:#181d2b;--w2:rgba(24,29,43,.85);--w3:rgba(24,29,43,.60);--w4:rgba(24,29,43,.38);--w5:rgba(24,29,43,.07);
-  --green:#2d8a5a;--red:#b84848;
-  --b:rgba(0,0,0,.07);--bg:rgba(168,124,40,.22);
-  --header-bg:rgba(248,249,251,.96);
-}
-@media(prefers-color-scheme:light){
-  html[data-theme="system"]{
-    --n:#f8f9fb;--n2:#eef0f5;--n3:#e4e7ef;--n4:#dde1e8;
-    --gold:#a87c28;--goldl:#b8922e;--goldd:rgba(168,124,40,.12);--goldg:rgba(168,124,40,.06);
-    --w:#181d2b;--w2:rgba(24,29,43,.85);--w3:rgba(24,29,43,.60);--w4:rgba(24,29,43,.38);--w5:rgba(24,29,43,.07);
-    --green:#2d8a5a;--red:#b84848;
-    --b:rgba(0,0,0,.07);--bg:rgba(168,124,40,.22);
-    --header-bg:rgba(248,249,251,.96);
-  }
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;}
 body{background:var(--n);color:var(--w);font-family:var(--sans);font-size:13px;min-height:100vh;overflow-x:hidden;}
 body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.55;}
 
-body,header,nav,.card,.metric-card,.h-pill{transition:background .25s,color .25s,border-color .25s;}
-#theme-btn{position:fixed;bottom:28px;right:28px;z-index:500;background:var(--n2);border:1px solid var(--bg);border-radius:28px;padding:10px 18px;cursor:pointer;color:var(--goldl);font-size:12px;letter-spacing:.07em;font-family:var(--sans);font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.18);transition:background .25s,border-color .2s,box-shadow .2s,color .25s;white-space:nowrap;}
-#theme-btn:hover{border-color:var(--gold);box-shadow:0 6px 28px rgba(0,0,0,.26);}
-#theme-btn svg{width:14px;height:14px;flex-shrink:0;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
@@ -86,7 +63,7 @@ body,header,nav,.card,.metric-card,.h-pill{transition:background .25s,color .25s
 .hairline{height:1px;background:linear-gradient(90deg,transparent,rgba(184,153,90,.6) 20%,rgba(184,153,90,.6) 80%,transparent);opacity:.4;}
 
 /* HEADER */
-header{display:flex;align-items:center;justify-content:space-between;padding:0 56px;height:64px;background:var(--header-bg);transition:background .25s;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:100;}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 56px;height:64px;background:rgba(26,41,64,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:100;}
 .hb{display:flex;align-items:center;gap:16px;}
 .hb-logo{display:flex;align-items:center;gap:10px;}
 .hb-mark{font-family:var(--serif);font-size:1.4rem;letter-spacing:.24em;font-weight:300;color:var(--w);margin-right:-.24em;}
@@ -462,10 +439,6 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
       <button class="btn-h" onclick="doLogout()">Salir</button>
     </div>
   </header>
-  <button id="theme-btn" onclick="cycleTheme()" title="Cambiar tema">
-    <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
-    <span id="theme-label">Dark</span>
-  </button>
   <nav>
     <div class="ni admin-hide active" onclick="showView('dashboard',this)">Resumen Patrimonial</div>
     <div class="ni admin-hide" onclick="showView('reports',this)">Reportes</div>
@@ -544,7 +517,6 @@ footer{padding:16px 56px;border-top:1px solid var(--b);display:flex;justify-cont
           <div class="chart-card">
             <div class="card-hd">Distribución anual</div>
             <div class="chart-h"><canvas id="incDonut"></canvas></div>
-            <div id="incDonutLegend" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;justify-content:center;"></div>
           </div>
         </div>
       </div>
@@ -991,8 +963,8 @@ function renderDash(c){
           callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}
       },
       scales:{
-        x:{grid:{color:getChartColors().grid},ticks:{color:getChartColors().ticks,font:{size:8,family:'Montserrat'},maxRotation:0}},
-        y:{grid:{color:getChartColors().grid},ticks:{color:getChartColors().ticks,font:{size:8,family:'Montserrat'},
+        x:{grid:{color:'rgba(243,244,246,.03)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:8,family:'Montserrat'},maxRotation:0}},
+        y:{grid:{color:'rgba(243,244,246,.03)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:8,family:'Montserrat'},
           callback:function(v){return '$'+(v>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'k');}}}
       }
     }
@@ -1020,8 +992,7 @@ function renderDash(c){
   var dl=document.getElementById('donutLegend');
   if(dl){
     var donutItems=al2.map(function(l,i){return {l:l,c:acols[i],p:ap[i]};}).filter(function(x){return x.p>0;});
-    var cc=getChartColors();
-    dl.innerHTML=donutItems.map(function(x){return '<div style="display:flex;align-items:center;gap:7px;font-size:.6rem;color:'+cc.donutTxt+'"><div style="width:7px;height:7px;border-radius:50%;background:'+x.c+';flex-shrink:0"></div><span data-donut-label style="flex:1;color:'+cc.donutTxt+'">'+x.l+'</span><span data-donut-val style="color:'+cc.donutVal+';font-weight:500">'+x.p+'%</span></div>';}).join('');
+    dl.innerHTML=donutItems.map(function(x){return '<div style="display:flex;align-items:center;gap:7px;font-size:.6rem;color:rgba(243,244,246,.5)"><div style="width:7px;height:7px;border-radius:50%;background:'+x.c+';flex-shrink:0"></div><span style="flex:1">'+x.l+'</span><span style="color:#f4f1ec;font-weight:500">'+x.p+'%</span></div>';}).join('');
   }
   var acc=c.accounts||[];
   document.getElementById('invTable').innerHTML=acc.map(function(a){
@@ -1055,28 +1026,19 @@ function renderDash(c){
     type:'bar',
     data:{labels:mos,datasets:ds.length?ds:[{label:'Sin ingresos',data:mos.map(function(){return 0;}),backgroundColor:'rgba(243,244,246,.05)'}]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:ds.length>1,labels:{color:getChartColors().legendColor,font:{size:8,family:'Montserrat'},boxWidth:10}},
-        tooltip:{backgroundColor:getChartColors().tooltipBg,bodyColor:getChartColors().tooltipBody,callbacks:{label:function(ctx){return ctx.dataset.label+': USD '+fmt(ctx.raw);}}}},
-      scales:{x:{grid:{display:false},ticks:{color:getChartColors().ticks,font:{size:8}}},y:{grid:{color:getChartColors().grid},ticks:{color:getChartColors().ticks,font:{size:8},callback:function(v){return 'USD '+fmt(v);}}}}}
+      plugins:{legend:{display:ds.length>1,labels:{color:'rgba(243,244,246,.6)',font:{size:8,family:'Montserrat'},boxWidth:10}},
+        tooltip:{backgroundColor:'rgba(26,41,64,.97)',callbacks:{label:function(ctx){return ctx.dataset.label+': USD '+fmt(ctx.raw);}}}},
+      scales:{x:{grid:{display:false},ticks:{color:'rgba(243,244,246,.55)',font:{size:8}}},y:{grid:{color:'rgba(243,244,246,.03)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:8},callback:function(v){return 'USD '+fmt(v);}}}}}
   });
   if(incDonut)incDonut.destroy();
   var allFlow=props.filter(function(p){return Number(p.rent)>0;}).map(function(p){return {name:p.name,v:Number(p.rent)*12};}).concat(prods.filter(function(p){return Number(p.income)>0;}).map(function(p){return {name:p.name,v:Number(p.income)*12};}));
-  var incDonutColors=['#5aab8a','#b1913a','#7ea8c9','#a08080','#9aab6e'];
   incDonut=new Chart(document.getElementById('incDonut').getContext('2d'),{
     type:'doughnut',
-    data:{labels:allFlow.length?allFlow.map(function(i){return i.name;}):['Sin ingresos'],datasets:[{data:allFlow.length?allFlow.map(function(i){return i.v;}):[1],backgroundColor:incDonutColors,borderWidth:0,hoverOffset:6}]},
+    data:{labels:allFlow.length?allFlow.map(function(i){return i.name;}):['Sin ingresos'],datasets:[{data:allFlow.length?allFlow.map(function(i){return i.v;}):[1],backgroundColor:['#5aab8a','#b1913a','#7ea8c9','#a08080','#9aab6e'],borderWidth:0,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{display:false},
-        tooltip:{backgroundColor:getChartColors().tooltipBg,bodyColor:getChartColors().tooltipBody,callbacks:{label:function(ctx){return 'USD '+fmt(ctx.raw)+' / año';}}}}}
+      plugins:{legend:{display:true,position:'bottom',labels:{color:'rgba(243,244,246,.4)',font:{size:9,family:'Montserrat'},boxWidth:8,padding:6}},
+        tooltip:{backgroundColor:'rgba(26,41,64,.97)',callbacks:{label:function(ctx){return 'USD '+fmt(ctx.raw)+' / año';}}}}}
   });
-  var idl=document.getElementById('incDonutLegend');
-  if(idl&&allFlow.length){
-    idl.innerHTML=allFlow.map(function(item,i){
-      return '<div style="display:flex;align-items:center;gap:5px;font-size:.58rem;color:var(--w3)">'+
-        '<div style="width:7px;height:7px;border-radius:50%;background:'+incDonutColors[i%incDonutColors.length]+';flex-shrink:0"></div>'+
-        '<span>'+item.name+'</span></div>';
-    }).join('');
-  }
   var notes=c.notes||[];
   document.getElementById('mtgBanner').innerHTML=c.nextMeeting?'<div class="mtg-banner"><div><div class="mtg-label">Proxima reunion</div><div class="mtg-val">'+new Date(c.nextMeeting+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</div></div></div>':'';
   document.getElementById('notesList').innerHTML=notes.length?notes.map(function(n){return '<div class="note-item"><div class="note-date">'+n.date+'</div><div class="note-txt">'+n.text+'</div></div>';}).join(''):'<div style="padding:16px 0;font-style:italic;color:rgba(243,244,246,.3);font-size:.7rem">Sin notas</div>';
@@ -1643,77 +1605,6 @@ function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 init();
-
-// ── Theme switcher ────────────────────────────────────────────────────────────
-const THEME_CYCLE=['dark','light','system'];
-const THEME_META={
-  dark:{label:'Dark',icon:'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'},
-  light:{label:'Light',icon:'<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'},
-  system:{label:'Auto',icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
-};
-
-function isLightMode(){
-  const m=localStorage.getItem('ofir-theme')||'dark';
-  return m==='light'||(m==='system'&&window.matchMedia('(prefers-color-scheme:light)').matches);
-}
-
-function getChartColors(){
-  const l=isLightMode();
-  return {
-    ticks:      l?'rgba(24,29,43,.5)' :'rgba(243,244,246,.55)',
-    grid:       l?'rgba(0,0,0,.05)'   :'rgba(243,244,246,.03)',
-    tooltipBg:  l?'rgba(248,249,251,.98)':'rgba(26,41,64,.97)',
-    tooltipBody:l?'#181d2b'           :'#f4f1ec',
-    legendColor:l?'rgba(24,29,43,.5)' :'rgba(243,244,246,.6)',
-    donutTxt:   l?'rgba(24,29,43,.5)' :'rgba(243,244,246,.5)',
-    donutVal:   l?'#181d2b'           :'#f4f1ec',
-  };
-}
-
-function updateChartColors(){
-  const cc=getChartColors();
-  [perfChart,incChart].forEach(function(ch){
-    if(!ch)return;
-    ['x','y'].forEach(function(ax){
-      if(ch.options.scales[ax]){
-        ch.options.scales[ax].ticks.color=cc.ticks;
-        if(ch.options.scales[ax].grid)ch.options.scales[ax].grid.color=cc.grid;
-      }
-    });
-    ch.options.plugins.tooltip.backgroundColor=cc.tooltipBg;
-    ch.options.plugins.tooltip.bodyColor=cc.tooltipBody;
-    ch.update();
-  });
-  if(incChart&&incChart.options.plugins.legend&&incChart.options.plugins.legend.labels){
-    incChart.options.plugins.legend.labels.color=cc.legendColor;
-    incChart.update();
-  }
-  if(incDonut){
-    incDonut.options.plugins.tooltip.backgroundColor=cc.tooltipBg;
-    incDonut.options.plugins.tooltip.bodyColor=cc.tooltipBody;
-    incDonut.update();
-  }
-  // Donut legend text
-  var dl=document.getElementById('donutLegend');
-  if(dl){
-    dl.querySelectorAll('[data-donut-label]').forEach(function(el){el.style.color=cc.donutTxt;});
-    dl.querySelectorAll('[data-donut-val]').forEach(function(el){el.style.color=cc.donutVal;});
-  }
-}
-
-function applyTheme(mode){
-  document.documentElement.setAttribute('data-theme',mode);
-  localStorage.setItem('ofir-theme',mode);
-  const m=THEME_META[mode];
-  document.getElementById('theme-icon').innerHTML=m.icon;
-  document.getElementById('theme-label').textContent=m.label;
-  updateChartColors();
-}
-function cycleTheme(){
-  const cur=localStorage.getItem('ofir-theme')||'dark';
-  applyTheme(THEME_CYCLE[(THEME_CYCLE.indexOf(cur)+1)%THEME_CYCLE.length]);
-}
-applyTheme(localStorage.getItem('ofir-theme')||'dark');
 </script>
 </body>
 </html>
