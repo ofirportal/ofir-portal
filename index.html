@@ -1471,13 +1471,15 @@ function tr_sinceStartAnn(r){
   if(r.since_start==null)return null;
   const yrs=tr_sinceStartYears(r);
   if(yrs==null||yrs<0.083)return null;
-  return(Math.pow(1+r.since_start/100,1/yrs)-1)*100;
+  return r.since_start; // Albridge ya lo entrega anualizado
 }
 function tr_annualize3(r){
   if(r.y3==null)return null;
   const yrs=tr_sinceStartYears(r);
-  if(yrs==null)return null;
-  const periods=Math.min(3,yrs);
+  if(yrs==null||yrs<0.25)return null;
+  // y3 = compuesto acumulado de hasta 3 años calendario (2023+2024+2025).
+  // Para cuentas ≥3 años siempre cubrió 3 años completos; para más jóvenes usar yrs real.
+  const periods=yrs>=3?3:yrs;
   if(periods<0.25)return null;
   return(Math.pow(1+r.y3/100,1/periods)-1)*100;
 }
