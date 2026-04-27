@@ -347,6 +347,8 @@ textarea.ii{resize:none;height:34px;line-height:1.4;}
 #view-tracker table.tr-tbl tbody td:first-child{text-align:left;font-weight:600;color:var(--tr-text);position:sticky;left:0;z-index:5;background:var(--tr-bg);border-right:1px solid var(--tr-border);}
 #view-tracker table.tr-tbl tbody tr:hover td:first-child{background:var(--tr-hover);}
 #view-tracker table.tr-tbl tbody td:nth-child(2){text-align:left;color:var(--tr-dim);font-family:monospace;font-size:12px;}
+#view-tracker .tr-resizer{position:absolute;top:0;right:0;width:5px;height:100%;cursor:col-resize;z-index:3;}
+#view-tracker .tr-resizer:hover,#view-tracker .tr-resizer.tr-resizing{background:rgba(201,169,110,.45);}
 #view-tracker .tp{color:#4caf7d !important;}
 #view-tracker .tn2{color:#e05c5c !important;}
 #view-tracker .td2{color:var(--tr-dim);}
@@ -1562,6 +1564,50 @@ function tr_renderTable(){
       <td>${(()=>{const s=tr_slug(r);return`<a href="https://performance.ofirmfo.com/${s}" target="_blank" style="color:var(--gold);text-decoration:none;font-size:13px;">🔗</a>`;})()}</td>
     </tr>`;
   }).join('');
+  tr_initResizers();
+}
+let _trResizersInited=false;
+function tr_initResizers(){
+  if(_trResizersInited)return;
+  const table=document.querySelector('#view-tracker table.tr-tbl');
+  if(!table)return;
+  const ths=Array.from(table.querySelectorAll('thead th'));
+  ths.forEach(th=>{
+    const h=document.createElement('div');
+    h.className='tr-resizer';
+    th.appendChild(h);
+    h.addEventListener('mousedown',e=>{
+      e.stopPropagation();e.preventDefault();
+      if(table.style.tableLayout!=='fixed'){
+        ths.forEach(t=>{const w=t.offsetWidth;t.style.width=w+'px';t.style.minWidth=w+'px';});
+        table.style.tableLayout='fixed';
+        table.style.width=table.offsetWidth+'px';
+      }
+      h.classList.add('tr-resizing');
+      const x0=e.clientX,w0=th.offsetWidth;
+      const onMove=e=>{
+        const w=Math.max(32,w0+e.clientX-x0);
+        th.style.width=w+'px';th.style.minWidth=w+'px';
+      };
+      const onUp=()=>{
+        h.classList.remove('tr-resizing');
+        document.removeEventListener('mousemove',onMove);
+        document.removeEventListener('mouseup',onUp);
+      };
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
+    });
+    // Doble click: reset a ancho automático
+    h.addEventListener('dblclick',e=>{
+      e.stopPropagation();
+      th.style.width='';th.style.minWidth='';
+      // Si todas las columnas vuelven a auto, salir de fixed
+      if(ths.every(t=>!t.style.width)){
+        table.style.tableLayout='';table.style.width='';
+      }
+    });
+  });
+  _trResizersInited=true;
 }
 function tr_calcGL(r){
   if(r.ending_value==null||!r.net_contribution)return null;
