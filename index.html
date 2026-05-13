@@ -524,16 +524,145 @@ html[data-theme="light"] nav{background:rgba(244,241,235,0.97);}
 html[data-theme="light"] .v2-tbtn{color:#5a6e85;border-color:rgba(26,41,64,.25);}
 html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
 
+/* Mobile bottom nav — hidden on desktop */
+.mob-nav{display:none;}
+
+/* ── TABLET (≤900px) ── */
 @media(max-width:900px){
-  .v2-hero{padding:28px 20px 24px;}
-  .v2-sec-wrap{padding:20px 20px;}
-  .v2-total{font-size:46px;}
-  .v2-hero-row{flex-direction:column;gap:20px;}
-  .v2-hrig{flex-direction:row;}
-  .v2-vd{width:40px;height:1px;margin:0 16px;}
+  .v2-hero{padding:32px 24px 28px;}
+  .v2-sec-wrap{padding:22px 22px;}
+  .v2-total{font-size:52px;}
+  .v2-hero-row{flex-direction:column;gap:22px;}
+  .v2-hrig{flex-direction:row;justify-content:flex-start;}
+  .v2-vd{width:40px;height:1px;margin:0 20px;}
   .v2-alloc{grid-template-columns:1fr;}
-  .v2-cds{grid-template-columns:1fr;}
+  .v2-cds{grid-template-columns:1fr 1fr;}
   .v2-2c,.v2-2c-eq{grid-template-columns:1fr;}
+}
+
+/* ── MOBILE PHONE (≤600px) — PREMIUM APP ── */
+@media(max-width:600px){
+
+  /* BOTTOM NAV */
+  .mob-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    height:calc(58px + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);
+    background:rgba(11,20,32,0.97);
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    border-top:1px solid rgba(201,169,110,0.13);
+    z-index:150;align-items:stretch;
+  }
+  .mob-ni{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    cursor:pointer;transition:color .18s;
+    font-size:7px;letter-spacing:2px;text-transform:uppercase;
+    color:rgba(138,154,181,0.42);-webkit-tap-highlight-color:transparent;
+  }
+  .mob-ni.active{color:#c9a96e;}
+  .mob-ni-ico{font-size:17px;line-height:1;display:block;}
+  .mob-ni span{display:block;}
+
+  /* APP SHELL */
+  nav{display:none;}
+  main{padding-bottom:calc(66px + env(safe-area-inset-bottom));}
+
+  /* HEADER — slim app bar */
+  header{padding:0 16px;height:52px;}
+  .hb-sep,.hb-sub,.h-nm,.h-rl,.badge-adm{display:none;}
+  .h-pill{padding:2px;background:transparent;border:none;}
+  .h-av{width:30px;height:30px;font-size:.72rem;}
+  .hb-mark{font-size:.92rem;letter-spacing:.28em;}
+  .v2-tbtn{padding:4px 10px;font-size:7px;letter-spacing:1px;}
+  .btn-h{font-size:0;padding:6px 10px;min-width:32px;position:relative;}
+  .btn-h::after{content:'↗';font-size:13px;color:rgba(243,244,246,.38);}
+
+  /* V2 HERO — cinematic centered */
+  .v2-hero{
+    padding:26px 20px 32px;
+    background:linear-gradient(175deg,#0b1520 0%,#111f2e 100%);
+    border-bottom:none;position:relative;
+  }
+  .v2-hero::after{
+    content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(201,169,110,.2),transparent);
+  }
+  .v2-eyebrow{text-align:center;font-size:7px;letter-spacing:3px;margin-bottom:8px;}
+  .v2-family{text-align:center;font-size:12px;letter-spacing:5px;margin-bottom:18px;}
+  .v2-hero-row{flex-direction:column;align-items:center;gap:22px;}
+  .v2-total{font-size:54px;letter-spacing:-2px;text-align:center;line-height:1;}
+  .v2-curr{font-size:18px;margin-top:6px;}
+  .v2-chips{justify-content:center;gap:8px;margin-top:12px;}
+  .v2-hrig{flex-direction:row;justify-content:center;gap:0;align-items:center;}
+  .v2-vd{width:1px;height:36px;margin:0 22px;}
+  .v2-sb{text-align:center;}.v2-sb+.v2-sb{margin-top:0;}
+  .v2-sl{font-size:7px;letter-spacing:2px;}
+  .v2-sv{font-size:20px;}.v2-ss{font-size:10px;}
+
+  /* SECTION WRAPS */
+  .v2-sec-wrap{padding:18px 14px;}
+  .v2-sl-hdr{font-size:7px;letter-spacing:3px;margin-bottom:12px;}
+
+  /* DONUT — compact horizontal pill */
+  .v2-alloc{grid-template-columns:1fr;gap:14px;}
+  .v2-donut-cd{flex-direction:row;padding:14px 16px;gap:18px;align-items:center;border-radius:12px;}
+  .v2-donut-ttl{display:none;}
+  .v2-donut-cd>div:nth-child(2){width:76px!important;height:76px!important;flex-shrink:0;}
+  .v2-donut-cd>div:nth-child(2) canvas{width:76px!important;height:76px!important;}
+  .v2-dl{margin-top:0;gap:7px;}
+  .v2-dln,.v2-dlv{font-size:10px;}
+
+  /* CARDS — 2 columns, compact premium */
+  .v2-cds-col{gap:10px;}
+  .v2-cds{grid-template-columns:1fr 1fr;gap:10px;}
+  .v2-ac{
+    padding:14px 13px 12px;border-radius:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,.32);
+  }
+  .v2-achdr{margin-bottom:10px;}
+  .v2-acl{font-size:7px;letter-spacing:2px;}
+  .v2-acp{font-size:9px;padding:1px 6px;}
+  .v2-acv{font-size:22px;line-height:1.1;}
+  .v2-acc{font-size:11px;margin-top:3px;}
+  .v2-acbar{margin-top:10px;}
+  .v2-acm{gap:10px;margin-top:8px;padding-top:8px;}
+  .v2-aml{font-size:7px;}.v2-amv{font-size:11px;}
+  .v2-eh{font-size:7px;letter-spacing:1.5px;margin-top:8px;}
+
+  /* DETAIL PANELS */
+  .v2-dc.v2-open{max-height:1400px;}
+  .v2-dp{border-radius:0 0 14px 14px;}
+  .v2-dph{padding:11px 14px;}
+  .v2-dptl{font-size:7px;letter-spacing:2.5px;}
+  .v2-dptv{font-size:15px;}.v2-dpc{width:22px;height:22px;}
+  .v2-ht th{padding:8px 12px;font-size:7px;}
+  .v2-ht td{padding:11px 12px;font-size:12px;}
+  .v2-ht th:nth-child(4),.v2-ht td:nth-child(4){display:none;}
+  .v2-hft td{padding:10px 12px;}
+  .v2-hft td:nth-child(4){display:none;}
+  .v2-hi{width:22px;height:22px;font-size:11px;margin-right:7px;}
+  .v2-hn{font-size:12px;}.v2-hsub{font-size:9px;}
+  .v2-hval{font-size:14px;}
+
+  /* CHART CARDS */
+  .v2-ccard{padding:16px 14px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.28);}
+  .v2-ccl{font-size:7px;letter-spacing:2.5px;}
+  .chart-h{height:160px;}
+  .v2-2c,.v2-2c-eq{grid-template-columns:1fr;gap:12px;}
+
+  /* LOGIN — bottom sheet */
+  #loginScreen{align-items:flex-end;padding:0;}
+  .lg-box{
+    width:100%;max-width:100%;
+    padding:36px 24px;
+    padding-bottom:calc(36px + env(safe-area-inset-bottom));
+    border-radius:20px 20px 0 0;
+    border-top:1px solid rgba(201,169,110,0.18);
+    background:rgba(16,27,44,0.99);
+  }
+  .lg-word{font-size:2.5rem;}
+  .lg-mark{margin-bottom:30px;}
+  .lg-fn{margin-top:20px;}
 }
 
 </style>
@@ -591,6 +720,19 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
     <div class="ni admin-only" style="display:none" onclick="showView('admin',this)">Administración</div>
     <div class="ni admin-only" style="display:none" onclick="showView('tracker',this)">Performance Tracker</div>
   </nav>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mob-nav" id="mobNav" style="display:none">
+    <div class="mob-ni active" data-view="dashboard" onclick="showView('dashboard',null)">
+      <span class="mob-ni-ico">◆</span>
+      <span>Resumen</span>
+    </div>
+    <div class="mob-ni" data-view="reports" onclick="showView('reports',null)">
+      <span class="mob-ni-ico">≡</span>
+      <span>Reportes</span>
+    </div>
+  </nav>
+
   <main>
 
     <!-- ══ DASHBOARD ══ -->
@@ -1001,6 +1143,7 @@ function enterApp(){
   document.getElementById('hBadge').style.display=isAdmin?'inline-block':'none';
   document.querySelectorAll('.admin-only').forEach(e=>e.style.display=isAdmin?'block':'none');
   document.querySelectorAll('.admin-hide').forEach(e=>e.style.display=isAdmin?'none':'block');
+  var mobn=document.getElementById('mobNav');if(mobn)mobn.style.display=isAdmin?'none':'flex';
   if(isAdmin){
     renderAdmMet();renderClList();
     if(clients.length)selClient(0);
@@ -1019,6 +1162,7 @@ function doLogout(){
   clients=[];currentClient=null;isAdmin=false;selIdx=0;
   [perfChart,donutChart,incChart,incDonut].forEach(ch=>{try{ch&&ch.destroy();}catch(e){}});
   perfChart=donutChart=incChart=incDonut=null;
+  var mobn=document.getElementById('mobNav');if(mobn)mobn.style.display='none';
   history.replaceState(null,'',window.location.pathname);
   showLogin();
 }
@@ -1026,8 +1170,11 @@ function doLogout(){
 function showView(name,el){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.mob-ni').forEach(n=>n.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
   if(el)el.classList.add('active');
+  var mn=document.querySelector('.mob-ni[data-view="'+name+'"]');
+  if(mn)mn.classList.add('active');
   const c=isAdmin?clients[selIdx]:currentClient;
   if(name==='dashboard')renderDash(c);
   if(name==='reports')renderReports(c);
