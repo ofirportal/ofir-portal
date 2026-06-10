@@ -897,6 +897,54 @@ function makeSlug(name, account) {
   return name.split(' ')[0].toLowerCase() + account.slice(-3);
 }
 
+// Slugs legacy (generados con nombres abreviados de NetX360) — no borrar
+const SLUG_ALIASES = {
+  'astiz-pfis589': 'JXD068589',
+  'baezjuan152':   'JXD104152',
+  'basilrobe801':  'JXD106801',
+  'boyaciyana906': 'JXD090906',
+  'buenos613':     'JXD087613',
+  'carlosgust150': 'JXD100150',
+  'di527':         'JXD075527',
+  'dikgozclau156': 'JXD102156',
+  'dubinsky001':   'JXD068001',
+  'escamillal106': 'JXD107106',
+  'figuerasma184': 'JXD100184',
+  'flaschserg167': 'JXD110167',
+  'galantemar232': 'JXD097232',
+  'godoy731':      'JXD081731',
+  'guthmannto456': 'JXD092456',
+  'hilzermang496': 'JXD111496',
+  'kahanovsky328': 'JXD108328',
+  'krivuline175':  'JXD110175',
+  'lavischwil914': 'JXD108914',
+  'lozada455':     'JXD059455',
+  'marchesott397': 'JXD093397',
+  'margolinlu212': 'JXD099212',
+  'marinonico499': 'JXD100499',
+  'matossian639':  'JXD068639',
+  'militosant301': 'JXD095301',
+  'neuss042':      'JXD059042',
+  'neussjulie225': 'JXD105225',
+  'niedlichgr830': 'JXD095830',
+  'pazjoaquin467': 'JXD104467',
+  'petliukdav672': 'JXD091672',
+  'pfister067':    'JXD059067',
+  'pronotti752':   'JXD059752',
+  'pronottimi546': 'JXD111546',
+  'rizzi158':      'JXD059158',
+  'rochinascl794': 'JXD097794',
+  'ruthadrian286': 'JXD108286',
+  'saban917':      'JXD084917',
+  'safdiejaco279': 'JXD099279',
+  'shwiffdieg458': 'JXD091458',
+  'toledonest148': 'JXD070148',
+  'trucco463':     'JXD059463',
+  'trucco944':     'JXD068944',
+  'zebulun2751':   'JXD111751',
+  'zelionedan347': 'JXD098347',
+};
+
 // ── Slug detection ────────────────────────────────────────────────────────────
 function detectSlug() {
   const params = new URLSearchParams(window.location.search);
@@ -1317,13 +1365,15 @@ async function boot() {
       }
     });
 
-    if (!SLUG_MAP[slug]) {
+    // Fallback: slug legacy del mapa estático
+    const resolvedAccount = SLUG_MAP[slug]?.account ?? SLUG_ALIASES[slug] ?? null;
+    if (!resolvedAccount) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error-page').style.display = 'flex';
       return;
     }
 
-    const { account } = SLUG_MAP[slug];
+    const account = resolvedAccount;
 
     const [tracker, history, positions] = await Promise.all([
       sbFetch(`performance_tracker?account=eq.${encodeURIComponent(account)}&limit=1`),
