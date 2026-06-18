@@ -1106,15 +1106,9 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
             <thead>
               <tr>
                 <th>Instrumento</th>
-                <th>Symbol</th>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
+                <th>Asset Class</th>
                 <th>Valor USD</th>
-                <th>Costo</th>
                 <th>% Portfolio</th>
-                <th>G/L %</th>
-                <th>G/L $</th>
               </tr>
             </thead>
             <tbody id="advPosTbody"></tbody>
@@ -1137,15 +1131,9 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
             <thead>
               <tr>
                 <th>Instrumento</th>
-                <th>Symbol</th>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
+                <th>Asset Class</th>
                 <th>Valor USD</th>
-                <th>Costo</th>
                 <th>% Portfolio</th>
-                <th>G/L %</th>
-                <th>G/L $</th>
               </tr>
             </thead>
             <tbody id="posTbody"></tbody>
@@ -2121,6 +2109,24 @@ function closeModal(){document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 /* ══ ADVISORY RENDERING ══ */
 
+/* Asset class mapping for advisory holdings */
+var ADV_AC_KEYS=[
+  ['PIMCO','Renta Fija'],['DNCA','Renta Fija'],['MAN GLB','Renta Fija'],['VONTOBEL','Renta Fija'],
+  ['NEUBERGER','Renta Fija'],['FRANKLIN','Renta Fija'],
+  ['JANUS','Balanceado'],['HENDERSON','Balanceado'],
+  ['JUPITER','Alternativos'],['GOLD','Alternativos'],['GLD','Alternativos'],['SPDR GOLD','Alternativos'],
+  ['BERKSHIRE','Renta Variable'],['S&P 500','Renta Variable'],['ISHRES','Renta Variable'],
+  ['MERCADOLIBRE','Renta Variable'],['MELI','Renta Variable'],['META PLATFORM','Renta Variable'],
+  ['NU HLDGS','Renta Variable'],['NU ','Renta Variable'],
+];
+function advAssetClass(h){
+  var nm=(h.name||'').toUpperCase(),sym=(h.symbol||'').toUpperCase();
+  for(var i=0;i<ADV_AC_KEYS.length;i++){if(nm.indexOf(ADV_AC_KEYS[i][0])>=0||sym===ADV_AC_KEYS[i][0])return ADV_AC_KEYS[i][1];}
+  if((h.category||'')=='Cash'||(h.product_type||'').indexOf('Cash')>=0||(h.product_type||'').indexOf('MMF')>=0)return 'Cash';
+  return 'Otros';
+}
+var ADV_AC_COLORS={'Renta Fija':'#5a9fd4','Renta Variable':'#c9a96e','Alternativos':'#4fc49a','Balanceado':'#9b8fd4','Cash':'#8fa0b8','Otros':'#777'};
+
 function renderAdvisory(){
   if(!advisorySnapshots.length)return;
   var cl=currentClient||{};
@@ -2135,19 +2141,17 @@ function renderAdvisory(){
 
   var startD=new Date((cl.startDate||'2026-06-01')+'T00:00:00');
 
-  // G&L from holdings
-  var holdings=latest.holdings||[];
-  var totalCost=holdings.reduce(function(s,h){return s+Number(h.total_cost||0);},0);
-  var totalGL=curVal-totalCost;
-  var totalGLpct=totalCost>0?((totalGL/totalCost)*100).toFixed(2):0;
+  // G&L = current vs inception (NOT vs cost basis from previous advisor)
+  var sinceGL=curVal-incVal;
+  var sinceGLpct=incVal>0?((sinceGL/incVal)*100).toFixed(2):'0.00';
 
   var chipsH='';
-  chipsH+='<span class="adv-chip '+(totalGL>=0?'green':'red')+'">'+(totalGL>=0?'+':'')+totalGLpct+'% G&L</span>';
-  chipsH+='<span class="adv-chip '+(totalGL>=0?'green':'red')+'">'+(totalGL>=0?'+':'-')+'USD '+fmt(Math.abs(Math.round(totalGL)))+'</span>';
+  chipsH+='<span class="adv-chip '+(sinceGL>=0?'green':'red')+'">'+(sinceGL>=0?'+':'')+sinceGLpct+'%</span>';
+  chipsH+='<span class="adv-chip '+(sinceGL>=0?'green':'red')+'">'+(sinceGL>=0?'+':'-')+'USD '+fmt(Math.abs(Math.round(sinceGL)))+'</span>';
   chipsH+='<span class="adv-chip gold">Desde '+startD.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'</span>';
   document.getElementById('advChips').innerHTML=chipsH;
 
-  // Metrics — period returns
+  // Metrics — period returns (based on snapshot values, not cost basis)
   var now=new Date();
   var mtdVal=incVal,qtdVal=incVal,stdVal=incVal,ytdVal=incVal;
   var mStart=new Date(now.getFullYear(),now.getMonth(),1);
@@ -2162,18 +2166,16 @@ function renderAdvisory(){
     if(sd<sStart){stdVal=sv;}
     if(sd<yStart){ytdVal=sv;}
   });
-  if(snaps.length<=2){mtdVal=incVal;qtdVal=incVal;stdVal=incVal;ytdVal=incVal;}
 
-  var mtdChg=curVal-mtdVal,mtdPct=mtdVal>0?((mtdChg/mtdVal)*100).toFixed(2):0;
-  var qtdChg=curVal-qtdVal,qtdPct=qtdVal>0?((qtdChg/qtdVal)*100).toFixed(2):0;
-  var stdChg=curVal-stdVal,stdPct=stdVal>0?((stdChg/stdVal)*100).toFixed(2):0;
-  var ytdChg=curVal-ytdVal,ytdPct=ytdVal>0?((ytdChg/ytdVal)*100).toFixed(2):0;
-  var sinceChg=curVal-incVal,sincePct=incVal>0?((sinceChg/incVal)*100).toFixed(2):0;
+  var mtdChg=curVal-mtdVal,mtdPct=mtdVal>0?((mtdChg/mtdVal)*100).toFixed(2):'0.00';
+  var qtdChg=curVal-qtdVal,qtdPct=qtdVal>0?((qtdChg/qtdVal)*100).toFixed(2):'0.00';
+  var stdChg=curVal-stdVal,stdPct=stdVal>0?((stdChg/stdVal)*100).toFixed(2):'0.00';
+  var ytdChg=curVal-ytdVal,ytdPct=ytdVal>0?((ytdChg/ytdVal)*100).toFixed(2):'0.00';
   var daysSinceStart=Math.max(1,Math.floor((now-startD)/(1000*60*60*24)));
 
   function mkM(label,val,pct,sub){
     var cls=Number(pct)>=0?'pos':'neg';
-    return '<div class="adv-m"><div class="adv-ml">'+label+'</div><div class="adv-mv">'+(Number(pct)>=0?'+':'')+pct+'%</div><div class="adv-ms"><span class="'+cls+'">'+(Number(val)>=0?'+':'-')+'USD '+fmt(Math.abs(val))+'</span>'+(sub?' · '+sub:'')+'</div></div>';
+    return '<div class="adv-m"><div class="adv-ml">'+label+'</div><div class="adv-mv">'+(Number(pct)>=0?'+':'')+pct+'%</div><div class="adv-ms"><span class="'+cls+'">'+(Number(val)>=0?'+':'-')+'USD '+fmt(Math.abs(Math.round(val)))+'</span>'+(sub?' · '+sub:'')+'</div></div>';
   }
   var mH='';
   mH+='<div class="adv-m"><div class="adv-ml">Valor inicial</div><div class="adv-mv">'+fmt(incVal)+'</div><div class="adv-ms">'+startD.toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})+'</div></div>';
@@ -2182,56 +2184,51 @@ function renderAdvisory(){
   mH+=mkM('Trimestre',qtdChg,qtdPct);
   mH+=mkM('Semestre',stdChg,stdPct);
   mH+=mkM(String(now.getFullYear()),ytdChg,ytdPct);
-  mH+=mkM('Desde inicio',sinceChg,sincePct,daysSinceStart+' días');
-  mH+='<div class="adv-m"><div class="adv-ml">Ganancia / Pérdida</div><div class="adv-mv" style="color:'+(totalGL>=0?'var(--adv-green)':'var(--adv-red)')+'">'+(totalGL>=0?'+':'-')+'USD '+fmt(Math.abs(Math.round(totalGL)))+'</div><div class="adv-ms">'+(totalGL>=0?'+':'')+totalGLpct+'% sobre costo</div></div>';
+  mH+=mkM('Desde inicio',sinceGL,sinceGLpct,daysSinceStart+' días');
+  mH+='<div class="adv-m"><div class="adv-ml">Ganancia / Pérdida</div><div class="adv-mv" style="color:'+(sinceGL>0?'var(--adv-green)':sinceGL<0?'var(--adv-red)':'var(--w)')+'">'+(sinceGL>=0?'+':'-')+'USD '+fmt(Math.abs(Math.round(sinceGL)))+'</div><div class="adv-ms">desde inicio del asesoramiento</div></div>';
   document.getElementById('advMetrics').innerHTML=mH;
 
-  // Donut — allocation by category
+  // Donut — allocation by asset class
+  var holdings=latest.holdings||[];
   var byCat={};
   holdings.forEach(function(h){
-    var cat=h.category||'Other';
-    byCat[cat]=(byCat[cat]||0)+Number(h.market_value||0);
+    var ac=advAssetClass(h);
+    byCat[ac]=(byCat[ac]||0)+Number(h.market_value||0);
   });
-  var catColors={'Stocks':'#c9a96e','ETFs':'#5a9fd4','Mutual Funds':'#4fc49a','Cash':'#8fa0b8','Other':'#9b8fd4'};
-  var cats=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];});
+  var catOrder=['Renta Fija','Renta Variable','Alternativos','Balanceado','Cash','Otros'];
+  var cats=catOrder.filter(function(c){return byCat[c]>0;});
   var catVals=cats.map(function(c){return byCat[c];});
   var catPcts=cats.map(function(c){return curVal>0?Math.round(byCat[c]/curVal*100):0;});
-  var catCols=cats.map(function(c){return catColors[c]||'#777';});
+  var catCols=cats.map(function(c){return ADV_AC_COLORS[c]||'#777';});
 
   if(advDonutChart)advDonutChart.destroy();
   advDonutChart=new Chart(document.getElementById('advDonut').getContext('2d'),{type:'doughnut',data:{labels:cats,datasets:[{data:catPcts,backgroundColor:catCols,borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,41,64,.97)',borderColor:'rgba(201,169,110,.3)',borderWidth:1,callbacks:{label:function(ctx){return cats[ctx.dataIndex]+': '+catPcts[ctx.dataIndex]+'% (USD '+fmt(catVals[ctx.dataIndex])+')';}}}}}});
   document.getElementById('advDonutLegend').innerHTML=cats.map(function(c,i){return '<div style="display:inline-flex;align-items:center;gap:6px;margin:6px 14px 0 0;font-size:.6rem;color:var(--w2)"><div style="width:8px;height:8px;border-radius:50%;background:'+catCols[i]+'"></div>'+c+' <span style="color:var(--w);font-weight:600">'+catPcts[i]+'%</span></div>';}).join('');
 
-  // Performance chart — evolution
+  // Performance chart — flat line (monthly statements only)
   if(advPerfChartObj)advPerfChartObj.destroy();
   var labels=snaps.map(function(s){return new Date(s.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});});
   var vals=snaps.map(function(s){return Number(s.total_value);});
-  advPerfChartObj=new Chart(document.getElementById('advPerfChart').getContext('2d'),{type:'line',data:{labels:labels,datasets:[{data:vals,borderColor:'rgba(184,153,90,.7)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#c9a96e',tension:.3,fill:true,backgroundColor:function(ctx){var g=ctx.chart.ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'rgba(177,145,58,.18)');g.addColorStop(1,'rgba(184,153,90,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,41,64,.97)',borderColor:'rgba(177,145,58,.3)',borderWidth:1,callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}},scales:{x:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},maxRotation:0}},y:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},callback:function(v){return '$'+(v>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'k');}}}}}});
+  var yMin=Math.min.apply(null,vals)*0.998;
+  var yMax=Math.max.apply(null,vals)*1.002;
+  if(yMin===yMax){yMin=yMin*0.99;yMax=yMax*1.01;}
+  advPerfChartObj=new Chart(document.getElementById('advPerfChart').getContext('2d'),{type:'line',data:{labels:labels,datasets:[{data:vals,borderColor:'rgba(184,153,90,.7)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#c9a96e',tension:0,fill:true,backgroundColor:function(ctx){var g=ctx.chart.ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'rgba(177,145,58,.18)');g.addColorStop(1,'rgba(184,153,90,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,41,64,.97)',borderColor:'rgba(177,145,58,.3)',borderWidth:1,callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}},scales:{x:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},maxRotation:0}},y:{min:yMin,max:yMax,grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},callback:function(v){return '$'+(v>=1e6?(v/1e6).toFixed(2)+'M':(v/1e3).toFixed(0)+'k');}}}}}});
 
   // Holdings table inline
   var sortedH=holdings.slice().sort(function(a,b){return Number(b.market_value||0)-Number(a.market_value||0);});
   document.getElementById('advPosDate').textContent=new Date(latest.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
   var tbody=sortedH.map(function(h){
     var mv=Number(h.market_value||0);
-    var gl=Number(h.unrealized_gl||0);
-    var glp=Number(h.unrealized_gl_pct||0);
-    var cost=Number(h.total_cost||0);
-    var cls=gl>=0?'adv-pos':'adv-neg';
+    var ac=advAssetClass(h);
     return '<tr>'
       +'<td>'+h.name+'</td>'
-      +'<td style="color:var(--adv-gold);font-weight:600">'+(h.symbol||'—')+'</td>'
-      +'<td style="color:var(--adv-dim);font-size:11px">'+(h.category||h.product_type||'—')+'</td>'
-      +'<td>'+(h.quantity?Number(h.quantity).toLocaleString('es-AR',{maximumFractionDigits:2}):'—')+'</td>'
-      +'<td>'+(h.last_price?'$'+Number(h.last_price).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'
+      +'<td><span style="color:'+ADV_AC_COLORS[ac]+';font-weight:500">'+ac+'</span></td>'
       +'<td style="font-weight:600;color:var(--adv-text)">$'+fmt(mv)+'</td>'
-      +'<td>'+(cost>0?'$'+fmt(cost):'—')+'</td>'
       +'<td>'+(h.pct_portfolio?Number(h.pct_portfolio).toFixed(1)+'%':'—')+'</td>'
-      +'<td class="'+cls+'">'+(cost>0?(glp>=0?'+':'')+glp.toFixed(1)+'%':'—')+'</td>'
-      +'<td class="'+cls+'">'+(cost>0?(gl>=0?'+':'-')+'$'+fmt(Math.abs(gl)):'—')+'</td>'
       +'</tr>';
   }).join('');
   document.getElementById('advPosTbody').innerHTML=tbody;
-  document.getElementById('advPosTfoot').innerHTML='<tr><td>Total ('+sortedH.length+' posiciones)</td><td></td><td></td><td></td><td></td><td style="text-align:right;font-weight:700;color:var(--adv-gold)">$'+fmt(curVal)+'</td><td style="text-align:right">'+(totalCost>0?'$'+fmt(totalCost):'')+'</td><td></td><td class="'+(totalGL>=0?'adv-pos':'adv-neg')+'" style="text-align:right">'+(totalCost>0?(totalGL>=0?'+':'')+totalGLpct+'%':'')+'</td><td class="'+(totalGL>=0?'adv-pos':'adv-neg')+'" style="text-align:right">'+(totalCost>0?(totalGL>=0?'+':'-')+'$'+fmt(Math.abs(Math.round(totalGL))):'')+'</td></tr>';
+  document.getElementById('advPosTfoot').innerHTML='<tr><td>Total ('+sortedH.length+' posiciones)</td><td></td><td style="text-align:right;font-weight:700;color:var(--adv-gold)">$'+fmt(curVal)+'</td><td style="text-align:right">100%</td></tr>';
 
   // Fee section
   var feeRate=Number(cl.feeRate||0.005);
@@ -2257,28 +2254,16 @@ function renderPositions(){
   holdings.sort(function(a,b){return Number(b.market_value||0)-Number(a.market_value||0);});
   var tbody=holdings.map(function(h){
     var mv=Number(h.market_value||0);
-    var gl=Number(h.unrealized_gl||0);
-    var glp=Number(h.unrealized_gl_pct||0);
-    var cost=Number(h.total_cost||0);
-    var cls=gl>=0?'adv-pos':'adv-neg';
+    var ac=advAssetClass(h);
     return '<tr>'
       +'<td>'+h.name+'</td>'
-      +'<td style="color:var(--adv-gold);font-weight:600">'+(h.symbol||'—')+'</td>'
-      +'<td style="color:var(--adv-dim);font-size:11px">'+(h.category||h.product_type||'—')+'</td>'
-      +'<td>'+(h.quantity?Number(h.quantity).toLocaleString('es-AR',{maximumFractionDigits:2}):'—')+'</td>'
-      +'<td>'+(h.last_price?'$'+Number(h.last_price).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'
+      +'<td><span style="color:'+ADV_AC_COLORS[ac]+';font-weight:500">'+ac+'</span></td>'
       +'<td style="font-weight:600;color:var(--adv-text)">$'+fmt(mv)+'</td>'
-      +'<td>'+(cost>0?'$'+fmt(cost):'—')+'</td>'
       +'<td>'+(h.pct_portfolio?Number(h.pct_portfolio).toFixed(1)+'%':'—')+'</td>'
-      +'<td class="'+cls+'">'+(cost>0?(glp>=0?'+':'')+glp.toFixed(1)+'%':'—')+'</td>'
-      +'<td class="'+cls+'">'+(cost>0?(gl>=0?'+':'-')+'$'+fmt(Math.abs(gl)):'—')+'</td>'
       +'</tr>';
   }).join('');
   document.getElementById('posTbody').innerHTML=tbody;
-
-  var totalCost=holdings.reduce(function(s,h){return s+Number(h.total_cost||0);},0);
-  var totalGL=curVal-totalCost;
-  document.getElementById('posTfoot').innerHTML='<tr><td>Total ('+holdings.length+' posiciones)</td><td></td><td></td><td></td><td></td><td style="text-align:right">$'+fmt(curVal)+'</td><td style="text-align:right">'+(totalCost>0?'$'+fmt(totalCost):'')+'</td><td></td><td></td><td style="text-align:right">'+(totalCost>0?(totalGL>=0?'+':'-')+'$'+fmt(Math.abs(totalGL)):'')+'</td></tr>';
+  document.getElementById('posTfoot').innerHTML='<tr><td>Total ('+holdings.length+' posiciones)</td><td></td><td style="text-align:right">$'+fmt(curVal)+'</td><td style="text-align:right">100%</td></tr>';
 
   // Activity
   if(!activity.length){
