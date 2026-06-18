@@ -665,6 +665,82 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
   .lg-fn{margin-top:20px;}
 }
 
+/* ══ ADVISORY ══ */
+#view-advisory,#view-positions{--adv-bg:#162236;--adv-border:#243b5e;--adv-gold:#c9a96e;--adv-gold-dim:#9e7d4e;--adv-green:#4caf7d;--adv-red:#e05c5c;--adv-text:#e8edf5;--adv-dim:#8fa3be;}
+
+.adv-hero{padding:48px 56px 36px;max-width:1440px;margin:0 auto;border-bottom:1px solid var(--b);}
+.adv-eyebrow{font-size:.44rem;letter-spacing:.22em;text-transform:uppercase;color:var(--w4);margin-bottom:6px;}
+.adv-badge{display:inline-block;background:rgba(201,169,110,.15);border:1px solid rgba(201,169,110,.3);color:var(--goldl);font-size:.42rem;font-weight:700;letter-spacing:.14em;padding:3px 10px;text-transform:uppercase;border-radius:2px;margin-bottom:14px;}
+.adv-name{font-family:var(--serif);font-size:1.3rem;font-weight:400;color:var(--w2);margin-bottom:12px;letter-spacing:.03em;}
+.adv-total-row{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.adv-curr{font-family:var(--sans);font-size:1.1rem;font-weight:200;color:var(--w3);}
+.adv-total{font-family:var(--serif);font-size:4.8rem;font-weight:300;color:var(--w);line-height:.9;letter-spacing:-.02em;}
+.adv-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.adv-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;font-size:.54rem;font-weight:500;letter-spacing:.04em;border-radius:20px;}
+.adv-chip.green{border:1px solid rgba(79,168,128,.4);color:#7dd4b0;background:rgba(79,168,128,.1);}
+.adv-chip.red{border:1px solid rgba(224,92,92,.4);color:#e88;background:rgba(224,92,92,.1);}
+.adv-chip.gold{border:1px solid rgba(177,145,58,.3);color:var(--goldl);background:rgba(184,153,90,.07);}
+.adv-chip.dim{border:1px solid var(--b);color:var(--w3);background:var(--w5);}
+
+.adv-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--b);padding:0 56px;max-width:1440px;margin:0 auto;border-bottom:1px solid var(--b);}
+.adv-m{background:var(--n2);padding:28px 24px;transition:var(--transition);}
+.adv-m:hover{background:var(--n3);}
+.adv-ml{font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--w3);margin-bottom:8px;font-weight:500;}
+.adv-mv{font-family:var(--serif);font-size:1.6rem;font-weight:300;color:var(--w);line-height:1;margin-bottom:3px;}
+.adv-ms{font-size:.56rem;color:var(--w3);line-height:1.4;}
+.adv-ms .pos{color:var(--adv-green);}
+.adv-ms .neg{color:var(--adv-red);}
+
+.adv-section{padding:36px 56px;max-width:1440px;margin:0 auto;border-bottom:1px solid var(--b);}
+.adv-section-title{font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--w3);margin-bottom:20px;font-weight:600;}
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+.adv-chart-box{background:var(--n2);border:1px solid var(--b);border-radius:4px;padding:24px;position:relative;}
+.adv-chart-title{font-size:.44rem;letter-spacing:.14em;text-transform:uppercase;color:var(--w3);margin-bottom:16px;font-weight:500;}
+
+.adv-tbl{width:100%;border-collapse:collapse;}
+.adv-tbl thead th{background:var(--n2);color:var(--adv-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:10px 12px;text-align:right;border-bottom:1px solid var(--adv-border);white-space:nowrap;position:sticky;top:0;z-index:2;}
+.adv-tbl thead th:first-child,
+.adv-tbl thead th:nth-child(2),
+.adv-tbl thead th:nth-child(3){text-align:left;}
+.adv-tbl tbody tr{border-bottom:1px solid rgba(36,59,94,.4);transition:background .1s;}
+.adv-tbl tbody tr:hover{background:rgba(30,52,84,.5);}
+.adv-tbl tbody td{padding:9px 12px;text-align:right;vertical-align:middle;white-space:nowrap;color:rgba(243,244,246,.75);font-size:12px;}
+.adv-tbl tbody td:first-child{text-align:left;font-weight:600;color:var(--adv-text);}
+.adv-tbl tbody td:nth-child(2),
+.adv-tbl tbody td:nth-child(3){text-align:left;}
+.adv-tbl tfoot td{padding:10px 12px;font-weight:700;color:var(--adv-gold);border-top:1px solid var(--adv-border);font-size:12px;text-align:right;}
+.adv-tbl tfoot td:first-child{text-align:left;}
+.adv-tbl .adv-pos{color:var(--adv-green);}
+.adv-tbl .adv-neg{color:var(--adv-red);}
+.adv-tbl-wrap{overflow-x:auto;max-height:500px;overflow-y:auto;}
+
+.adv-fee-box{background:var(--n2);border:1px solid var(--b);border-radius:4px;padding:20px 24px;display:flex;gap:32px;flex-wrap:wrap;align-items:center;}
+.adv-fee-item{display:flex;flex-direction:column;gap:3px;}
+.adv-fee-label{font-size:.42rem;letter-spacing:.14em;text-transform:uppercase;color:var(--w3);font-weight:500;}
+.adv-fee-val{font-family:var(--serif);font-size:1.2rem;font-weight:300;color:var(--goldl);}
+
+.adv-act-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(36,59,94,.3);}
+.adv-act-row:last-child{border-bottom:none;}
+.adv-act-date{font-size:11px;color:var(--adv-dim);min-width:80px;}
+.adv-act-type{font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:3px;font-weight:600;margin-right:10px;min-width:60px;text-align:center;}
+.adv-act-type.buy{background:rgba(79,168,128,.15);color:var(--adv-green);border:1px solid rgba(79,168,128,.3);}
+.adv-act-type.sell{background:rgba(224,92,92,.12);color:var(--adv-red);border:1px solid rgba(224,92,92,.3);}
+.adv-act-type.other{background:rgba(143,163,190,.1);color:var(--adv-dim);border:1px solid rgba(143,163,190,.2);}
+.adv-act-desc{flex:1;font-size:12px;color:var(--adv-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.adv-act-sym{font-size:11px;color:var(--adv-gold);font-weight:600;margin:0 10px;min-width:50px;}
+.adv-act-amt{font-size:12px;font-weight:600;min-width:100px;text-align:right;}
+.adv-act-amt.pos{color:var(--adv-green);}
+.adv-act-amt.neg{color:var(--adv-red);}
+
+@media(max-width:768px){
+  .adv-hero{padding:28px 20px 24px;}
+  .adv-total{font-size:2.8rem;}
+  .adv-metrics{padding:0 20px;}
+  .adv-section{padding:24px 20px;}
+  .adv-grid{grid-template-columns:1fr;}
+  .adv-fee-box{flex-direction:column;gap:16px;}
+}
+
 </style>
 </head>
 <body>
@@ -719,6 +795,8 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
     <div class="ni admin-hide" onclick="showView('reports',this)">Reportes</div>
     <div class="ni admin-only" style="display:none" onclick="showView('admin',this)">Administración</div>
     <div class="ni admin-only" style="display:none" onclick="showView('tracker',this)">Performance Tracker</div>
+    <div class="ni advisory-only" style="display:none" onclick="showView('advisory',this)">Resumen</div>
+    <div class="ni advisory-only" style="display:none" onclick="showView('positions',this)">Posiciones</div>
   </nav>
 
   <!-- MOBILE BOTTOM NAV -->
@@ -994,6 +1072,70 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
       </div>
     </div><!-- /tracker -->
 
+    <!-- ══ ADVISORY DASHBOARD ══ -->
+    <div id="view-advisory" class="view">
+      <div class="adv-hero">
+        <div class="adv-eyebrow" id="advDate">—</div>
+        <div class="adv-badge">Advisory</div>
+        <div class="adv-name" id="advName">—</div>
+        <div class="adv-total-row">
+          <span class="adv-curr">USD</span>
+          <span class="adv-total" id="advTotal">—</span>
+        </div>
+        <div class="adv-chips" id="advChips"></div>
+      </div>
+      <div class="adv-metrics" id="advMetrics"></div>
+      <div class="adv-section">
+        <div class="adv-section-title">Allocation & Evolución</div>
+        <div class="adv-grid">
+          <div class="adv-chart-box">
+            <div class="adv-chart-title">Distribución por tipo</div>
+            <div style="position:relative;height:260px"><canvas id="advDonut"></canvas></div>
+            <div id="advDonutLegend"></div>
+          </div>
+          <div class="adv-chart-box">
+            <div class="adv-chart-title">Evolución del portafolio</div>
+            <div style="position:relative;height:260px"><canvas id="advPerfChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+      <div class="adv-section">
+        <div class="adv-section-title">Management Fee</div>
+        <div class="adv-fee-box" id="advFee"></div>
+      </div>
+    </div>
+
+    <!-- ══ ADVISORY POSITIONS ══ -->
+    <div id="view-positions" class="view">
+      <div class="adv-section" style="border-bottom:none">
+        <div class="adv-section-title">Holdings actuales — <span id="posDate">—</span></div>
+        <div class="adv-tbl-wrap">
+          <table class="adv-tbl">
+            <thead>
+              <tr>
+                <th>Instrumento</th>
+                <th>Symbol</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Valor USD</th>
+                <th>Costo</th>
+                <th>% Portfolio</th>
+                <th>G/L %</th>
+                <th>G/L $</th>
+              </tr>
+            </thead>
+            <tbody id="posTbody"></tbody>
+            <tfoot id="posTfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="adv-section">
+        <div class="adv-section-title">Actividad reciente</div>
+        <div id="posActivity" style="max-height:400px;overflow-y:auto"></div>
+      </div>
+    </div>
+
   </main>
   <footer>
     <div class="ft">Información confidencial — Uso exclusivo del cliente</div>
@@ -1032,8 +1174,10 @@ const SB_URL='https://jpegcujzyzqfjvlumzpm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWdjdWp6eXpxZmp2bHVtenBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzgzNzEsImV4cCI6MjA5MDIxNDM3MX0.A6cx3covHatuMa6PgkLVquDyrZAjzRCk3Knt0nKq2tQ';
 const ADM_PW='ofir2025';
 const db=supabase.createClient(SB_URL,SB_KEY);
-let clients=[],selIdx=0,isAdmin=false,currentClient=null;
+let clients=[],selIdx=0,isAdmin=false,isAdvisory=false,currentClient=null;
+let advisoryClient=null,advisorySnapshots=[];
 let perfChart,donutChart,incChart,incDonut;
+let advDonutChart=null,advPerfChartObj=null;
 const _intl=new Intl.NumberFormat('es-AR',{maximumFractionDigits:0});
 const fmt=n=>(n==null||isNaN(Number(n)))?'—':_intl.format(Number(n));
 const pct=(a,b)=>b>0?Math.round(a/b*100):0;
@@ -1119,8 +1263,17 @@ async function doLogin(){
     enterApp();return;
   }
   const{data,error}=await db.rpc('verify_client',{p_pass:pw});
-  if(error||!data||!data.length){showLoginErr();return;}
-  isAdmin=false;currentClient=mapR(data[0]);clients=[currentClient];selIdx=0;
+  if(error||!data||!data.length){
+    const{data:advData,error:advErr}=await db.from('advisory_clients').select('*').eq('password',pw);
+    if(!advErr&&advData&&advData.length){
+      isAdmin=false;isAdvisory=true;advisoryClient=advData[0];
+      const{data:snaps}=await db.from('advisory_snapshots').select('*').eq('client_id',advisoryClient.id).order('snapshot_date',{ascending:true});
+      advisorySnapshots=snaps||[];
+      enterApp();return;
+    }
+    showLoginErr();return;
+  }
+  isAdmin=false;isAdvisory=false;currentClient=mapR(data[0]);clients=[currentClient];selIdx=0;
   enterApp();
 }
 
@@ -1136,6 +1289,23 @@ function enterApp(){
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
+
+  if(isAdvisory){
+    document.getElementById('hAv').textContent=(advisoryClient.name||'S')[0].toUpperCase();
+    document.getElementById('hNm').textContent=advisoryClient.name||'';
+    document.getElementById('hRl').textContent='Advisory';
+    document.getElementById('hBadge').style.display='none';
+    document.querySelectorAll('.admin-only').forEach(e=>e.style.display='none');
+    document.querySelectorAll('.admin-hide').forEach(e=>e.style.display='none');
+    document.querySelectorAll('.advisory-only').forEach(e=>e.style.display='block');
+    var mobn=document.getElementById('mobNav');if(mobn)mobn.style.display='none';
+    var hSub=document.querySelector('.hb-sub');if(hSub)hSub.innerHTML='Advisory<br>Portal de inversiones';
+    document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+    var advNav=document.querySelector('.advisory-only');if(advNav)advNav.classList.add('active');
+    showView('advisory');
+    return;
+  }
+
   const c=isAdmin?(clients[selIdx]||clients[0]):currentClient;
   document.getElementById('hAv').textContent=isAdmin?'A':(c?.name||'?')[0].toUpperCase();
   document.getElementById('hNm').textContent=isAdmin?'Alan Naem':(c?.name||'');
@@ -1143,6 +1313,7 @@ function enterApp(){
   document.getElementById('hBadge').style.display=isAdmin?'inline-block':'none';
   document.querySelectorAll('.admin-only').forEach(e=>e.style.display=isAdmin?'block':'none');
   document.querySelectorAll('.admin-hide').forEach(e=>e.style.display=isAdmin?'none':'block');
+  document.querySelectorAll('.advisory-only').forEach(e=>e.style.display='none');
   var mobn=document.getElementById('mobNav');if(mobn)mobn.style.display=isAdmin?'none':'flex';
   if(isAdmin){
     renderAdmMet();renderClList();
@@ -1159,10 +1330,12 @@ function enterApp(){
 }
 
 function doLogout(){
-  clients=[];currentClient=null;isAdmin=false;selIdx=0;
-  [perfChart,donutChart,incChart,incDonut].forEach(ch=>{try{ch&&ch.destroy();}catch(e){}});
-  perfChart=donutChart=incChart=incDonut=null;
+  clients=[];currentClient=null;isAdmin=false;isAdvisory=false;selIdx=0;
+  advisoryClient=null;advisorySnapshots=[];
+  [perfChart,donutChart,incChart,incDonut,advDonutChart,advPerfChartObj].forEach(ch=>{try{ch&&ch.destroy();}catch(e){}});
+  perfChart=donutChart=incChart=incDonut=advDonutChart=advPerfChartObj=null;
   var mobn=document.getElementById('mobNav');if(mobn)mobn.style.display='none';
+  var hSub=document.querySelector('.hb-sub');if(hSub)hSub.innerHTML='Multi Family Office<br>Portal Patrimonial';
   history.replaceState(null,'',window.location.pathname);
   showLogin();
 }
@@ -1180,6 +1353,8 @@ function showView(name,el){
   if(name==='reports')renderReports(c);
   if(name==='admin')renderAdmMet();
   if(name==='tracker')tr_initView();
+  if(name==='advisory')renderAdvisory();
+  if(name==='positions')renderPositions();
 }
 
 /* ── DASHBOARD ── */
@@ -1905,6 +2080,165 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')tr_closeModal();});
 function openModal(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+/* ══ ADVISORY RENDERING ══ */
+
+function renderAdvisory(){
+  if(!advisoryClient||!advisorySnapshots.length)return;
+  var cl=advisoryClient;
+  var snaps=advisorySnapshots;
+  var latest=snaps[snaps.length-1];
+  var inception=snaps[0];
+  var curVal=Number(latest.total_value);
+  var incVal=Number(cl.inception_value||inception.total_value);
+
+  document.getElementById('advDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('advName').textContent=cl.name||'';
+  document.getElementById('advTotal').textContent=fmt(curVal);
+
+  var chg=curVal-incVal;
+  var chgPct=incVal>0?((chg/incVal)*100).toFixed(2):0;
+  var startD=new Date(cl.start_date+'T00:00:00');
+  var chipsH='';
+  chipsH+='<span class="adv-chip '+(chg>=0?'green':'red')+'">'+(chg>=0?'+':'')+chgPct+'% desde inicio</span>';
+  chipsH+='<span class="adv-chip '+(chg>=0?'green':'red')+'">'+(chg>=0?'+':'-')+'USD '+fmt(Math.abs(chg))+'</span>';
+  chipsH+='<span class="adv-chip gold">Desde '+startD.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'</span>';
+  document.getElementById('advChips').innerHTML=chipsH;
+
+  // Metrics
+  var now=new Date();
+  var mtdVal=incVal,qtdVal=incVal,stdVal=incVal,ytdVal=incVal;
+  var qStart=new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1);
+  var sStart=new Date(now.getFullYear(),now.getMonth()<6?0:6,1);
+  var yStart=new Date(now.getFullYear(),0,1);
+  snaps.forEach(function(s){
+    var sd=new Date(s.snapshot_date+'T00:00:00');
+    var sv=Number(s.total_value);
+    if(sd.getMonth()===now.getMonth()&&sd.getFullYear()===now.getFullYear()&&sd<new Date(now.getFullYear(),now.getMonth(),1)){mtdVal=sv;}
+    if(sd<qStart){qtdVal=sv;}
+    if(sd<sStart){stdVal=sv;}
+    if(sd<yStart){ytdVal=sv;}
+  });
+  if(snaps.length<=2){mtdVal=incVal;qtdVal=incVal;stdVal=incVal;ytdVal=incVal;}
+
+  var mtdChg=curVal-mtdVal,mtdPct=mtdVal>0?((mtdChg/mtdVal)*100).toFixed(2):0;
+  var qtdChg=curVal-qtdVal,qtdPct=qtdVal>0?((qtdChg/qtdVal)*100).toFixed(2):0;
+  var stdChg=curVal-stdVal,stdPct=stdVal>0?((stdChg/stdVal)*100).toFixed(2):0;
+  var ytdChg=curVal-ytdVal,ytdPct=ytdVal>0?((ytdChg/ytdVal)*100).toFixed(2):0;
+  var sinceChg=curVal-incVal,sincePct=incVal>0?((sinceChg/incVal)*100).toFixed(2):0;
+
+  // Fee calculation
+  var feeRate=Number(cl.fee_rate||0.005);
+  var avgVal=(incVal+curVal)/2;
+  var feeAnnual=avgVal*feeRate;
+  var daysSinceStart=Math.max(1,Math.floor((now-startD)/(1000*60*60*24)));
+  var feeAccrued=feeAnnual*(daysSinceStart/365);
+
+  function mkM(label,val,pct,sub){
+    var cls=Number(pct)>=0?'pos':'neg';
+    return '<div class="adv-m"><div class="adv-ml">'+label+'</div><div class="adv-mv">'+(Number(pct)>=0?'+':'')+pct+'%</div><div class="adv-ms"><span class="'+cls+'">'+(Number(val)>=0?'+':'-')+'USD '+fmt(Math.abs(val))+'</span>'+(sub?' · '+sub:'')+'</div></div>';
+  }
+  var mH='';
+  mH+='<div class="adv-m"><div class="adv-ml">Valor inicial</div><div class="adv-mv">'+fmt(incVal)+'</div><div class="adv-ms">'+startD.toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})+'</div></div>';
+  mH+='<div class="adv-m"><div class="adv-ml">Valor actual</div><div class="adv-mv">'+fmt(curVal)+'</div><div class="adv-ms">'+new Date(latest.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})+'</div></div>';
+  mH+=mkM('MTD',mtdChg,mtdPct,'Mes actual');
+  mH+=mkM('QTD',qtdChg,qtdPct,'Trimestre');
+  mH+=mkM('STD',stdChg,stdPct,'Semestre');
+  mH+=mkM('YTD',ytdChg,ytdPct,'Año');
+  mH+=mkM('Desde inicio',sinceChg,sincePct,daysSinceStart+' días');
+  mH+='<div class="adv-m"><div class="adv-ml">Fee acumulado</div><div class="adv-mv">'+fmt(Math.round(feeAccrued))+'</div><div class="adv-ms">de USD '+fmt(Math.round(feeAnnual))+' anuales ('+((feeRate*100).toFixed(1))+'%)</div></div>';
+  document.getElementById('advMetrics').innerHTML=mH;
+
+  // Donut — allocation by category
+  var holdings=latest.holdings||[];
+  var byCat={};
+  holdings.forEach(function(h){
+    var cat=h.category||'Other';
+    byCat[cat]=(byCat[cat]||0)+Number(h.market_value||0);
+  });
+  var catColors={'Stocks':'#c9a96e','ETFs':'#5a9fd4','Mutual Funds':'#4fc49a','Cash':'#8fa0b8','Other':'#9b8fd4'};
+  var cats=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];});
+  var catVals=cats.map(function(c){return byCat[c];});
+  var catPcts=cats.map(function(c){return curVal>0?Math.round(byCat[c]/curVal*100):0;});
+  var catCols=cats.map(function(c){return catColors[c]||'#777';});
+
+  if(advDonutChart)advDonutChart.destroy();
+  advDonutChart=new Chart(document.getElementById('advDonut').getContext('2d'),{type:'doughnut',data:{labels:cats,datasets:[{data:catPcts,backgroundColor:catCols,borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,41,64,.97)',borderColor:'rgba(201,169,110,.3)',borderWidth:1,callbacks:{label:function(ctx){return cats[ctx.dataIndex]+': '+catPcts[ctx.dataIndex]+'% (USD '+fmt(catVals[ctx.dataIndex])+')';}}}}}});
+  document.getElementById('advDonutLegend').innerHTML=cats.map(function(c,i){return '<div style="display:inline-flex;align-items:center;gap:6px;margin:6px 14px 0 0;font-size:.6rem;color:var(--w2)"><div style="width:8px;height:8px;border-radius:50%;background:'+catCols[i]+'"></div>'+c+' <span style="color:var(--w);font-weight:600">'+catPcts[i]+'%</span></div>';}).join('');
+
+  // Performance chart — evolution
+  if(advPerfChartObj)advPerfChartObj.destroy();
+  var labels=snaps.map(function(s){return new Date(s.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});});
+  var vals=snaps.map(function(s){return Number(s.total_value);});
+  advPerfChartObj=new Chart(document.getElementById('advPerfChart').getContext('2d'),{type:'line',data:{labels:labels,datasets:[{data:vals,borderColor:'rgba(184,153,90,.7)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#c9a96e',tension:.3,fill:true,backgroundColor:function(ctx){var g=ctx.chart.ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'rgba(177,145,58,.18)');g.addColorStop(1,'rgba(184,153,90,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,41,64,.97)',borderColor:'rgba(177,145,58,.3)',borderWidth:1,callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}},scales:{x:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},maxRotation:0}},y:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},callback:function(v){return '$'+(v>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'k');}}}}}});
+
+  // Fee section
+  document.getElementById('advFee').innerHTML=
+    '<div class="adv-fee-item"><div class="adv-fee-label">Tasa anual</div><div class="adv-fee-val">'+(feeRate*100).toFixed(1)+'%</div></div>'
+    +'<div class="adv-fee-item"><div class="adv-fee-label">Valor promedio</div><div class="adv-fee-val">USD '+fmt(Math.round(avgVal))+'</div></div>'
+    +'<div class="adv-fee-item"><div class="adv-fee-label">Fee anual estimado</div><div class="adv-fee-val">USD '+fmt(Math.round(feeAnnual))+'</div></div>'
+    +'<div class="adv-fee-item"><div class="adv-fee-label">Fee acumulado ('+daysSinceStart+' días)</div><div class="adv-fee-val">USD '+fmt(Math.round(feeAccrued))+'</div></div>';
+}
+
+function renderPositions(){
+  if(!advisoryClient||!advisorySnapshots.length)return;
+  var latest=advisorySnapshots[advisorySnapshots.length-1];
+  var holdings=(latest.holdings||[]).slice();
+  var activity=(latest.activity||[]).slice();
+  var curVal=Number(latest.total_value);
+
+  document.getElementById('posDate').textContent=new Date(latest.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+
+  holdings.sort(function(a,b){return Number(b.market_value||0)-Number(a.market_value||0);});
+  var tbody=holdings.map(function(h){
+    var mv=Number(h.market_value||0);
+    var gl=Number(h.unrealized_gl||0);
+    var glp=Number(h.unrealized_gl_pct||0);
+    var cost=Number(h.total_cost||0);
+    var cls=gl>=0?'adv-pos':'adv-neg';
+    return '<tr>'
+      +'<td>'+h.name+'</td>'
+      +'<td style="color:var(--adv-gold);font-weight:600">'+(h.symbol||'—')+'</td>'
+      +'<td style="color:var(--adv-dim);font-size:11px">'+(h.category||h.product_type||'—')+'</td>'
+      +'<td>'+(h.quantity?Number(h.quantity).toLocaleString('es-AR',{maximumFractionDigits:2}):'—')+'</td>'
+      +'<td>'+(h.last_price?'$'+Number(h.last_price).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'
+      +'<td style="font-weight:600;color:var(--adv-text)">$'+fmt(mv)+'</td>'
+      +'<td>'+(cost>0?'$'+fmt(cost):'—')+'</td>'
+      +'<td>'+(h.pct_portfolio?Number(h.pct_portfolio).toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(glp>=0?'+':'')+glp.toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(gl>=0?'+':'-')+'$'+fmt(Math.abs(gl)):'—')+'</td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('posTbody').innerHTML=tbody;
+
+  var totalCost=holdings.reduce(function(s,h){return s+Number(h.total_cost||0);},0);
+  var totalGL=curVal-totalCost;
+  document.getElementById('posTfoot').innerHTML='<tr><td>Total ('+holdings.length+' posiciones)</td><td></td><td></td><td></td><td></td><td style="text-align:right">$'+fmt(curVal)+'</td><td style="text-align:right">'+(totalCost>0?'$'+fmt(totalCost):'')+'</td><td></td><td></td><td style="text-align:right">'+(totalCost>0?(totalGL>=0?'+':'-')+'$'+fmt(Math.abs(totalGL)):'')+'</td></tr>';
+
+  // Activity
+  if(!activity.length){
+    document.getElementById('posActivity').innerHTML='<div style="padding:20px;text-align:center;color:var(--adv-dim);font-style:italic;font-size:.7rem">Sin actividad registrada en este período</div>';
+    return;
+  }
+  var actH=activity.map(function(a){
+    var tp=String(a.type||'').toLowerCase();
+    var cls='other',label=a.type||'—';
+    if(tp.indexOf('bought')>=0||tp.indexOf('buy')>=0){cls='buy';label='Compra';}
+    else if(tp.indexOf('sold')>=0||tp.indexOf('sell')>=0){cls='sell';label='Venta';}
+    else if(tp.indexOf('dividend')>=0||tp.indexOf('interest')>=0){cls='other';label='Ingreso';}
+    else if(tp.indexOf('payment')>=0){cls='other';label='Pago';}
+    var amt=Number(a.amount||0);
+    var amtCls=amt>=0?'pos':'neg';
+    return '<div class="adv-act-row">'
+      +'<span class="adv-act-date">'+a.date+'</span>'
+      +'<span class="adv-act-type '+cls+'">'+label+'</span>'
+      +'<span class="adv-act-desc">'+a.description+'</span>'
+      +'<span class="adv-act-sym">'+(a.symbol||'')+'</span>'
+      +'<span class="adv-act-amt '+amtCls+'">'+(amt!==0?(amt>=0?'+':'-')+'$'+fmt(Math.abs(amt)):'—')+'</span>'
+      +'</div>';
+  }).join('');
+  document.getElementById('posActivity').innerHTML=actH;
+}
+
 init();
 </script>
 </body>
