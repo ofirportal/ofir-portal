@@ -1100,6 +1100,29 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
         </div>
       </div>
       <div class="adv-section">
+        <div class="adv-section-title">Posiciones — <span id="advPosDate">—</span></div>
+        <div class="adv-tbl-wrap" style="max-height:600px">
+          <table class="adv-tbl">
+            <thead>
+              <tr>
+                <th>Instrumento</th>
+                <th>Symbol</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Valor USD</th>
+                <th>Costo</th>
+                <th>% Portfolio</th>
+                <th>G/L %</th>
+                <th>G/L $</th>
+              </tr>
+            </thead>
+            <tbody id="advPosTbody"></tbody>
+            <tfoot id="advPosTfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="adv-section">
         <div class="adv-section-title">Management Fee</div>
         <div class="adv-fee-box" id="advFee"></div>
       </div>
@@ -2103,33 +2126,38 @@ function renderAdvisory(){
   var cl=currentClient||{};
   var snaps=advisorySnapshots;
   var latest=snaps[snaps.length-1];
-  var inception=snaps[0];
   var curVal=Number(latest.total_value);
-  var incVal=Number(cl.inceptionValue||inception.total_value);
+  var incVal=Number(cl.inceptionValue||curVal);
 
   document.getElementById('advDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('advName').textContent=cl.name||'';
   document.getElementById('advTotal').textContent=fmt(curVal);
 
-  var chg=curVal-incVal;
-  var chgPct=incVal>0?((chg/incVal)*100).toFixed(2):0;
   var startD=new Date((cl.startDate||'2026-06-01')+'T00:00:00');
+
+  // G&L from holdings
+  var holdings=latest.holdings||[];
+  var totalCost=holdings.reduce(function(s,h){return s+Number(h.total_cost||0);},0);
+  var totalGL=curVal-totalCost;
+  var totalGLpct=totalCost>0?((totalGL/totalCost)*100).toFixed(2):0;
+
   var chipsH='';
-  chipsH+='<span class="adv-chip '+(chg>=0?'green':'red')+'">'+(chg>=0?'+':'')+chgPct+'% desde inicio</span>';
-  chipsH+='<span class="adv-chip '+(chg>=0?'green':'red')+'">'+(chg>=0?'+':'-')+'USD '+fmt(Math.abs(chg))+'</span>';
+  chipsH+='<span class="adv-chip '+(totalGL>=0?'green':'red')+'">'+(totalGL>=0?'+':'')+totalGLpct+'% G&L</span>';
+  chipsH+='<span class="adv-chip '+(totalGL>=0?'green':'red')+'">'+(totalGL>=0?'+':'-')+'USD '+fmt(Math.abs(Math.round(totalGL)))+'</span>';
   chipsH+='<span class="adv-chip gold">Desde '+startD.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'</span>';
   document.getElementById('advChips').innerHTML=chipsH;
 
-  // Metrics
+  // Metrics — period returns
   var now=new Date();
   var mtdVal=incVal,qtdVal=incVal,stdVal=incVal,ytdVal=incVal;
+  var mStart=new Date(now.getFullYear(),now.getMonth(),1);
   var qStart=new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1);
   var sStart=new Date(now.getFullYear(),now.getMonth()<6?0:6,1);
   var yStart=new Date(now.getFullYear(),0,1);
   snaps.forEach(function(s){
     var sd=new Date(s.snapshot_date+'T00:00:00');
     var sv=Number(s.total_value);
-    if(sd.getMonth()===now.getMonth()&&sd.getFullYear()===now.getFullYear()&&sd<new Date(now.getFullYear(),now.getMonth(),1)){mtdVal=sv;}
+    if(sd<mStart){mtdVal=sv;}
     if(sd<qStart){qtdVal=sv;}
     if(sd<sStart){stdVal=sv;}
     if(sd<yStart){ytdVal=sv;}
@@ -2141,13 +2169,7 @@ function renderAdvisory(){
   var stdChg=curVal-stdVal,stdPct=stdVal>0?((stdChg/stdVal)*100).toFixed(2):0;
   var ytdChg=curVal-ytdVal,ytdPct=ytdVal>0?((ytdChg/ytdVal)*100).toFixed(2):0;
   var sinceChg=curVal-incVal,sincePct=incVal>0?((sinceChg/incVal)*100).toFixed(2):0;
-
-  // Fee calculation
-  var feeRate=Number(cl.feeRate||0.005);
-  var avgVal=(incVal+curVal)/2;
-  var feeAnnual=avgVal*feeRate;
   var daysSinceStart=Math.max(1,Math.floor((now-startD)/(1000*60*60*24)));
-  var feeAccrued=feeAnnual*(daysSinceStart/365);
 
   function mkM(label,val,pct,sub){
     var cls=Number(pct)>=0?'pos':'neg';
@@ -2156,16 +2178,15 @@ function renderAdvisory(){
   var mH='';
   mH+='<div class="adv-m"><div class="adv-ml">Valor inicial</div><div class="adv-mv">'+fmt(incVal)+'</div><div class="adv-ms">'+startD.toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})+'</div></div>';
   mH+='<div class="adv-m"><div class="adv-ml">Valor actual</div><div class="adv-mv">'+fmt(curVal)+'</div><div class="adv-ms">'+new Date(latest.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})+'</div></div>';
-  mH+=mkM('MTD',mtdChg,mtdPct,'Mes actual');
-  mH+=mkM('QTD',qtdChg,qtdPct,'Trimestre');
-  mH+=mkM('STD',stdChg,stdPct,'Semestre');
-  mH+=mkM('YTD',ytdChg,ytdPct,'Año');
+  mH+=mkM('Mes actual',mtdChg,mtdPct);
+  mH+=mkM('Trimestre',qtdChg,qtdPct);
+  mH+=mkM('Semestre',stdChg,stdPct);
+  mH+=mkM(String(now.getFullYear()),ytdChg,ytdPct);
   mH+=mkM('Desde inicio',sinceChg,sincePct,daysSinceStart+' días');
-  mH+='<div class="adv-m"><div class="adv-ml">Fee acumulado</div><div class="adv-mv">'+fmt(Math.round(feeAccrued))+'</div><div class="adv-ms">de USD '+fmt(Math.round(feeAnnual))+' anuales ('+((feeRate*100).toFixed(1))+'%)</div></div>';
+  mH+='<div class="adv-m"><div class="adv-ml">Ganancia / Pérdida</div><div class="adv-mv" style="color:'+(totalGL>=0?'var(--adv-green)':'var(--adv-red)')+'">'+(totalGL>=0?'+':'-')+'USD '+fmt(Math.abs(Math.round(totalGL)))+'</div><div class="adv-ms">'+(totalGL>=0?'+':'')+totalGLpct+'% sobre costo</div></div>';
   document.getElementById('advMetrics').innerHTML=mH;
 
   // Donut — allocation by category
-  var holdings=latest.holdings||[];
   var byCat={};
   holdings.forEach(function(h){
     var cat=h.category||'Other';
@@ -2187,7 +2208,36 @@ function renderAdvisory(){
   var vals=snaps.map(function(s){return Number(s.total_value);});
   advPerfChartObj=new Chart(document.getElementById('advPerfChart').getContext('2d'),{type:'line',data:{labels:labels,datasets:[{data:vals,borderColor:'rgba(184,153,90,.7)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#c9a96e',tension:.3,fill:true,backgroundColor:function(ctx){var g=ctx.chart.ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'rgba(177,145,58,.18)');g.addColorStop(1,'rgba(184,153,90,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,41,64,.97)',borderColor:'rgba(177,145,58,.3)',borderWidth:1,callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}},scales:{x:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},maxRotation:0}},y:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},callback:function(v){return '$'+(v>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'k');}}}}}});
 
+  // Holdings table inline
+  var sortedH=holdings.slice().sort(function(a,b){return Number(b.market_value||0)-Number(a.market_value||0);});
+  document.getElementById('advPosDate').textContent=new Date(latest.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  var tbody=sortedH.map(function(h){
+    var mv=Number(h.market_value||0);
+    var gl=Number(h.unrealized_gl||0);
+    var glp=Number(h.unrealized_gl_pct||0);
+    var cost=Number(h.total_cost||0);
+    var cls=gl>=0?'adv-pos':'adv-neg';
+    return '<tr>'
+      +'<td>'+h.name+'</td>'
+      +'<td style="color:var(--adv-gold);font-weight:600">'+(h.symbol||'—')+'</td>'
+      +'<td style="color:var(--adv-dim);font-size:11px">'+(h.category||h.product_type||'—')+'</td>'
+      +'<td>'+(h.quantity?Number(h.quantity).toLocaleString('es-AR',{maximumFractionDigits:2}):'—')+'</td>'
+      +'<td>'+(h.last_price?'$'+Number(h.last_price).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'
+      +'<td style="font-weight:600;color:var(--adv-text)">$'+fmt(mv)+'</td>'
+      +'<td>'+(cost>0?'$'+fmt(cost):'—')+'</td>'
+      +'<td>'+(h.pct_portfolio?Number(h.pct_portfolio).toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(glp>=0?'+':'')+glp.toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(gl>=0?'+':'-')+'$'+fmt(Math.abs(gl)):'—')+'</td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('advPosTbody').innerHTML=tbody;
+  document.getElementById('advPosTfoot').innerHTML='<tr><td>Total ('+sortedH.length+' posiciones)</td><td></td><td></td><td></td><td></td><td style="text-align:right;font-weight:700;color:var(--adv-gold)">$'+fmt(curVal)+'</td><td style="text-align:right">'+(totalCost>0?'$'+fmt(totalCost):'')+'</td><td></td><td class="'+(totalGL>=0?'adv-pos':'adv-neg')+'" style="text-align:right">'+(totalCost>0?(totalGL>=0?'+':'')+totalGLpct+'%':'')+'</td><td class="'+(totalGL>=0?'adv-pos':'adv-neg')+'" style="text-align:right">'+(totalCost>0?(totalGL>=0?'+':'-')+'$'+fmt(Math.abs(Math.round(totalGL))):'')+'</td></tr>';
+
   // Fee section
+  var feeRate=Number(cl.feeRate||0.005);
+  var avgVal=(incVal+curVal)/2;
+  var feeAnnual=avgVal*feeRate;
+  var feeAccrued=feeAnnual*(daysSinceStart/365);
   document.getElementById('advFee').innerHTML=
     '<div class="adv-fee-item"><div class="adv-fee-label">Tasa anual</div><div class="adv-fee-val">'+(feeRate*100).toFixed(1)+'%</div></div>'
     +'<div class="adv-fee-item"><div class="adv-fee-label">Valor promedio</div><div class="adv-fee-val">USD '+fmt(Math.round(avgVal))+'</div></div>'
