@@ -1109,16 +1109,14 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
                 <th>Asset Class</th>
                 <th>Valor USD</th>
                 <th>% Portfolio</th>
+                <th>G/L %</th>
+                <th>G/L $</th>
               </tr>
             </thead>
             <tbody id="advPosTbody"></tbody>
             <tfoot id="advPosTfoot"></tfoot>
           </table>
         </div>
-      </div>
-      <div class="adv-section">
-        <div class="adv-section-title">Management Fee</div>
-        <div class="adv-fee-box" id="advFee"></div>
       </div>
     </div>
 
@@ -1134,6 +1132,8 @@ html[data-theme="light"] .v2-tbtn:hover{border-color:#9a7020;color:#9a7020;}
                 <th>Asset Class</th>
                 <th>Valor USD</th>
                 <th>% Portfolio</th>
+                <th>G/L %</th>
+                <th>G/L $</th>
               </tr>
             </thead>
             <tbody id="posTbody"></tbody>
@@ -2214,32 +2214,31 @@ function renderAdvisory(){
   if(yMin===yMax){yMin=yMin*0.99;yMax=yMax*1.01;}
   advPerfChartObj=new Chart(document.getElementById('advPerfChart').getContext('2d'),{type:'line',data:{labels:labels,datasets:[{data:vals,borderColor:'rgba(184,153,90,.7)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#c9a96e',tension:0,fill:true,backgroundColor:function(ctx){var g=ctx.chart.ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'rgba(177,145,58,.18)');g.addColorStop(1,'rgba(184,153,90,0)');return g;}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,41,64,.97)',borderColor:'rgba(177,145,58,.3)',borderWidth:1,callbacks:{label:function(ctx){return '  USD '+fmt(ctx.raw);}}}},scales:{x:{grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},maxRotation:0}},y:{min:yMin,max:yMax,grid:{color:'rgba(243,244,246,.04)'},ticks:{color:'rgba(243,244,246,.55)',font:{size:9},callback:function(v){return '$'+(v>=1e6?(v/1e6).toFixed(2)+'M':(v/1e3).toFixed(0)+'k');}}}}}});
 
-  // Holdings table inline
+  // Holdings table inline with G&L
   var sortedH=holdings.slice().sort(function(a,b){return Number(b.market_value||0)-Number(a.market_value||0);});
   document.getElementById('advPosDate').textContent=new Date(latest.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  var tblTotalCost=0,tblTotalGL=0;
   var tbody=sortedH.map(function(h){
     var mv=Number(h.market_value||0);
     var ac=advAssetClass(h);
+    var gl=Number(h.unrealized_gl||0);
+    var glp=Number(h.unrealized_gl_pct||0);
+    var cost=Number(h.total_cost||0);
+    tblTotalCost+=cost;tblTotalGL+=gl;
+    var cls=gl>=0?'adv-pos':'adv-neg';
     return '<tr>'
       +'<td>'+h.name+'</td>'
       +'<td><span style="color:'+ADV_AC_COLORS[ac]+';font-weight:500">'+ac+'</span></td>'
       +'<td style="font-weight:600;color:var(--adv-text)">$'+fmt(mv)+'</td>'
       +'<td>'+(h.pct_portfolio?Number(h.pct_portfolio).toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(glp>=0?'+':'')+glp.toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(gl>=0?'+':'-')+'$'+fmt(Math.abs(Math.round(gl))):'—')+'</td>'
       +'</tr>';
   }).join('');
   document.getElementById('advPosTbody').innerHTML=tbody;
-  document.getElementById('advPosTfoot').innerHTML='<tr><td>Total ('+sortedH.length+' posiciones)</td><td></td><td style="text-align:right;font-weight:700;color:var(--adv-gold)">$'+fmt(curVal)+'</td><td style="text-align:right">100%</td></tr>';
-
-  // Fee section
-  var feeRate=Number(cl.feeRate||0.005);
-  var avgVal=(incVal+curVal)/2;
-  var feeAnnual=avgVal*feeRate;
-  var feeAccrued=feeAnnual*(daysSinceStart/365);
-  document.getElementById('advFee').innerHTML=
-    '<div class="adv-fee-item"><div class="adv-fee-label">Tasa anual</div><div class="adv-fee-val">'+(feeRate*100).toFixed(1)+'%</div></div>'
-    +'<div class="adv-fee-item"><div class="adv-fee-label">Valor promedio</div><div class="adv-fee-val">USD '+fmt(Math.round(avgVal))+'</div></div>'
-    +'<div class="adv-fee-item"><div class="adv-fee-label">Fee anual estimado</div><div class="adv-fee-val">USD '+fmt(Math.round(feeAnnual))+'</div></div>'
-    +'<div class="adv-fee-item"><div class="adv-fee-label">Fee acumulado ('+daysSinceStart+' días)</div><div class="adv-fee-val">USD '+fmt(Math.round(feeAccrued))+'</div></div>';
+  var ftGLpct=tblTotalCost>0?((tblTotalGL/tblTotalCost)*100).toFixed(1):'0';
+  var ftCls=tblTotalGL>=0?'adv-pos':'adv-neg';
+  document.getElementById('advPosTfoot').innerHTML='<tr><td>Total ('+sortedH.length+' posiciones)</td><td></td><td style="text-align:right;font-weight:700;color:var(--adv-gold)">$'+fmt(curVal)+'</td><td style="text-align:right">100%</td><td class="'+ftCls+'" style="text-align:right">'+(tblTotalCost>0?(tblTotalGL>=0?'+':'')+ftGLpct+'%':'')+'</td><td class="'+ftCls+'" style="text-align:right">'+(tblTotalCost>0?(tblTotalGL>=0?'+':'-')+'$'+fmt(Math.abs(Math.round(tblTotalGL))):'')+'</td></tr>';
 }
 
 function renderPositions(){
@@ -2252,18 +2251,28 @@ function renderPositions(){
   document.getElementById('posDate').textContent=new Date(latest.snapshot_date+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
 
   holdings.sort(function(a,b){return Number(b.market_value||0)-Number(a.market_value||0);});
+  var pTotalCost=0,pTotalGL=0;
   var tbody=holdings.map(function(h){
     var mv=Number(h.market_value||0);
     var ac=advAssetClass(h);
+    var gl=Number(h.unrealized_gl||0);
+    var glp=Number(h.unrealized_gl_pct||0);
+    var cost=Number(h.total_cost||0);
+    pTotalCost+=cost;pTotalGL+=gl;
+    var cls=gl>=0?'adv-pos':'adv-neg';
     return '<tr>'
       +'<td>'+h.name+'</td>'
       +'<td><span style="color:'+ADV_AC_COLORS[ac]+';font-weight:500">'+ac+'</span></td>'
       +'<td style="font-weight:600;color:var(--adv-text)">$'+fmt(mv)+'</td>'
       +'<td>'+(h.pct_portfolio?Number(h.pct_portfolio).toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(glp>=0?'+':'')+glp.toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+cls+'">'+(cost>0?(gl>=0?'+':'-')+'$'+fmt(Math.abs(Math.round(gl))):'—')+'</td>'
       +'</tr>';
   }).join('');
   document.getElementById('posTbody').innerHTML=tbody;
-  document.getElementById('posTfoot').innerHTML='<tr><td>Total ('+holdings.length+' posiciones)</td><td></td><td style="text-align:right">$'+fmt(curVal)+'</td><td style="text-align:right">100%</td></tr>';
+  var pGLpct=pTotalCost>0?((pTotalGL/pTotalCost)*100).toFixed(1):'0';
+  var pCls=pTotalGL>=0?'adv-pos':'adv-neg';
+  document.getElementById('posTfoot').innerHTML='<tr><td>Total ('+holdings.length+' posiciones)</td><td></td><td style="text-align:right">$'+fmt(curVal)+'</td><td style="text-align:right">100%</td><td class="'+pCls+'" style="text-align:right">'+(pTotalCost>0?(pTotalGL>=0?'+':'')+pGLpct+'%':'')+'</td><td class="'+pCls+'" style="text-align:right">'+(pTotalCost>0?(pTotalGL>=0?'+':'-')+'$'+fmt(Math.abs(Math.round(pTotalGL))):'')+'</td></tr>';
 
   // Activity
   if(!activity.length){
