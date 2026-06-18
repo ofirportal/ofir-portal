@@ -1211,7 +1211,8 @@ function mapR(r){
     notes:nr.filter(n=>!n.__meta),goals:r.goals||[],
     startDate:m.startDate||'',inceptionValue:Number(m.inceptionValue||0),
     nextMeeting:m.nextMeeting||'',managementFee:Number(m.managementFee||0),
-    liquidity:m.liquidity||[],reports:m.reports||[],productivos:m.productivos||[],recs:m.recs||[]
+    liquidity:m.liquidity||[],reports:m.reports||[],productivos:m.productivos||[],recs:m.recs||[],
+    isAdvisory:!!m.isAdvisory,advisoryClientId:Number(m.advisoryClientId||0),feeRate:Number(m.feeRate||0)
   };
 }
 
@@ -1263,17 +1264,13 @@ async function doLogin(){
     enterApp();return;
   }
   const{data,error}=await db.rpc('verify_client',{p_pass:pw});
-  if(error||!data||!data.length){
-    const{data:advData,error:advErr}=await db.from('advisory_clients').select('*').eq('password',pw);
-    if(!advErr&&advData&&advData.length){
-      isAdmin=false;isAdvisory=true;advisoryClient=advData[0];
-      const{data:snaps}=await db.from('advisory_snapshots').select('*').eq('client_id',advisoryClient.id).order('snapshot_date',{ascending:true});
-      advisorySnapshots=snaps||[];
-      enterApp();return;
-    }
-    showLoginErr();return;
-  }
-  isAdmin=false;isAdvisory=false;currentClient=mapR(data[0]);clients=[currentClient];selIdx=0;
+  if(error||!data||!data.length){showLoginErr();return;}
+  isAdmin=false;currentClient=mapR(data[0]);clients=[currentClient];selIdx=0;
+  if(currentClient.isAdvisory&&currentClient.advisoryClientId){
+    isAdvisory=true;
+    const{data:snaps}=await db.from('advisory_snapshots').select('*').eq('client_id',currentClient.advisoryClientId).order('snapshot_date',{ascending:true});
+    advisorySnapshots=snaps||[];
+  }else{isAdvisory=false;}
   enterApp();
 }
 
@@ -1290,9 +1287,9 @@ function enterApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
 
-  if(isAdvisory){
-    document.getElementById('hAv').textContent=(advisoryClient.name||'S')[0].toUpperCase();
-    document.getElementById('hNm').textContent=advisoryClient.name||'';
+  if(isAdvisory&&!isAdmin){
+    document.getElementById('hAv').textContent=(currentClient.name||'S')[0].toUpperCase();
+    document.getElementById('hNm').textContent=currentClient.name||'';
     document.getElementById('hRl').textContent='Advisory';
     document.getElementById('hBadge').style.display='none';
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='none');
@@ -1349,7 +1346,25 @@ function showView(name,el){
   var mn=document.querySelector('.mob-ni[data-view="'+name+'"]');
   if(mn)mn.classList.add('active');
   const c=isAdmin?clients[selIdx]:currentClient;
-  if(name==='dashboard')renderDash(c);
+  if(name==='dashboard'){
+    if(c&&c.isAdvisory){
+      currentClient=c;isAdvisory=true;
+      if(!advisorySnapshots.length&&c.advisoryClientId){
+        db.from('advisory_snapshots').select('*').eq('client_id',c.advisoryClientId).order('snapshot_date',{ascending:true}).then(function(res){
+          advisorySnapshots=res.data||[];
+          document.getElementById('view-dashboard').classList.remove('active');
+          document.getElementById('view-advisory').classList.add('active');
+          renderAdvisory();
+        });
+      }else{
+        document.getElementById('view-dashboard').classList.remove('active');
+        document.getElementById('view-advisory').classList.add('active');
+        renderAdvisory();
+      }
+      return;
+    }
+    renderDash(c);
+  }
   if(name==='reports')renderReports(c);
   if(name==='admin')renderAdmMet();
   if(name==='tracker')tr_initView();
@@ -1525,6 +1540,7 @@ function renderClList(){
 
 function selClient(i){
   selIdx=i;const c=clients[i];if(!c)return;
+  if(!c.isAdvisory){isAdvisory=false;advisorySnapshots=[];}
   renderClList();
   document.getElementById('shUrl').textContent=window.location.origin+window.location.pathname;
   document.getElementById('shCard').style.display='block';
@@ -2083,13 +2099,13 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.cu
 /* ══ ADVISORY RENDERING ══ */
 
 function renderAdvisory(){
-  if(!advisoryClient||!advisorySnapshots.length)return;
-  var cl=advisoryClient;
+  if(!advisorySnapshots.length)return;
+  var cl=currentClient||{};
   var snaps=advisorySnapshots;
   var latest=snaps[snaps.length-1];
   var inception=snaps[0];
   var curVal=Number(latest.total_value);
-  var incVal=Number(cl.inception_value||inception.total_value);
+  var incVal=Number(cl.inceptionValue||inception.total_value);
 
   document.getElementById('advDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('advName').textContent=cl.name||'';
@@ -2097,7 +2113,7 @@ function renderAdvisory(){
 
   var chg=curVal-incVal;
   var chgPct=incVal>0?((chg/incVal)*100).toFixed(2):0;
-  var startD=new Date(cl.start_date+'T00:00:00');
+  var startD=new Date((cl.startDate||'2026-06-01')+'T00:00:00');
   var chipsH='';
   chipsH+='<span class="adv-chip '+(chg>=0?'green':'red')+'">'+(chg>=0?'+':'')+chgPct+'% desde inicio</span>';
   chipsH+='<span class="adv-chip '+(chg>=0?'green':'red')+'">'+(chg>=0?'+':'-')+'USD '+fmt(Math.abs(chg))+'</span>';
@@ -2127,7 +2143,7 @@ function renderAdvisory(){
   var sinceChg=curVal-incVal,sincePct=incVal>0?((sinceChg/incVal)*100).toFixed(2):0;
 
   // Fee calculation
-  var feeRate=Number(cl.fee_rate||0.005);
+  var feeRate=Number(cl.feeRate||0.005);
   var avgVal=(incVal+curVal)/2;
   var feeAnnual=avgVal*feeRate;
   var daysSinceStart=Math.max(1,Math.floor((now-startD)/(1000*60*60*24)));
@@ -2180,7 +2196,7 @@ function renderAdvisory(){
 }
 
 function renderPositions(){
-  if(!advisoryClient||!advisorySnapshots.length)return;
+  if(!advisorySnapshots.length)return;
   var latest=advisorySnapshots[advisorySnapshots.length-1];
   var holdings=(latest.holdings||[]).slice();
   var activity=(latest.activity||[]).slice();
