@@ -1021,6 +1021,8 @@ function buildBarChart(history, data) {
     const byYear = {};
     history.forEach(h => {
       if (h.partial) return;
+      // Saltar registros anuales (01-01→12-31): duplican los trimestrales y corrompen el compuesto
+      if (h.period_start && h.period_end && h.period_start.slice(5) === '01-01' && h.period_end.slice(5) === '12-31' && h.period_start.slice(0,4) === h.period_end.slice(0,4)) return;
       const yr = h.period_end.slice(0, 4);
       if (!byYear[yr]) byYear[yr] = [];
       byYear[yr].push(h.pct);
